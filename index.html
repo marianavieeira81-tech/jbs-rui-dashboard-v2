@@ -1,0 +1,1712 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Rui — Dashboard de IA</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&family=Bebas+Neue&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#080808;--surface:#101010;--s2:#181818;--s3:#222;--s4:#2C2C2C;
+  --ac:#D4AF37;--ac-l:#F0DC82;--ac-d:#A88820;--ac-faint:rgba(212,175,55,.09);
+  --tx:#F0F0F0;--tx2:#A0A0A0;--tx3:#555;
+  --grn:#004225;--grn-l:#00A065;--grn-bg:rgba(0,160,101,.12);
+  --red:#E11D48;--red-bg:rgba(225,29,72,.12);
+  --bdr:#1E1E1E;--r:14px;--rsm:8px;
+  --sh:0 2px 20px rgba(0,0,0,.6);--sh-md:0 8px 40px rgba(0,0,0,.7);
+  --sh-gold:0 0 30px rgba(212,175,55,.12);
+  --sb:248px;--stripe:3px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);display:flex;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");opacity:.025;pointer-events:none;z-index:0;}
+body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);background:linear-gradient(90deg,#E11D48 0%,#D4AF37 35%,#D4AF37 65%,#004225 100%);z-index:200;}
+
+/* SIDEBAR */
+.sb{width:var(--sb);position:fixed;top:0;left:0;bottom:0;background:var(--surface);border-right:1px solid var(--bdr);display:flex;flex-direction:column;z-index:50;padding-top:var(--stripe);}
+.sb::after{content:'';position:absolute;top:0;right:-1px;width:1px;height:100%;background:linear-gradient(180deg,var(--ac) 0%,transparent 30%,transparent 70%,var(--ac-d) 100%);opacity:.4;}
+.sb-top{padding:28px 22px 20px;border-bottom:1px solid var(--bdr);}
+.sb-eye{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--tx3);margin-bottom:5px;font-weight:600;}
+.sb-brand{font-size:22px;font-weight:700;letter-spacing:-.03em;color:var(--tx);}
+.sb-brand span{color:var(--ac);font-family:'Bebas Neue',cursive;font-size:28px;letter-spacing:.05em;}
+.sb-pill{margin-top:12px;display:inline-flex;align-items:center;gap:7px;background:var(--s2);border-radius:20px;padding:5px 13px;border:1px solid var(--bdr);}
+.sb-pill .dot{width:7px;height:7px;border-radius:50%;background:var(--grn-l);box-shadow:0 0 8px var(--grn-l);animation:blink 2.2s ease-in-out infinite;}
+.sb-pill span{font-size:11px;color:var(--tx2);font-weight:500;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.4;}}
+.sb-scroll{flex:1;overflow-y:auto;padding:16px 0;scrollbar-width:thin;scrollbar-color:var(--s3) transparent;}
+.sb-group{padding:0 14px;margin-bottom:4px;}
+.sb-lbl{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--tx3);padding:14px 8px 6px;font-weight:600;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--rsm);cursor:pointer;transition:all .2s;color:var(--tx2);font-size:13px;font-weight:500;position:relative;user-select:none;}
+.sb-item:hover{background:var(--s2);color:var(--tx);transform:translateX(2px);}
+.sb-item.active{background:var(--ac-faint);color:var(--ac);font-weight:600;border:1px solid rgba(212,175,55,.12);}
+.sb-item.active::before{content:'';position:absolute;left:-1px;top:25%;bottom:25%;width:3px;background:linear-gradient(180deg,var(--ac-l),var(--ac));border-radius:0 3px 3px 0;box-shadow:0 0 10px rgba(212,175,55,.5);}
+.sb-ico{width:16px;text-align:center;font-style:normal;flex-shrink:0;opacity:.7;}
+.sb-item.active .sb-ico{opacity:1;}
+.sb-chess{height:24px;background-image:repeating-conic-gradient(rgba(212,175,55,.06) 0% 25%,transparent 0% 50%);background-size:10px 10px;}
+.sb-foot{padding:18px 22px;border-top:1px solid var(--bdr);}
+.sb-foot .wk{font-size:11px;color:var(--tx3);}
+.sb-foot .wk strong{color:var(--tx2);display:block;font-size:12px;margin-bottom:2px;}
+
+/* MAIN */
+.main{margin-left:var(--sb);flex:1;padding:calc(var(--stripe) + 36px) 40px 70px;position:relative;z-index:1;}
+.topbar{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:34px;}
+.topbar h1{font-size:26px;font-weight:700;letter-spacing:-.04em;background:linear-gradient(135deg,#fff 0%,var(--ac-l) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.topbar .eye{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--tx3);margin-bottom:5px;font-weight:600;}
+.topbar-r{display:flex;align-items:center;gap:12px;}
+.ts{font-size:12px;color:var(--tx3);text-align:right;}
+.ts strong{display:block;font-size:13px;font-weight:600;color:var(--tx2);font-family:'DM Mono',monospace;}
+.btn-ref{background:linear-gradient(135deg,var(--ac),var(--ac-d));color:#000;border:none;padding:10px 22px;border-radius:var(--rsm);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;box-shadow:0 4px 16px rgba(212,175,55,.25);}
+.btn-ref:hover{background:linear-gradient(135deg,var(--ac-l),var(--ac));transform:translateY(-2px);box-shadow:0 6px 24px rgba(212,175,55,.45);}
+.sec{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--tx3);margin:30px 0 16px;display:flex;align-items:center;gap:12px;font-weight:600;}
+.sec::before{content:'';width:20px;height:2px;background:linear-gradient(90deg,var(--ac),transparent);}
+.sec::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--bdr),transparent);}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.kpi,.card{animation:fadeUp .4s ease both;}
+.kpi:nth-child(1){animation-delay:.05s;}.kpi:nth-child(2){animation-delay:.1s;}.kpi:nth-child(3){animation-delay:.15s;}.kpi:nth-child(4){animation-delay:.2s;}
+
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+.kpi{background:var(--surface);border-radius:var(--r);padding:22px 24px;border:1px solid var(--bdr);box-shadow:var(--sh);cursor:default;transition:all .25s;position:relative;overflow:hidden;}
+.kpi:hover{border-color:rgba(212,175,55,.2);box-shadow:var(--sh-gold),var(--sh-md);transform:translateY(-2px);}
+.kpi.gold{background:linear-gradient(145deg,#130F00,#0A0800);border-color:rgba(212,175,55,.25);}
+.kpi.gold .kpi-lbl{color:#6A5520;}.kpi.gold .kpi-val{color:var(--ac);}.kpi.gold .kpi-sub{color:#6A5520;}
+.kpi-tag{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ac);font-weight:700;margin-bottom:6px;}
+.kpi-lbl{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--tx3);margin-bottom:10px;font-weight:600;}
+.kpi-val{font-size:38px;font-weight:700;letter-spacing:-.03em;line-height:1;margin-bottom:8px;color:var(--tx);font-family:'Bebas Neue',cursive;}
+.kpi-sub{font-size:12px;color:var(--tx3);display:flex;align-items:center;gap:6px;}
+.pill{display:inline-flex;align-items:center;gap:3px;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;}
+.up{background:var(--grn-bg);color:var(--grn-l);}.dn{background:var(--red-bg);color:var(--red);}.nu{background:var(--s2);color:var(--tx2);}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;}
+.card{background:var(--surface);border-radius:var(--r);border:1px solid var(--bdr);box-shadow:var(--sh);padding:24px;transition:all .25s;position:relative;overflow:hidden;}
+.card:hover{border-color:var(--s4);transform:translateY(-1px);box-shadow:var(--sh-md);}
+.ctitle{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--tx3);margin-bottom:18px;font-weight:600;}
+
+/* FUNIL */
+.fn-stage{background:var(--surface);border-radius:var(--r);border:1px solid var(--bdr);overflow:hidden;margin-bottom:10px;transition:all .2s;animation:fadeUp .4s ease both;}
+.fn-stage:hover{border-color:var(--s4);}
+.fn-hdr{display:flex;align-items:center;gap:14px;padding:16px 20px;cursor:pointer;user-select:none;}
+.fn-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+.fn-name{font-size:14px;font-weight:600;color:var(--tx);flex:1;}
+.fn-cnt{font-size:26px;font-weight:700;color:var(--tx);font-family:'Bebas Neue',cursive;}
+.fn-pct{font-size:11px;color:var(--tx3);}
+.fn-arrow{font-size:16px;color:var(--tx3);margin-left:12px;transition:transform .2s;}
+.fn-track{height:4px;background:var(--s2);margin:0 20px 14px;border-radius:2px;}
+.fn-bar{height:100%;border-radius:2px;transition:width .8s cubic-bezier(.4,0,.2,1);}
+.fn-body{display:none;padding:0 20px 18px;border-top:1px solid var(--s2);}
+.fn-body.open{display:block;}
+.fn-section-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;padding:12px 0 8px;display:flex;align-items:center;gap:7px;}
+.fn-section-advanced{color:var(--grn-l);}
+.fn-section-dropped{color:var(--red);}
+.fn-section-pending{color:var(--ac);}
+.fn-section-divider{height:1px;background:var(--s2);margin:4px 0 2px;}
+.leads-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;}
+.lchip{background:var(--s2);border-radius:var(--rsm);padding:8px 11px;display:flex;align-items:center;gap:8px;cursor:default;transition:all .15s;border:1px solid transparent;}
+.lchip:hover{background:var(--s3);}
+.lchip.dropped{background:rgba(225,29,72,.05);border:1px solid rgba(225,29,72,.12);}
+.lchip.pending{background:rgba(212,175,55,.05);border:1px solid rgba(212,175,55,.12);}
+.lav{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;font-family:'Bebas Neue',cursive;}
+.lname{font-size:12px;font-weight:600;color:var(--tx);}
+.ptag{display:inline-block;font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;}
+.wa{background:rgba(0,120,60,.2);color:#00C060;}.ig{background:rgba(180,30,150,.15);color:#E060C0;}.fb{background:rgba(30,80,200,.15);color:#6090FF;}.ot{background:var(--s3);color:var(--tx2);}
+
+/* TABLE */
+.ltbl{width:100%;border-collapse:collapse;}
+.ltbl th{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx3);text-align:left;padding:0 8px 14px 0;border-bottom:1px solid var(--bdr);font-weight:600;}
+.ltbl td{padding:12px 8px 12px 0;font-size:13px;border-bottom:1px solid var(--s2);vertical-align:middle;}
+.ltbl tr{transition:background .15s;}
+.ltbl tr:hover td{background:rgba(255,255,255,.02);}
+.sp{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;font-family:'DM Mono',monospace;}
+.sh{background:rgba(212,175,55,.1);color:var(--ac);border:1px solid rgba(212,175,55,.2);}.sm{background:var(--s2);color:var(--tx2);border:1px solid var(--bdr);}.sl{background:var(--red-bg);color:var(--red);border:1px solid rgba(225,29,72,.2);}
+.stpill{font-size:11px;padding:3px 10px;border-radius:5px;font-weight:600;}
+.st-q{background:var(--grn-bg);color:var(--grn-l);}.st-t{background:rgba(212,175,55,.1);color:var(--ac);}.st-a{background:rgba(30,80,200,.12);color:#6090FF;}.st-i{background:var(--red-bg);color:var(--red);}
+.sent-row{display:flex;align-items:center;gap:5px;}
+.sdot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.s-pos{background:var(--grn-l);}.s-neu{background:#444;}.s-neg{background:var(--red);}
+
+/* RANKING */
+.rk-list{display:flex;flex-direction:column;gap:7px;}
+.rk-item{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--s2);border-radius:var(--rsm);cursor:default;transition:all .15s;border:1px solid transparent;}
+.rk-item:hover{background:var(--s3);transform:translateX(3px);}
+.rk-item:first-child{background:linear-gradient(135deg,rgba(212,175,55,.08),rgba(212,175,55,.03));border-color:rgba(212,175,55,.15);}
+.rk-pos{font-size:12px;font-weight:700;color:var(--tx3);width:22px;font-family:'DM Mono',monospace;}
+.rk-pos.g{color:var(--ac);}.rk-pos.s{color:#999;}.rk-pos.b{color:#C09060;}
+.rk-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;font-family:'Bebas Neue',cursive;}
+.rk-name{flex:1;font-size:13px;font-weight:500;color:var(--tx);}
+.rk-val{font-size:14px;font-weight:700;color:var(--ac);font-family:'DM Mono',monospace;}
+.rk-sub{font-size:10px;color:var(--tx3);}
+
+/* SCORE */
+.sc-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:22px;}
+.sc-cell{text-align:center;padding:16px 12px;border-radius:var(--rsm);cursor:default;transition:all .2s;}
+.sc-cell:hover{transform:translateY(-3px);}
+.sc-n{font-size:28px;font-weight:700;font-family:'Bebas Neue',cursive;}
+.sc-l{font-size:10px;color:var(--tx3);margin-top:4px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;}
+
+/* SENTIMENTO */
+.sent-card{border-radius:var(--r);border:1px solid var(--bdr);padding:24px;transition:all .25s;animation:fadeUp .4s ease both;}
+.sent-card:hover{transform:translateY(-2px);box-shadow:var(--sh-md);}
+
+/* CONV */
+.conv-row{display:flex;align-items:center;gap:12px;margin-bottom:16px;cursor:default;}
+.conv-lbl{font-size:13px;font-weight:600;color:var(--tx2);width:84px;flex-shrink:0;}
+.conv-trk{flex:1;height:32px;background:var(--s2);border-radius:6px;overflow:hidden;border:1px solid var(--bdr);}
+.conv-fill{height:100%;display:flex;align-items:center;padding-left:12px;font-size:12px;font-weight:700;color:#000;position:relative;overflow:hidden;}
+.conv-fill::after{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);animation:shimmer 2s ease-in-out infinite;}
+@keyframes shimmer{to{left:200%;}}
+.conv-num{font-size:13px;font-weight:700;color:var(--tx);width:68px;text-align:right;font-family:'DM Mono',monospace;}
+
+/* TOOLTIP */
+[data-tip]{position:relative;}
+[data-tip]:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);background:#161616;color:var(--tx);border:1px solid var(--s3);font-size:11px;padding:8px 14px;border-radius:8px;white-space:normal;max-width:240px;text-align:center;z-index:999;pointer-events:none;line-height:1.6;font-family:'DM Sans',sans-serif;box-shadow:var(--sh-md);}
+[data-tip]:hover::before{content:'';position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:#161616;z-index:999;}
+
+/* LOADING / TOAST */
+.loading{display:none;position:fixed;inset:0;background:rgba(8,8,8,.9);z-index:300;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
+.loading.show{display:flex;}
+.ld-box{background:var(--surface);border-radius:var(--r);padding:32px 44px;text-align:center;box-shadow:var(--sh-md);border:1px solid rgba(212,175,55,.2);}
+.spinner{width:32px;height:32px;border:2px solid var(--s3);border-top-color:var(--ac);border-radius:50%;animation:spin .6s linear infinite;margin:0 auto 14px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.toast{position:fixed;bottom:28px;right:28px;background:var(--surface);border:1px solid rgba(212,175,55,.25);color:var(--tx);padding:11px 20px;border-radius:var(--rsm);font-size:12px;font-weight:500;opacity:0;transform:translateY(10px);transition:all .28s;z-index:300;display:flex;align-items:center;gap:9px;box-shadow:var(--sh-md);}
+.toast.show{opacity:1;transform:translateY(0);}
+.t-dot{width:7px;height:7px;border-radius:50%;background:var(--ac);}
+
+/* ============================================================
+   DIAGNÓSTICO AUTOMÁTICO
+   ============================================================ */
+.diag-box{background:linear-gradient(135deg,rgba(212,175,55,.06),rgba(212,175,55,.02));border:1px solid rgba(212,175,55,.18);border-radius:var(--r);padding:22px 26px;margin-bottom:0;animation:fadeUp .5s ease both;}
+.diag-label{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--ac);font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.diag-label::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--ac);box-shadow:0 0 8px var(--ac);display:inline-block;}
+.diag-items{display:flex;flex-direction:column;gap:10px;}
+.diag-item{display:flex;align-items:flex-start;gap:12px;font-size:13px;line-height:1.6;color:var(--tx2);}
+.diag-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
+.diag-item strong{color:var(--tx);}
+
+/* ============================================================
+   COBERTURA FORA DO HORÁRIO
+   ============================================================ */
+.cob-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;}
+.cob-card{background:var(--surface);border-radius:var(--r);border:1px solid var(--bdr);padding:20px 22px;transition:all .25s;animation:fadeUp .4s ease both;}
+.cob-card:hover{border-color:rgba(212,175,55,.2);transform:translateY(-2px);}
+.cob-val{font-size:38px;font-weight:700;font-family:'Bebas Neue',cursive;color:var(--ac);line-height:1;margin-bottom:6px;}
+.cob-lbl{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--tx3);font-weight:600;}
+.cob-sub{font-size:12px;color:var(--tx3);margin-top:6px;line-height:1.5;}
+.cob-timeline{background:var(--surface);border-radius:var(--r);border:1px solid var(--bdr);padding:24px;}
+.cob-hour-grid{display:grid;grid-template-columns:repeat(24,1fr);gap:3px;margin-top:14px;}
+.cob-hour{height:32px;border-radius:3px;position:relative;cursor:default;transition:all .15s;}
+.cob-hour:hover{transform:scaleY(1.2);z-index:2;}
+.cob-hour-lbl{font-size:8px;color:var(--tx3);text-align:center;margin-top:5px;}
+
+/* ============================================================
+   PLATAFORMAS — REDE (NETWORK GRAPH)
+   ============================================================ */
+.plt-wrap{display:flex;flex-direction:column;gap:20px;}
+
+/* controles de período + relatório */
+.plt-controls{display:flex;align-items:center;gap:10px;margin-bottom:24px;flex-wrap:wrap;}
+.period-btn{background:var(--s2);border:1px solid var(--bdr);color:var(--tx2);padding:8px 18px;border-radius:var(--rsm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;}
+.period-btn:hover{background:var(--s3);color:var(--tx);}
+.period-btn.active{background:var(--ac-faint);color:var(--ac);border-color:rgba(212,175,55,.25);}
+.report-btn{background:var(--surface);border:1px solid rgba(212,175,55,.25);color:var(--ac);padding:8px 18px;border-radius:var(--rsm);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;margin-left:auto;display:flex;align-items:center;gap:6px;}
+.report-btn:hover{background:var(--ac-faint);transform:translateY(-1px);}
+.sep{width:1px;height:28px;background:var(--bdr);}
+
+/* canvas área */
+.network-area{background:#060504;border-radius:var(--r);border:1px solid rgba(212,175,55,.18);padding:0;overflow:hidden;position:relative;box-shadow:0 0 60px rgba(212,175,55,.06) inset;}
+.network-canvas-wrap{position:relative;width:100%;height:600px;}
+#networkCanvas{display:block;width:100%;height:100%;}
+
+/* popup de lead */
+.lead-popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.95);opacity:0;background:var(--surface);border:1px solid rgba(212,175,55,.25);border-radius:var(--r);padding:28px;width:380px;z-index:500;box-shadow:0 20px 60px rgba(0,0,0,.8);transition:all .22s;pointer-events:none;}
+.lead-popup.show{opacity:1;transform:translate(-50%,-50%) scale(1);pointer-events:all;}
+.popup-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:499;display:none;backdrop-filter:blur(3px);}
+.popup-overlay.show{display:block;}
+.popup-close{position:absolute;top:14px;right:16px;background:none;border:none;color:var(--tx3);font-size:18px;cursor:pointer;line-height:1;padding:4px;}
+.popup-close:hover{color:var(--tx);}
+.popup-name{font-size:18px;font-weight:700;color:var(--tx);margin-bottom:4px;padding-right:24px;}
+.popup-canal{font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;display:inline-block;margin-bottom:16px;}
+.popup-row{display:flex;gap:8px;margin-bottom:8px;font-size:13px;}
+.popup-key{color:var(--tx3);width:110px;flex-shrink:0;}
+.popup-val{color:var(--tx);font-weight:500;}
+.popup-score-bar{height:6px;background:var(--s2);border-radius:3px;overflow:hidden;margin-top:4px;}
+.popup-score-fill{height:100%;border-radius:3px;}
+
+/* modal relatório */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:600;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.modal-bg.show{display:flex;}
+.modal-box{background:var(--surface);border:1px solid rgba(212,175,55,.2);border-radius:var(--r);padding:32px;width:520px;box-shadow:0 24px 80px rgba(0,0,0,.9);}
+.modal-title{font-size:16px;font-weight:700;color:var(--tx);margin-bottom:6px;}
+.modal-sub{font-size:12px;color:var(--tx3);margin-bottom:22px;}
+.modal-row{display:flex;gap:14px;margin-bottom:18px;}
+.modal-label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--tx3);margin-bottom:6px;font-weight:600;}
+.modal-input{background:var(--s2);border:1px solid var(--bdr);color:var(--tx);padding:10px 14px;border-radius:var(--rsm);font-size:13px;font-family:inherit;width:100%;transition:border .2s;}
+.modal-input:focus{outline:none;border-color:rgba(212,175,55,.4);}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:22px;}
+.btn-cancel{background:none;border:1px solid var(--bdr);color:var(--tx2);padding:10px 20px;border-radius:var(--rsm);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;}
+.btn-cancel:hover{border-color:var(--s4);color:var(--tx);}
+.btn-generate{background:linear-gradient(135deg,var(--ac),var(--ac-d));color:#000;border:none;padding:10px 24px;border-radius:var(--rsm);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;}
+.btn-generate:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(212,175,55,.3);}
+
+/* report table overlay */
+.report-view{display:none;position:fixed;inset:0;background:var(--bg);z-index:700;overflow-y:auto;padding:40px;}
+.report-view.show{display:block;}
+.report-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
+.report-title{font-size:22px;font-weight:700;letter-spacing:-.03em;background:linear-gradient(135deg,#fff,var(--ac-l));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.btn-close-report{background:var(--s2);border:1px solid var(--bdr);color:var(--tx2);padding:8px 18px;border-radius:var(--rsm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;}
+.btn-close-report:hover{color:var(--tx);}
+
+@keyframes pulseRing{0%{transform:scale(1);opacity:.6;}100%{transform:scale(1.5);opacity:0;}}
+#waOrb:hover{transform:scale(1.06);box-shadow:0 0 60px rgba(37,211,102,.4),0 0 100px rgba(37,211,102,.12);}
+#igOrb:hover{transform:scale(1.06);box-shadow:0 0 60px rgba(200,55,171,.4),0 0 100px rgba(200,55,171,.12);}
+
+/* LEAD CARD COMPLETO */
+.lead-card-full{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.94);opacity:0;
+  background:var(--surface);border:1px solid rgba(212,175,55,.22);border-radius:var(--r);
+  width:520px;max-height:88vh;overflow-y:auto;z-index:600;
+  box-shadow:0 24px 80px rgba(0,0,0,.9);transition:all .22s;pointer-events:none;
+  scrollbar-width:thin;scrollbar-color:var(--s3) transparent;}
+.lead-card-full.show{opacity:1;transform:translate(-50%,-50%) scale(1);pointer-events:all;}
+.lcard-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:599;display:none;backdrop-filter:blur(4px);}
+.lcard-overlay.show{display:block;}
+.lcard-header{padding:22px 24px 16px;border-bottom:1px solid var(--bdr);position:relative;}
+.lcard-name{font-size:19px;font-weight:700;color:var(--tx);margin-bottom:6px;padding-right:32px;}
+.lcard-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.lcard-close{position:absolute;top:18px;right:20px;background:none;border:none;color:var(--tx3);font-size:18px;cursor:pointer;line-height:1;transition:color .15s;}
+.lcard-close:hover{color:var(--tx);}
+.lcard-body{padding:20px 24px;}
+.lcard-section{margin-bottom:18px;}
+.lcard-section-title{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--tx3);font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.lcard-section-title::after{content:'';flex:1;height:1px;background:var(--bdr);}
+.lcard-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;font-size:13px;}
+.lcard-key{color:var(--tx3);min-width:130px;flex-shrink:0;line-height:1.5;}
+.lcard-val{color:var(--tx);font-weight:500;line-height:1.5;}
+.lcard-score-wrap{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.lcard-score-num{font-size:32px;font-weight:700;font-family:'Bebas Neue',cursive;}
+.lcard-score-bar{flex:1;height:8px;background:var(--s2);border-radius:4px;overflow:hidden;}
+.lcard-score-fill{height:100%;border-radius:4px;}
+.lcard-q{background:var(--s2);border-radius:var(--rsm);padding:10px 14px;margin-bottom:6px;border-left:3px solid var(--bdr);}
+.lcard-q.answered{border-left-color:var(--grn-l);}
+.lcard-q.skipped{border-left-color:var(--tx3);}
+.lcard-q-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);font-weight:700;margin-bottom:4px;}
+.lcard-q-pergunta{font-size:12px;color:var(--tx2);margin-bottom:5px;font-style:italic;}
+.lcard-q-resposta{font-size:13px;color:var(--tx);font-weight:500;}
+.lcard-q-resposta.empty{color:var(--tx3);font-style:italic;font-weight:400;}
+
+/* report table */
+.rtbl{width:100%;border-collapse:collapse;font-size:13px;}
+.rtbl th{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx3);text-align:left;padding:0 12px 14px 0;border-bottom:1px solid var(--bdr);font-weight:600;}
+.rtbl td{padding:11px 12px 11px 0;border-bottom:1px solid var(--s2);vertical-align:top;color:var(--tx2);}
+.rtbl td:first-child{color:var(--tx);font-weight:600;}
+.rtbl tr:hover td{background:rgba(255,255,255,.015);}
+</style>
+</head>
+<body>
+
+<div class="loading" id="ld"><div class="ld-box"><div class="spinner"></div><div style="font-size:14px;font-weight:600;color:var(--tx)">Atualizando...</div></div></div>
+<div class="toast" id="toast"><div class="t-dot"></div><span>Dashboard atualizado</span></div>
+
+<!-- overlay + card completo de lead -->
+<div class="lcard-overlay" id="lcardOverlay" onclick="closeLeadCard()"></div>
+<div class="lead-card-full" id="leadCardFull">
+  <div class="lcard-header">
+    <button class="lcard-close" onclick="closeLeadCard()">✕</button>
+    <div class="lcard-name" id="lc-name">—</div>
+    <div class="lcard-meta" id="lc-meta"></div>
+  </div>
+  <div class="lcard-body" id="lc-body"></div>
+</div>
+
+<!-- popup lead (legado — mantido para compatibilidade) -->
+<div class="popup-overlay" id="popupOverlay" onclick="closePopup()"></div>
+<div class="lead-popup" id="leadPopup">
+  <button class="popup-close" onclick="closePopup()">✕</button>
+  <div class="popup-name" id="pName">—</div>
+  <span class="popup-canal wa" id="pCanal">WhatsApp</span>
+  <div style="margin-top:4px" id="pRows"></div>
+</div>
+
+<!-- modal relatório -->
+<div class="modal-bg" id="reportModal">
+  <div class="modal-box">
+    <div class="modal-title">Gerar Relatório de Leads</div>
+    <div class="modal-sub">Selecione o intervalo de datas para exportar todos os leads com suas informações completas.</div>
+    <div class="modal-row">
+      <div style="flex:1"><div class="modal-label">Data inicial</div><input class="modal-input" type="date" id="rdFrom"/></div>
+      <div style="flex:1"><div class="modal-label">Data final</div><input class="modal-input" type="date" id="rdTo"/></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeReportModal()">Cancelar</button>
+      <button class="btn-generate" onclick="generateReport()">Gerar Relatório →</button>
+    </div>
+  </div>
+</div>
+
+<!-- report view -->
+<div class="report-view" id="reportView">
+  <div class="report-header">
+    <div>
+      <div style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--tx3);margin-bottom:4px">Agente de IA · Dados Fictícios</div>
+      <div class="report-title" id="reportViewTitle">Relatório de Leads</div>
+    </div>
+    <button class="btn-close-report" onclick="closeReportView()">← Voltar ao Dashboard</button>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden;">
+    <table class="rtbl" id="reportTable">
+      <thead><tr>
+        <th>Lead</th><th>Data</th><th>Score</th><th>Modelo</th><th>Pagamento</th>
+        <th>Temperatura</th><th>Sentimento</th><th>Status</th><th>Horário</th><th>Cobertura</th>
+      </tr></thead>
+      <tbody id="reportBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<aside class="sb">
+  <div class="sb-top">
+    <div class="sb-eye">DEMO</div>
+    <div class="sb-brand">RUI <span>AI</span></div>
+    <div class="sb-pill"><span class="dot"></span><span>Agente ativo · 24h</span></div>
+  </div>
+  <div class="sb-scroll">
+    <div class="sb-group">
+      <div class="sb-lbl">Principal</div>
+      <div class="sb-item active" onclick="go('dash')"><i class="sb-ico">◉</i>Dashboard</div>
+      <div class="sb-item" onclick="go('plataformas')"><i class="sb-ico">⊞</i>Plataformas</div>
+      <div class="sb-item" onclick="go('cobertura')"><i class="sb-ico">🌙</i>Cobertura Noturna</div>
+    </div>
+    <div class="sb-group">
+      <div class="sb-lbl">Leads</div>
+      <div class="sb-item" onclick="go('funil')"><i class="sb-ico">⬇</i>Funil de Qualificação</div>
+      <div class="sb-item" onclick="go('score')"><i class="sb-ico">◎</i>Distribuição de Score</div>
+    </div>
+    <div class="sb-group">
+      <div class="sb-lbl">Análise</div>
+      <div class="sb-item" onclick="go('sentimento')"><i class="sb-ico">◈</i>Sentimento</div>
+    </div>
+  </div>
+  <div class="sb-chess"></div>
+  <div class="sb-foot"><div class="wk"><strong id="sbWeek">Semana atual</strong><span id="sbWeekRange">—</span></div></div>
+</aside>
+
+<main class="main">
+
+<!-- ============ DASHBOARD PRINCIPAL ============ -->
+<div id="p-dash">
+  <div class="topbar">
+    <div><div class="eye">Painel de Controle</div><h1>Performance do Agente Rui</h1></div>
+    <div class="topbar-r">
+      <div class="ts"><span>Última atualização</span><strong id="tsVal">—</strong></div>
+      <button class="btn-ref" onclick="refresh()">↺ Atualizar</button>
+    </div>
+  </div>
+
+  <!-- DIAGNÓSTICO AUTOMÁTICO -->
+  <div class="diag-box" id="diagBox">
+    <div class="diag-label">Diagnóstico automático · gerado com os dados da semana</div>
+    <div class="diag-items" id="diagItems"></div>
+  </div>
+
+  <div class="sec">Indicadores da semana · gerados automaticamente pelo Agente Rui</div>
+  <div class="kpi-grid">
+    <div class="kpi gold">
+      <div class="kpi-tag">⚡ Rui atendeu</div><div class="kpi-lbl">Leads recebidos</div>
+      <div class="kpi-val" data-count="50" data-kpi="total">50</div>
+      <div class="kpi-sub"><span class="pill up">↑ 12%</span> vs semana anterior</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-tag">⚡ Rui qualificou</div><div class="kpi-lbl">Qualificação completa</div>
+      <div class="kpi-val" data-count="31">31</div>
+      <div class="kpi-sub"><span class="pill nu">62%</span> do total recebido</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-tag">⚡ Rui transferiu</div><div class="kpi-lbl">Leads qualificados entregues</div>
+      <div class="kpi-val" data-count="18" data-kpi="transferidos">18</div>
+      <div class="kpi-sub"><span class="pill up" style="background:var(--grn-bg);color:var(--grn-l)">R$ 6,3M</span> em carteira potencial</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-tag">⚡ Score médio Rui</div><div class="kpi-lbl">Score médio</div>
+      <div class="kpi-val" data-count="64" data-kpi="scoreMedio">64</div>
+      <div class="kpi-sub"><span class="pill up">↑ 5 pts</span> vs semana anterior</div>
+    </div>
+  </div>
+
+  <div class="sec">Últimos leads atendidos pelo Rui</div>
+  <div class="card" data-tabela="leads">
+    <table class="ltbl">
+      <thead><tr><th>Lead</th><th>Canal</th><th>Score Rui</th><th>Modelo buscado</th><th>Pagamento</th><th>Sentimento</th><th>Status</th></tr></thead>
+      <tbody id="ltbody"></tbody>
+    </table>
+  </div>
+
+  <div class="sec">Conversão proporcional por canal</div>
+  <div class="card" data-tip="Para cada 100 leads que entram por canal, quantos fecham negócio.">
+    <div class="ctitle">Vendas fechadas · a cada 100 leads por canal</div>
+    <div id="convBars" style="margin-top:10px"></div>
+  </div>
+</div>
+
+<!-- ============ PLATAFORMAS ============ -->
+<div id="p-plataformas" style="display:none">
+  <div class="topbar">
+    <div><div class="eye">Principal</div><h1>Plataformas</h1></div>
+  </div>
+
+  <!-- controles de período + relatório -->
+  <div class="plt-controls">
+    <button class="period-btn active" onclick="setPeriod('dia',this)">Diário</button>
+    <button class="period-btn" onclick="setPeriod('semana',this)">Semanal</button>
+    <button class="period-btn" onclick="setPeriod('mes',this)">Mensal</button>
+    <div class="sep"></div>
+    <button class="report-btn" onclick="openReportModal()">📄 Relatório</button>
+  </div>
+
+  <!-- ESTADO 1: bolinhas WhatsApp + Instagram (fechado) -->
+  <div id="pltClosed" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 0 40px;">
+    <div style="font-size:12px;color:var(--tx3);margin-bottom:36px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;">Clique na plataforma para ver os leads</div>
+    <div style="display:flex;align-items:flex-start;gap:72px;">
+      <!-- WhatsApp orb -->
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div id="waOrb" onclick="openNetwork('whatsapp')" style="
+          width:110px;height:110px;border-radius:50%;
+          background:radial-gradient(circle at 38% 38%,#1a5c36,#0a2e1c);
+          border:2px solid #25D366;
+          box-shadow:0 0 40px rgba(37,211,102,.25),0 0 80px rgba(37,211,102,.08);
+          display:flex;align-items:center;justify-content:center;
+          cursor:pointer;transition:all .25s;position:relative;
+        ">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="72" height="72">
+            <path fill="#25D366" d="M4.868 43.303l2.694-9.835a18.894 18.894 0 01-2.527-9.488C5.038 13.514 13.557 5 24.014 5c5.079.002 9.845 1.979 13.43 5.566a18.927 18.927 0 015.555 13.434c-.004 10.455-8.522 18.969-18.976 18.969a18.95 18.95 0 01-9.094-2.312L4.868 43.303z"/>
+            <path fill="#fff" d="M19.005 34.991a14.862 14.862 0 008.069 2.37c8.243 0 14.944-6.703 14.948-14.949.002-3.987-1.549-7.737-4.368-10.559A14.857 14.857 0 0027.078 7.5c-8.249 0-14.95 6.702-14.953 14.948a14.9 14.9 0 002.076 7.564l-2.22 8.107 8.024-2.128z"/>
+            <path fill="#25D366" d="M34.892 29.426c-.307-.153-1.813-.894-2.094-.996-.281-.103-.486-.154-.691.154-.205.307-.794.996-.972 1.2-.178.204-.357.23-.664.077-.307-.154-1.297-.478-2.47-1.523-.913-.813-1.529-1.817-1.708-2.124-.179-.307-.019-.473.134-.626.138-.138.307-.358.461-.537.153-.18.205-.307.307-.512.103-.205.051-.384-.025-.537-.077-.153-.691-1.666-.947-2.281-.249-.6-.502-.518-.691-.528-.179-.01-.384-.012-.589-.012-.205 0-.537.077-.818.384s-1.075 1.05-1.075 2.561c0 1.512 1.1 2.974 1.254 3.179.153.205 2.165 3.307 5.247 4.637.733.316 1.305.505 1.75.646.735.234 1.404.201 1.933.122.59-.088 1.813-.741 2.069-1.457.256-.716.256-1.33.179-1.457-.076-.128-.28-.205-.587-.358z"/>
+          </svg>
+          <div style="position:absolute;inset:-8px;border-radius:50%;border:1px solid rgba(37,211,102,.3);animation:pulseRing 2.5s ease-out infinite;"></div>
+          <div style="position:absolute;inset:-18px;border-radius:50%;border:1px solid rgba(37,211,102,.15);animation:pulseRing 2.5s ease-out infinite .5s;"></div>
+        </div>
+        <div style="margin-top:18px;font-size:13px;font-weight:600;color:#25D366;">WhatsApp</div>
+        <div style="font-size:11px;color:var(--tx3);margin-top:4px;" id="orbLeadCountWA">— leads</div>
+      </div>
+      <!-- Instagram orb -->
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div id="igOrb" onclick="openNetwork('instagram')" style="
+          width:110px;height:110px;border-radius:50%;
+          background:radial-gradient(circle at 38% 38%,#3d1040,#1a0824);
+          border:2px solid #C837AB;
+          box-shadow:0 0 40px rgba(200,55,171,.25),0 0 80px rgba(200,55,171,.08);
+          display:flex;align-items:center;justify-content:center;
+          cursor:pointer;transition:all .25s;position:relative;
+        ">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="72" height="72">
+            <defs>
+              <linearGradient id="igReal" x1="0%" y1="100%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#feda75"/>
+                <stop offset="15%" stop-color="#fa7e1e"/>
+                <stop offset="40%" stop-color="#d62976"/>
+                <stop offset="70%" stop-color="#962fbf"/>
+                <stop offset="100%" stop-color="#4f5bd5"/>
+              </linearGradient>
+            </defs>
+            <path fill="url(#igReal)" d="M34.017 41.99l-20 .019c-4.4.004-8.003-3.592-8.008-7.992l-.019-20c-.004-4.4 3.592-8.003 7.992-8.008l20-.019c4.4-.004 8.003 3.592 8.008 7.992l.019 20c.005 4.401-3.592 8.004-7.992 8.008z"/>
+            <path fill="#fff" d="M24 31c-3.859 0-7-3.14-7-7s3.141-7 7-7 7 3.14 7 7-3.141 7-7 7zm0-12c-2.757 0-5 2.243-5 5s2.243 5 5 5 5-2.243 5-5-2.243-5-5-5zm6.5-3.5c0 .828-.671 1.5-1.5 1.5-.828 0-1.5-.672-1.5-1.5s.672-1.5 1.5-1.5c.829 0 1.5.672 1.5 1.5z"/>
+            <path fill="#fff" d="M28.879 43.956L19.116 43.974c-5.596.006-10.136-4.524-10.142-10.119L8.956 24.091c-.006-5.595 4.524-10.135 10.119-10.141l9.764-.018c5.595-.006 10.135 4.524 10.141 10.119l.018 9.764c.006 5.595-4.524 10.135-10.119 10.141zM19.138 15.951c-4.492.004-8.146 3.665-8.142 8.158l.018 9.764c.004 4.492 3.665 8.146 8.158 8.142l9.764-.018c4.492-.004 8.146-3.665 8.142-8.158l-.018-9.764c-.004-4.492-3.665-8.146-8.158-8.142l-9.764.018z"/>
+          </svg>
+          <div style="position:absolute;inset:-8px;border-radius:50%;border:1px solid rgba(200,55,171,.3);animation:pulseRing 2.5s ease-out infinite;"></div>
+          <div style="position:absolute;inset:-18px;border-radius:50%;border:1px solid rgba(200,55,171,.15);animation:pulseRing 2.5s ease-out infinite .5s;"></div>
+        </div>
+        <div style="margin-top:18px;font-size:13px;font-weight:600;color:#C837AB;">Instagram</div>
+        <div style="font-size:11px;color:var(--tx3);margin-top:4px;" id="orbLeadCountIG">— leads</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ESTADO 2: gráfico de rede (aberto após clicar na bolinha) -->
+  <div id="pltOpen" style="display:none;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+      <button onclick="closeNetwork()" style="background:var(--s2);border:1px solid var(--bdr);color:var(--tx2);padding:7px 16px;border-radius:var(--rsm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;">← Voltar</button>
+      <div id="pltOpenLabel" style="font-size:12px;color:var(--tx3);">Clique em um lead para ver todas as informações coletadas pelo Rui</div>
+    </div>
+    <div class="network-area">
+      <div class="network-canvas-wrap">
+        <canvas id="networkCanvas"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ COBERTURA NOTURNA ============ -->
+<div id="p-cobertura" style="display:none">
+  <div class="topbar"><div><div class="eye">Principal</div><h1>Cobertura Fora do Horário</h1></div></div>
+  <div style="font-size:13px;color:var(--tx2);margin-bottom:24px;line-height:1.7;max-width:640px">
+    Horário humano: <strong style="color:var(--tx)">Seg–Sex 08h–19h</strong> · <strong style="color:var(--tx)">Sáb 08h–14h</strong> · <strong style="color:var(--red)">Dom fechado</strong>.
+    Fora desses horários — incluindo madrugada, domingo e feriados — o Rui opera sozinho. Qualifica, responde e transfere leads que de outra forma perderiam o timing sem nenhuma resposta até o dia seguinte.
+  </div>
+  <div class="cob-grid">
+    <div class="cob-card" data-tip="Leads atendidos quando nenhum vendedor estava disponível esta semana — a maioria na madrugada.">
+      <div class="cob-val" data-kpi="cobLeads">47</div>
+      <div class="cob-lbl">Leads fora do horário</div>
+      <div class="cob-sub">atendidos pelo Rui esta semana, incl. madrugada</div>
+    </div>
+    <div class="cob-card" data-tip="Percentual de todos os leads da semana que chegaram fora do horário humano — incluindo madrugada (00h–06h).">
+      <div class="cob-val" data-kpi="cobPct">62%</div>
+      <div class="cob-lbl">Do total semanal</div>
+      <div class="cob-sub">mais da metade vem fora do horário comercial</div>
+    </div>
+    <div class="cob-card" data-tip="Valor potencial dos leads qualificados fora do horário humano esta semana — sem o Rui, todos perderiam o timing.">
+      <div class="cob-val" style="font-size:28px">R$ 5,8M</div>
+      <div class="cob-lbl">Carteira potencial noturna</div>
+      <div class="cob-sub">em leads qualificados pelo Rui fora do horário</div>
+    </div>
+  </div>
+
+  <!-- Tabs de análise -->
+  <div style="display:flex;gap:8px;margin:20px 0 16px">
+    <button class="period-btn active" id="cobTabDia" onclick="cobSetTab('dia')">Dia</button>
+    <button class="period-btn" id="cobTabMes" onclick="cobSetTab('mes')">Mês</button>
+    <button class="period-btn" id="cobTabRelatorio" onclick="cobSetTab('relatorio')">Relatório Mensal</button>
+  </div>
+
+  <!-- View: Dia -->
+  <div id="cobViewDia" class="cob-timeline">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap">
+      <span style="font-size:12px;color:var(--tx2)">Selecione o dia:</span>
+      <input type="date" id="cobDayPicker" value="2026-05-09" min="2026-04-01" max="2026-05-17" style="background:var(--s2);border:1px solid var(--bdr);color:var(--tx);padding:5px 10px;border-radius:6px;font-size:12px;font-family:'DM Mono',monospace;cursor:pointer" onchange="cobBuildDia()">
+    </div>
+    <div class="ctitle" id="cobDiaTitle">Volume de leads por hora</div>
+    <div style="font-size:11px;color:var(--tx3);margin-bottom:4px">
+      <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--ac);margin-right:5px;vertical-align:middle"></span>Fora do horário humano &nbsp;
+      <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--grn-l);margin-right:5px;vertical-align:middle"></span>Horário humano
+    </div>
+    <div class="cob-hour-grid" id="cobHourGridDia"></div>
+    <div class="cob-hour-grid" id="cobHourLabelsDia" style="margin-top:0"></div>
+  </div>
+
+  <!-- View: Mês -->
+  <div id="cobViewMes" class="cob-timeline" style="display:none">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap">
+      <span style="font-size:12px;color:var(--tx2)">Selecione o mês:</span>
+      <select id="cobMonthPicker" style="background:var(--s2);border:1px solid var(--bdr);color:var(--tx);padding:5px 12px;border-radius:6px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer" onchange="cobBuildMes()">
+        <option value="2026-04">Abril 2026</option>
+        <option value="2026-05" selected>Maio 2026</option>
+      </select>
+    </div>
+    <div class="ctitle" id="cobMesTitle">Total de leads por hora do dia</div>
+    <div style="font-size:11px;color:var(--tx3);margin-bottom:4px">
+      Total de leads atendidos pelo Rui em cada hora do dia ao longo do mês selecionado
+    </div>
+    <div class="cob-hour-grid" id="cobHourGridMes"></div>
+    <div class="cob-hour-grid" id="cobHourLabelsMes" style="margin-top:0"></div>
+  </div>
+
+  <!-- View: Relatório Mensal -->
+  <div id="cobViewRelatorio" class="cob-timeline" style="display:none">
+    <div class="ctitle">Relatório desde o início do contrato</div>
+    <div id="cobRelatorioContent" style="margin-top:16px"></div>
+  </div>
+</div>
+
+<!-- ============ FUNIL ============ -->
+<div id="p-funil" style="display:none">
+  <div class="topbar"><div><div class="eye">Leads</div><h1>Funil de Qualificação</h1></div></div>
+  <div style="font-size:13px;color:var(--tx2);margin-bottom:24px;line-height:1.7;max-width:600px">Clique em cada etapa para expandir. Cada fase mostra <span style="color:var(--grn-l);font-weight:600">✓ quem avançou</span> e <span style="color:var(--red);font-weight:600">✗ quem parou</span> naquela etapa — com nome e canal de origem.</div>
+  <div id="funnelWrap"></div>
+</div>
+
+<!-- ============ SCORE ============ -->
+<div id="p-score" style="display:none">
+  <div class="topbar"><div><div class="eye">Leads</div><h1>Distribuição de Score</h1></div></div>
+  <div class="card">
+    <div class="ctitle">Score calculado pelo Rui · escala 0–100 · 7 dimensões</div>
+    <canvas id="scChart" width="680" height="300"></canvas>
+    <div class="sc-grid">
+      <div class="sc-cell" style="background:rgba(56,189,248,.07);border:1px solid rgba(56,189,248,.25)" data-tip="Leads frios. Sem intenção clara. Aguardar."><div class="sc-n" style="color:#38BDF8" data-score="frios">6</div><div class="sc-l">0–20 · Frios</div></div>
+      <div class="sc-cell" style="background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.22)" data-tip="Leads mornos. Interesse presente mas tímido."><div class="sc-n" style="color:#22c55e" data-score="mornos">10</div><div class="sc-l">21–40 · Mornos</div></div>
+      <div class="sc-cell" style="background:rgba(234,179,8,.07);border:1px solid rgba(234,179,8,.22)" data-tip="Leads engajados. Responderam bem ao Rui."><div class="sc-n" style="color:#EAB308" data-score="engajados">15</div><div class="sc-l">41–60 · Engajados</div></div>
+      <div class="sc-cell" style="background:rgba(249,115,22,.07);border:1px solid rgba(249,115,22,.22)" data-tip="Leads quentes. Transferir imediatamente ao vendedor."><div class="sc-n" style="color:#F97316" data-score="quentes">13</div><div class="sc-l">61–80 · Quentes</div></div>
+      <div class="sc-cell" style="background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.25)" data-tip="Leads premium. Prioridade máxima. Acionar gerente."><div class="sc-n" style="color:#EF4444" data-score="premium">6</div><div class="sc-l">81–100 · Premium</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SENTIMENTO ============ -->
+<div id="p-sentimento" style="display:none">
+  <div class="topbar"><div><div class="eye">Análise</div><h1>Análise de Sentimento</h1></div></div>
+  <div style="font-size:13px;color:var(--tx2);margin-bottom:24px;line-height:1.7;max-width:560px">Monitoramento silencioso em tempo real. O lead não percebe. O Rui adapta o comportamento conforme o tom emocional detectado.</div>
+  <div class="g3" style="margin-bottom:20px">
+    <div class="sent-card" style="border-left:3px solid var(--grn-l);background:var(--surface)" data-tip="Rui aprofunda perguntas e sugere test drive proativamente se score ≥ 60.">
+      <div style="font-size:26px;margin-bottom:10px">😊</div>
+      <div style="font-size:11px;font-weight:700;color:var(--grn-l);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px">Positivo</div>
+      <div style="font-size:34px;font-weight:700;color:var(--grn-l);font-family:'Bebas Neue',cursive;margin-bottom:8px" data-sent="positivo">62%</div>
+      <div style="font-size:12px;color:var(--tx3);line-height:1.7">Engajado, perguntas específicas, respostas longas. Rui aprofunda e conduz ao fechamento.</div>
+    </div>
+    <div class="sent-card" style="border-left:3px solid var(--tx3);background:var(--surface)" data-tip="Rui aplica perguntas de aprofundamento para aumentar o engajamento.">
+      <div style="font-size:26px;margin-bottom:10px">😐</div>
+      <div style="font-size:11px;font-weight:700;color:var(--tx2);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px">Neutro</div>
+      <div style="font-size:34px;font-weight:700;color:var(--tx2);font-family:'Bebas Neue',cursive;margin-bottom:8px" data-sent="neutro">28%</div>
+      <div style="font-size:12px;color:var(--tx3);line-height:1.7">Respostas curtas, sem sinal emocional claro. Rui tenta aprofundar antes de seguir.</div>
+    </div>
+    <div class="sent-card" style="border-left:3px solid var(--red);background:var(--surface)" data-tip="2 tentativas de contorno. Persiste → transferência imediata com flag de recuperação.">
+      <div style="font-size:26px;margin-bottom:10px">😠</div>
+      <div style="font-size:11px;font-weight:700;color:var(--red);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px">Frustrado</div>
+      <div style="font-size:34px;font-weight:700;color:var(--red);font-family:'Bebas Neue',cursive;margin-bottom:8px" data-sent="frustrado">10%</div>
+      <div style="font-size:12px;color:var(--tx3);line-height:1.7">Irritação detectada. 2 tentativas de contorno. Persiste → transferência ao vendedor.</div>
+    </div>
+  </div>
+  <div class="card"><div class="ctitle">Transferências por frustração esta semana</div><div style="font-size:40px;font-weight:700;color:var(--red);font-family:'Bebas Neue',cursive;margin-bottom:8px">3 leads</div><div style="font-size:12px;color:var(--tx3)">Vendedor recebeu flag "Prioridade — recuperação de relacionamento".</div></div>
+</div>
+
+
+</main>
+
+<script>
+// ============================================================
+// DADOS SIMULADOS — Agente de IA · Dados Fictícios
+// Ticket médio: R$350.000 | Leads/semana: ~50 | Público: Classe A
+// ============================================================
+
+const TICKET_MEDIO = 350000;
+
+const LEADS = [
+  {n:"Carlos Menezes",    pl:"WhatsApp", sc:87, md:"BMW X5 2023",          py:"À vista",     st:"pos", ss:"Transferido",    hora:"22:14", data:"2026-05-05"},
+  {n:"Ricardo Albuquerque",pl:"WhatsApp",sc:72, md:"Porsche Cayenne",       py:"À vista",     st:"pos", ss:"Qualificado",    hora:"09:30", data:"2026-05-05"},
+  {n:"Felipe Siqueira",   pl:"WhatsApp", sc:54, md:"Land Rover Defender",   py:"Financiamento",st:"neu",ss:"Em andamento",   hora:"14:22", data:"2026-05-06"},
+  {n:"Eduardo Lima",      pl:"WhatsApp", sc:41, md:"Mercedes GLE",          py:"Avaliando",   st:"neu", ss:"Em andamento",   hora:"08:05", data:"2026-05-06"},
+  {n:"Marcos Pinheiro",   pl:"WhatsApp", sc:22, md:"SUV (vago)",            py:"Não informou",st:"neg", ss:"Encerrado",      hora:"01:47", data:"2026-05-04"},
+  {n:"André Cavalcante",  pl:"WhatsApp", sc:91, md:"Audi Q8",               py:"À vista",     st:"pos", ss:"Transferido",    hora:"23:58", data:"2026-05-04"},
+  {n:"Bruno Tavares",     pl:"WhatsApp", sc:68, md:"BMW 320i",              py:"Financiamento",st:"neu",ss:"Qualificado",    hora:"11:10", data:"2026-05-05"},
+  {n:"Gustavo Ferreira",  pl:"WhatsApp", sc:79, md:"Jeep Grand Cherokee",   py:"À vista",     st:"pos", ss:"Transferido",    hora:"19:32", data:"2026-05-05"},
+  {n:"Henrique Costa",    pl:"WhatsApp", sc:35, md:"Honda HR-V",            py:"Avaliando",   st:"neu", ss:"Em andamento",   hora:"07:55", data:"2026-05-06"},
+  {n:"Igor Nunes",        pl:"WhatsApp", sc:83, md:"Volvo XC90",            py:"À vista",     st:"pos", ss:"Transferido",    hora:"21:03", data:"2026-05-03"},
+  {n:"João Rodrigues",    pl:"WhatsApp", sc:76, md:"Range Rover Evoque",    py:"À vista",     st:"pos", ss:"Transferido",    hora:"00:22", data:"2026-05-02"},
+  {n:"Lucas Moura",       pl:"WhatsApp", sc:63, md:"Corolla Cross",         py:"Financiamento",st:"neu",ss:"Qualificado",    hora:"10:15", data:"2026-05-03"},
+  {n:"Mateus Araújo",     pl:"WhatsApp", sc:88, md:"Mercedes C300",         py:"À vista",     st:"pos", ss:"Transferido",    hora:"20:47", data:"2026-05-02"},
+  {n:"Nathan Barbosa",    pl:"WhatsApp", sc:29, md:"Civic (vago)",          py:"Não informou",st:"neu", ss:"Em andamento",   hora:"15:00", data:"2026-05-01"},
+  {n:"Otávio Ribeiro",    pl:"WhatsApp", sc:82, md:"Audi A6",               py:"À vista",     st:"pos", ss:"Transferido",    hora:"22:30", data:"2026-05-01"},
+];
+
+// ============================================================
+// DADOS SIMULADOS COMPLETOS — Agente de IA · Dados Fictícios
+// Inclui as 7 perguntas de qualificação + todos os campos extraídos
+// ============================================================
+const ALL_LEADS_NAMES=["Carlos Menezes","Ricardo Albuquerque","Felipe Siqueira","Eduardo Lima","Marcos Pinheiro","André Cavalcante","Bruno Tavares","Gustavo Ferreira","Henrique Costa","Igor Nunes","João Rodrigues","Lucas Moura","Mateus Araújo","Nathan Barbosa","Otávio Ribeiro","Paulo Souza","Rafael Alves","Samuel Carvalho","Thiago Dias","Victor Hugo","Wagner Leal","Xavier Martins","Yuri Oliveira","Zé Carlos","Adriano Melo","Bernardo Lima","Cássio Pereira","Diego Fonseca","Emerson Vaz","Fábio Torres","Geraldo Cunha","Humberto Paiva","Ivan Ramos","Jonas Freitas","Kleberson Luz","Leonardo Prado","Murilo Rangel","Nicolas Brito","Otávio Cardoso","Pedro Machado","Quésia Andrade","Roberto Neto","Sérgio Campos","Tadeu Lopes","Ulisses Gama","Valdeci Rocha","Wanderson Cruz","Ximenes Porto","Yago Simões","Zacarias Mendes"];
+const LEAD_SCORES=[87,72,54,41,22,91,68,79,35,83,76,63,88,29,82,74,61,57,45,90,38,71,65,48,86,55,77,33,69,52,84,42,78,67,31,80,59,93,44,73,66,50,85,27,75,60,49,88,36,70];
+
+function buildLeadData(nome,score,i){
+  const _m=["BMW X5 2023","Porsche Cayenne","Audi Q8","Mercedes GLE 450","Volvo XC90","Range Rover Evoque","BMW 320i","Jeep Grand Cherokee","Honda HR-V","Audi A6","Mercedes C300","Corolla Cross","Audi A4","BMW 5 Series","Range Rover Sport","Toyota Corolla GR","Ford Mustang","Honda CR-V","Volkswagen Tiguan","Audi Q5","Land Rover Defender","Mercedes GLE","Alfa Romeo Stelvio","Porsche Macan","Porsche Macan S","BMW X3","Mercedes C300 AMG","Mercedes E250","Mercedes GLA","Audi Q3","Peugeot 208 GTi","Volkswagen Polo","Renault Duster","Hyundai HB20","Chevrolet Onix","Renault Sandero","Renault Kwid","Fiat 500","Fiat Fastback","Volkswagen Taos","Volkswagen Jetta","Nissan Kicks","Volkswagen T-Cross","Toyota Yaris","Chevrolet Tracker","Hyundai Creta","Subaru WRX","Toyota Hilux","Ford Ranger","Toyota SW4"];
+  const _pz=["Nos próximos 15 dias","Nos próximos 30 dias","Estou pesquisando, sem pressa","Até o final do mês","Nos próximos 60 dias","Semana que vem","Não definido ainda"];
+  const _pg=["À vista","À vista","Financiamento","Financiamento","Consórcio","Não definido","À vista","Financiamento","À vista","Consórcio"];
+  const _it=["Uso próprio","Presentear minha esposa","Uso próprio","Uso próprio","Presentear meu pai","Uso próprio","Uso próprio","Presentear alguém","Uso próprio","Uso próprio"];
+  const _va=["Tenho um Corolla 2020 e quero incluir na negociação","Não tenho veículo atual — aquisição independente","Tenho um Civic 2019, mas prefiro não incluir","Tenho um HB20 2021 e quero incluir","Não tenho veículo no momento","Tenho um Compass 2022 e quero incluir","Não tenho veículo","Tenho um Onix 2018 e quero incluir","Não tenho","Tenho um Kwid 2020 e prefiro não incluir"];
+  const _lc=["Recife","Olinda","Caruaru","Recife","Jaboatão dos Guararapes","Recife","Paulista","Recife","Recife","Caruaru","Recife","Olinda","Recife","Recife","Recife","Recife","Recife","Olinda","Recife","Recife"];
+  const _dc=["Independente","Envolve minha esposa","Independente","Independente","Envolve meu sócio","Independente","Envolve familiar","Independente","Independente","Envolve minha esposa"];
+  const _cc=[null,"financeiro",null,null,"financeiro",null,"escolha",null,null,"ambos"];
+  const _sn=["Positivo","Positivo","Neutro","Neutro","Frustrado","Positivo","Neutro","Positivo","Neutro","Positivo","Positivo","Neutro","Positivo","Neutro","Frustrado","Positivo","Neutro","Positivo","Positivo","Positivo"];
+  const _st=["Transferido","Transferido","Em qualificação","Em qualificação","Encerrado","Transferido","Em qualificação","Transferido","Em qualificação","Transferido","Transferido","Em qualificação","Transferido","Em qualificação","Encerrado","Transferido","Em qualificação","Transferido","Transferido","Transferido"];
+  const _hr=["23:15","01:30","02:45","14:22","00:38","22:10","03:20","09:30","01:55","21:03","04:12","10:15","02:08","23:50","20:47","03:22","01:25","12:04","03:47","06:30","00:15","03:11","22:40","04:50","02:05","04:45","01:20","23:44","05:10","19:32","05:18","21:30","03:55","00:28","22:20","04:08","00:48","13:30","02:30","21:15","04:05","23:10","02:55","01:42","20:35","04:30","03:10","22:00","05:45","02:20"];
+  const _dt=["2026-05-09","2026-05-09","2026-05-09","2026-05-09","2026-05-08","2026-05-08","2026-05-08","2026-05-07","2026-05-07","2026-05-06","2026-05-06","2026-05-05","2026-05-05","2026-05-04","2026-05-04","2026-05-03","2026-05-03","2026-05-02","2026-05-02","2026-05-01","2026-04-30","2026-04-29","2026-04-28","2026-04-27","2026-04-26","2026-04-25","2026-04-24","2026-04-23","2026-04-22","2026-04-21","2026-04-20","2026-04-19","2026-04-18","2026-04-17","2026-04-16","2026-04-15","2026-04-14","2026-04-13","2026-04-12","2026-04-11","2026-04-10","2026-04-09","2026-04-08","2026-04-07","2026-04-06","2026-04-05","2026-04-04","2026-04-03","2026-04-02","2026-04-01"];
+  const _fn=["(81) 99100-1234","(81) 98200-5678",null,"(81) 99300-9012","(81) 98400-3456",null,"(81) 99500-7890","(81) 98600-1234","(81) 99700-5678",null,"(81) 99800-9012","(81) 98900-3456","(81) 99000-7890",null,"(81) 99100-1111","(81) 98200-2222","(81) 99300-3333",null,"(81) 99400-4444","(81) 98500-5555",null,"(81) 99600-6666","(81) 98700-7777","(81) 99800-8888",null,"(81) 99900-9999","(81) 98000-0000","(81) 99100-1010",null,"(81) 99200-2020"];
+  const sc=score;
+  const modelo=_m[i%_m.length];
+  const prazo=_pz[i%_pz.length];
+  const pagamento=_pg[i%_pg.length];
+  const intencao=_it[i%_it.length];
+  const veicAtual=_va[i%_va.length];
+  const localizacao=_lc[i%_lc.length];
+  const decisao=_dc[i%_dc.length];
+  const envolveOutro=decisao!=="Independente";
+  const codTipo=envolveOutro?(_cc[i%_cc.length]||"financeiro"):null;
+  const codDetalhe=codTipo===null?null:codTipo==="financeiro"?"Focado principalmente no lado financeiro":codTipo==="escolha"?"Focado na escolha do veículo":"Envolvido em ambos os aspectos";
+  const temperatura=sc>=81?"Premium":sc>=61?"Quente":sc>=41?"Engajado":sc>=21?"Morno":"Frio";
+  const sentimento=_sn[i%_sn.length];
+  const status=_st[i%_st.length];
+  const hora=_hr[i%_hr.length];
+  const data=_dt[i%_dt.length];
+  const telefone=_fn[i%_fn.length]||null;
+  // Decidir quais perguntas foram respondidas com base no score
+  const respAll=sc>=60;
+  const respP1a5=sc>=35;
+  const respP1a3=sc>=20;
+  return {
+    nome,score:sc,temperatura,sentimento,status,hora,data,
+    canal:"WhatsApp",telefone,localizacao,modelo,pagamento,prazo,intencao,veicAtual,
+    decisao,codTipo,codDetalhe,
+    perguntas:[
+      {num:"P1",tema:"Intenção",
+       pergunta:"Você está buscando o veículo para uso próprio, ou é para presentear alguém especial?",
+       resposta:respP1a3||respP1a5||respAll?intencao:null},
+      {num:"P2",tema:"Prazo",
+       pergunta:"Você já tem uma data em mente para a retirada?",
+       resposta:respP1a3||respP1a5||respAll?prazo:null},
+      {num:"P3",tema:"Modelo",
+       pergunta:"Tem alguma marca ou modelo que já está no seu radar? Ou prefere que eu te apresente o que temos disponível agora?",
+       resposta:respP1a3||respP1a5||respAll?modelo:null},
+      {num:"P4",tema:"Pagamento",
+       pergunta:"Em relação à forma de pagamento, você já tem algo em mente? Trabalhamos com financiamento, consórcio e pagamento à vista.",
+       resposta:respP1a5||respAll?pagamento:null},
+      {num:"P5",tema:"Veículo atual",
+       pergunta:"Você tem algum veículo hoje que pensaria em incluir na negociação? Ou seria uma aquisição independente?",
+       resposta:respP1a5||respAll?veicAtual:null},
+      {num:"P6",tema:"Decisão",
+       pergunta:"Essa escolha você costuma fazer de forma independente, ou é uma decisão que envolve mais alguém?",
+       resposta:respAll?decisao:null,
+       detalhe:respAll&&envolveOutro?codDetalhe:null},
+      {num:"P7",tema:"Localização",
+       pergunta:"Você está aqui em Recife ou vem de outra cidade?",
+       resposta:respAll?localizacao:null},
+    ],
+  };
+}
+
+const NETWORK_LEADS_DIA    = ALL_LEADS_NAMES.slice(0,10).map((n,i)=>buildLeadData(n,LEAD_SCORES[i],i));
+const NETWORK_LEADS_SEMANA = ALL_LEADS_NAMES.slice(0,28).map((n,i)=>buildLeadData(n,LEAD_SCORES[i],i));
+const NETWORK_LEADS_MES    = ALL_LEADS_NAMES.map((n,i)=>buildLeadData(n,LEAD_SCORES[i],i));
+
+// ============================================================
+// INSTAGRAM — ícone SVG + leads
+// ============================================================
+const IG_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="62" height="62"><defs><linearGradient id="igCanvasReal" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#feda75"/><stop offset="15%" stop-color="#fa7e1e"/><stop offset="40%" stop-color="#d62976"/><stop offset="70%" stop-color="#962fbf"/><stop offset="100%" stop-color="#4f5bd5"/></linearGradient></defs><path fill="url(#igCanvasReal)" d="M34.017 41.99l-20 .019c-4.4.004-8.003-3.592-8.008-7.992l-.019-20c-.004-4.4 3.592-8.003 7.992-8.008l20-.019c4.4-.004 8.003 3.592 8.008 7.992l.019 20c.005 4.401-3.592 8.004-7.992 8.008z"/><path fill="#fff" d="M24 31c-3.859 0-7-3.14-7-7s3.141-7 7-7 7 3.14 7 7-3.141 7-7 7zm0-12c-2.757 0-5 2.243-5 5s2.243 5 5 5 5-2.243 5-5-2.243-5-5-5zm6.5-3.5c0 .828-.671 1.5-1.5 1.5-.828 0-1.5-.672-1.5-1.5s.672-1.5 1.5-1.5c.829 0 1.5.672 1.5 1.5z"/><path fill="#fff" d="M28.879 43.956L19.116 43.974c-5.596.006-10.136-4.524-10.142-10.119L8.956 24.091c-.006-5.595 4.524-10.135 10.119-10.141l9.764-.018c5.595-.006 10.135 4.524 10.141 10.119l.018 9.764c.006 5.595-4.524 10.135-10.119 10.141zM19.138 15.951c-4.492.004-8.146 3.665-8.142 8.158l.018 9.764c.004 4.492 3.665 8.146 8.158 8.142l9.764-.018c4.492-.004 8.146-3.665 8.142-8.158l-.018-9.764c-.004-4.492-3.665-8.146-8.158-8.142l-9.764.018z"/></svg>`;
+
+const IG_NAMES  = ["Alexandre Costa","Beatriz Oliveira","Camila Santos","Daniel Ferreira","Elisa Rodrigues","Fábio Lima","Gabriela Mendes","Henrique Sousa","Isabela Martins","João Paulo","Kelly Alves","Leonardo Costa","Marina Pereira","Nicolas Oliveira","Olivia Ferreira","Pedro Santos","Queila Rodrigues","Ricardo Alves","Sofia Lima","Thales Mendes","Ursula Costa","Vinicius Sousa","Wesley Martins","Xuxa Pereira","Yara Alves","Zelia Costa","André Oliveira","Bia Santos","Caio Ferreira","Dani Lima"];
+const IG_SCORES = [92,78,65,55,82,47,71,38,88,62,29,75,51,86,44,69,33,80,57,91,42,73,60,48,83,36,67,53,77,41];
+
+const NETWORK_LEADS_IG_DIA    = IG_NAMES.slice(0,8).map((n,i)=>({...buildLeadData(n,IG_SCORES[i],i+20),canal:'Instagram'}));
+const NETWORK_LEADS_IG_SEMANA = IG_NAMES.slice(0,20).map((n,i)=>({...buildLeadData(n,IG_SCORES[i],i+20),canal:'Instagram'}));
+const NETWORK_LEADS_IG_MES    = IG_NAMES.map((n,i)=>({...buildLeadData(n,IG_SCORES[i],i+20),canal:'Instagram'}));
+
+const SELLERS = [
+  {n:"Ana Lima",     c:"#B87333",spd:38,cnv:4},
+  {n:"Bruno Mota",   c:"#D4AF37",spd:52,cnv:3},
+  {n:"Carla Sena",   c:"#004225",spd:65,cnv:5},
+  {n:"Diego Faria",  c:"#606060",spd:71,cnv:2},
+  {n:"Eduardo Paz",  c:"#00845A",spd:44,cnv:4},
+  {n:"Fernanda Rios",c:"#E11D48",spd:90,cnv:1},
+  {n:"Gabriel Lins", c:"#6090FF",spd:58,cnv:3},
+  {n:"Helena Vaz",   c:"#E060C0",spd:33,cnv:5},
+  {n:"Ítalo Cruz",   c:"#A88820",spd:48,cnv:4}
+];
+
+const FUNNEL = [
+  {lbl:"Leads recebidos",c:"#D4AF37",n:1000,p:100,tip:"Total de leads atendidos pelo Rui no mês. WhatsApp: 680 | Instagram: 320.",waCount:680,igCount:320},
+  {lbl:"Iniciaram fluxo",c:"#A88820",n:680,p:68,tip:"Responderam ao Rui e começaram a qualificação. 68% de engajamento inicial.",waCount:462,igCount:218},
+  {lbl:"Qualificação completa",c:"#606060",n:460,p:46,tip:"Responderam as 7 perguntas do Rui. Score calculado e classificado.",waCount:313,igCount:147},
+  {lbl:"Score ≥ 60 · Leads quentes",c:"#D4AF37",n:260,p:26,tip:"Transferidos ao vendedor com prioridade alta. Score acima de 60.",waCount:177,igCount:83}
+];
+
+const CONV_DATA = [
+  {lbl:"WhatsApp",val:38,c:"#25D366",tip:"WhatsApp: 38 vendas por 100 leads. Canal principal com maior volume e conversão."},
+  {lbl:"Instagram",val:22,c:"#C837AB",tip:"Instagram: 22 vendas por 100 leads. Canal em crescimento com perfil mais jovem."}
+];
+
+// Volume de leads por hora (0-23)
+const HOUR_VOLUMES = [4,6,3,5,2,1,1,2,8,12,14,11,10,9,13,12,8,11,15,14,10,9,7,6];
+// Horário humano: seg-sex 08-19h, sab 08-14h, dom fechado
+function isHumanHour(h, dateStr){
+  if(dateStr){ const d=new Date(dateStr+'T12:00:00'); const dow=d.getDay(); if(dow===0) return false; if(dow===6) return h>=8&&h<14; }
+  return h>=8&&h<19;
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function ptc(p){const lc=(p||'').toLowerCase();return lc==='whatsapp'?'wa':lc==='instagram'?'ig':lc==='facebook'?'fb':'ot';}
+function avc(i){const c=["#D4AF37","#004225","#E11D48","#6090FF","#E060C0","#B87333","#A88820","#00845A","#606060","#4A9EFF"];return c[i%c.length];}
+function ini(n){return(n||'?').split(' ').map(w=>w[0]).slice(0,2).join('');}
+function posC(i){return i===0?'g':i===1?'s':i===2?'b':'';}
+function scoreColor(sc){return sc>=81?'#EF4444':sc>=61?'#F97316':sc>=41?'#EAB308':sc>=21?'#22c55e':'#38BDF8';}
+function tempColor(t){const m={'Premium':'#EF4444','Quente':'#F97316','Engajado':'#EAB308','Morno':'#22c55e','Frio':'#38BDF8'};return m[t]||'var(--tx3)';}
+
+// ============================================================
+// NAV
+// ============================================================
+function go(id){
+  document.querySelectorAll('[id^="p-"]').forEach(p=>p.style.display='none');
+  document.getElementById('p-'+id).style.display='block';
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(i=>{if(i.getAttribute('onclick')?.includes("'"+id+"'"))i.classList.add('active');});
+  if(id==='score') drawScoreChart();
+  if(id==='plataformas') updateOrbCount();
+  if(id==='cobertura') buildCobertura();
+  if(id==='funil') buildFunil();
+}
+
+function updateOrbCount(){
+  const {wa,ig} = getLeadsForPeriod(networkPeriod);
+  const elWA = document.getElementById('orbLeadCountWA');
+  const elIG = document.getElementById('orbLeadCountIG');
+  if(elWA) elWA.textContent = `${wa.length} lead${wa.length!==1?'s':''}`;
+  if(elIG) elIG.textContent = `${ig.length} lead${ig.length!==1?'s':''}`;
+}
+
+function openNetwork(canal){
+  if(canal) currentNetworkCanal = canal;
+  document.getElementById('pltClosed').style.display='none';
+  document.getElementById('pltOpen').style.display='block';
+  const lbl = currentNetworkCanal === 'instagram' ? '📷 Instagram' : '💬 WhatsApp';
+  const el = document.getElementById('pltOpenLabel');
+  if(el) el.textContent = lbl + ' — Clique em um lead para ver as informações coletadas pelo Rui';
+  initNetwork();
+}
+
+function closeNetwork(){
+  if(networkAnimFrame){cancelAnimationFrame(networkAnimFrame);networkAnimFrame=null;}
+  document.getElementById('pltOpen').style.display='none';
+  document.getElementById('pltClosed').style.display='flex';
+}
+
+// ============================================================
+// DIAGNÓSTICO AUTOMÁTICO
+// ============================================================
+function buildDiagnostico(){
+  const items = [
+    {icon:'⚠️', text:'<strong>Maior abandono no funil: Pergunta 4 (forma de pagamento)</strong> — 7 leads pararam aqui esta semana. Considere ajustar a abordagem do Rui nessa etapa.'},
+    {icon:'🌙', text:'<strong>62% dos leads chegaram fora do horário humano</strong> — sem o Rui, 47 conversas teriam ficado sem resposta, muitas delas na madrugada.'},
+    {icon:'💰', text:'<strong>18 leads qualificados entregues ao time</strong> — carteira potencial de R$ 6,3M em leads ativos esta semana (18 × R$ 350k).'},
+    {icon:'⚡', text:'<strong>Leads premium esta semana: 6</strong> — Score 86–100. Requerem acionamento do gerente com prioridade máxima.'},
+  ];
+  const el = document.getElementById('diagItems');
+  if(!el) return;
+  el.innerHTML = items.map(i=>`<div class="diag-item"><span class="diag-icon">${i.icon}</span><div>${i.text}</div></div>`).join('');
+}
+
+// ============================================================
+// COBERTURA NOTURNA
+// ============================================================
+function buildCobertura(){
+  const picker = document.getElementById('cobDayPicker');
+  if(picker && !picker.value) picker.value = '2026-05-09';
+  cobBuildDia();
+}
+
+function cobSetTab(tab){
+  ['dia','mes','relatorio'].forEach(t=>{
+    const s=t.charAt(0).toUpperCase()+t.slice(1);
+    const btn=document.getElementById('cobTab'+s);
+    const view=document.getElementById('cobView'+s);
+    if(btn) btn.classList.toggle('active',t===tab);
+    if(view) view.style.display=t===tab?'':'none';
+  });
+  if(tab==='dia') cobBuildDia();
+  else if(tab==='mes') cobBuildMes();
+  else cobBuildRelatorio();
+}
+
+function cobRenderHourChart(gridId, labelsId, hourCounts, dateStr){
+  const grid=document.getElementById(gridId);
+  const lbls=document.getElementById(labelsId);
+  if(!grid) return;
+  const max=Math.max(...hourCounts,1);
+  grid.innerHTML=''; lbls.innerHTML='';
+  hourCounts.forEach((v,h)=>{
+    let human;
+    if(dateStr){
+      const d=new Date(dateStr+'T12:00:00'),dow=d.getDay();
+      if(dow===0) human=false;
+      else if(dow===6) human=h>=8&&h<14;
+      else human=h>=8&&h<19;
+    } else { human=h>=8&&h<19; }
+    const pct=Math.max(10,Math.round((v/max)*100));
+    const col=v>0?(human?'var(--grn-l)':'var(--ac)'):'var(--bdr)';
+    const div=document.createElement('div');
+    div.className='cob-hour';
+    div.style.cssText=`background:${col};opacity:${v>0?(0.2+(v/max)*0.8):0.3};height:${Math.max(8,pct*0.38)}px;align-self:flex-end;`;
+    div.setAttribute('data-tip',`${String(h).padStart(2,'0')}h · ${v} lead${v!==1?'s':''} · ${human?'Horário humano':'Fora do horário'}`);
+    grid.appendChild(div);
+    const lbl=document.createElement('div');
+    lbl.className='cob-hour-lbl';
+    lbl.textContent=h%3===0?String(h).padStart(2,'0')+'h':'';
+    lbls.appendChild(lbl);
+  });
+  grid.style.alignItems='flex-end';
+}
+
+function cobBuildDia(){
+  const picker=document.getElementById('cobDayPicker');
+  const selDate=picker?picker.value:'2026-05-09';
+  const title=document.getElementById('cobDiaTitle');
+  if(title&&selDate){
+    const d=new Date(selDate+'T12:00:00');
+    const dias=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+    const meses=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    title.textContent=`Volume de leads por hora · ${dias[d.getDay()]}, ${d.getDate()} ${meses[d.getMonth()]} ${d.getFullYear()}`;
+  }
+  const allL=[...NETWORK_LEADS_MES,...NETWORK_LEADS_IG_MES];
+  const hourCounts=Array(24).fill(0);
+  allL.forEach(l=>{
+    if(l.data===selDate){const h=parseInt((l.hora||'').split(':')[0]);if(!isNaN(h)&&h>=0&&h<24)hourCounts[h]++;}
+  });
+  cobRenderHourChart('cobHourGridDia','cobHourLabelsDia',hourCounts,selDate);
+}
+
+function cobBuildMes(){
+  const picker=document.getElementById('cobMonthPicker');
+  const selMonth=picker?picker.value:'2026-05';
+  const title=document.getElementById('cobMesTitle');
+  if(title){
+    const [y,m]=selMonth.split('-');
+    const meses=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    title.textContent=`Total de leads por hora do dia · ${meses[parseInt(m)-1]} ${y}`;
+  }
+  const allL=[...NETWORK_LEADS_MES,...NETWORK_LEADS_IG_MES];
+  const hourCounts=Array(24).fill(0);
+  allL.forEach(l=>{
+    if(l.data&&l.data.startsWith(selMonth)){const h=parseInt((l.hora||'').split(':')[0]);if(!isNaN(h)&&h>=0&&h<24)hourCounts[h]++;}
+  });
+  cobRenderHourChart('cobHourGridMes','cobHourLabelsMes',hourCounts,null);
+}
+
+function cobBuildRelatorio(){
+  const el=document.getElementById('cobRelatorioContent');
+  if(!el) return;
+  const allL=[...NETWORK_LEADS_MES,...NETWORK_LEADS_IG_MES];
+  const byMonth={};
+  allL.forEach(l=>{ if(l.data){const ym=l.data.slice(0,7);byMonth[ym]=(byMonth[ym]||0)+1;} });
+  // Adiciona histórico simulado para contexto
+  const historico={'2026-02':31,'2026-03':44};
+  const todos={...historico,...byMonth};
+  const months=Object.keys(todos).sort();
+  const total=Object.values(todos).reduce((a,b)=>a+b,0);
+  const maxM=Math.max(...Object.values(todos));
+  const meses=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const fmtM=ym=>{const[y,m]=ym.split('-');return`${meses[parseInt(m)-1]} ${y}`;};
+  el.innerHTML=`
+    <div style="margin-bottom:24px">
+      <div style="font-size:13px;color:var(--tx2);margin-bottom:14px">Agente Rui em operação desde <strong style="color:var(--ac)">${fmtM(months[0])}</strong>. Total de leads atendidos:</div>
+      <div style="font-size:52px;font-weight:800;font-family:'DM Mono',monospace;color:var(--ac-l);line-height:1">${total}</div>
+      <div style="font-size:12px;color:var(--tx3);margin-top:6px">leads atendidos pelo Rui desde o início do contrato</div>
+    </div>
+    <div style="display:grid;gap:14px;max-width:480px">
+      ${months.map(ym=>{
+        const cnt=todos[ym];
+        const pct=Math.round((cnt/maxM)*100);
+        const isReal=!!byMonth[ym];
+        return`<div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px">
+            <span style="color:var(--tx2);font-weight:600">${fmtM(ym)}</span>
+            <span style="color:${isReal?'var(--ac-l)':'var(--tx2)'};font-family:'DM Mono',monospace;font-weight:700">${cnt} leads</span>
+          </div>
+          <div style="height:8px;background:var(--s3);border-radius:4px">
+            <div style="width:${pct}%;height:100%;background:${isReal?'linear-gradient(90deg,var(--ac-d),var(--ac-l))':'rgba(255,255,255,.15)'};border-radius:4px;transition:width .5s ease"></div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div style="margin-top:18px;font-size:11px;color:var(--tx3)">* Dados de Fevereiro e Março são estimados com base na curva de crescimento do agente.</div>
+  `;
+}
+
+// ============================================================
+// TABLE
+// ============================================================
+function buildTable(){
+  const tb = document.getElementById('ltbody');
+  if(!tb) return;
+  const stM = {'Transferido':'st-t','Qualificado':'st-q','Em andamento':'st-a','Encerrado':'st-i'};
+  const scC = s => s>=70?'sh':s>=45?'sm':'sl';
+  const snH = st => {
+    if(st==='pos') return `<div class="sent-row"><div class="sdot s-pos"></div><span style="font-size:12px;color:var(--grn-l)">Positivo</span></div>`;
+    if(st==='neg') return `<div class="sent-row"><div class="sdot s-neg"></div><span style="font-size:12px;color:var(--red)">Frustrado</span></div>`;
+    return `<div class="sent-row"><div class="sdot s-neu"></div><span style="font-size:12px;color:var(--tx3)">Neutro</span></div>`;
+  };
+  tb.innerHTML = LEADS.map(l=>`<tr>
+    <td><strong>${l.n}</strong></td>
+    <td><span class="ptag ${ptc(l.pl)}">${l.pl}</span></td>
+    <td><span class="sp ${scC(l.sc)}">${l.sc}/100</span></td>
+    <td>${l.md}</td><td>${l.py}</td><td>${snH(l.st)}</td>
+    <td><span class="stpill ${stM[l.ss]||'st-i'}">${l.ss}</span></td>
+  </tr>`).join('');
+}
+
+function buildConv(id){
+  const wrap = document.getElementById(id);
+  if(!wrap) return;
+  wrap.innerHTML = CONV_DATA.map(d=>`<div class="conv-row" data-tip="${d.tip}">
+    <div class="conv-lbl">${d.lbl}</div>
+    <div class="conv-trk"><div class="conv-fill" style="width:${d.val}%;background:${d.c}">${d.val}</div></div>
+    <div class="conv-num">${d.val} / 100</div>
+  </div>`).join('');
+}
+
+// ============================================================
+// FUNIL
+// ============================================================
+function buildFunil(){
+  const wrap = document.getElementById('funnelWrap');
+  if(!wrap || wrap.children.length > 0) return;
+  const dropLabels = [
+    "Não responderam ao Rui",
+    "Abandonaram no meio da qualificação",
+    "Score < 60 · encaminhados para nutrição",
+    "Leads quentes aguardando fechamento"
+  ];
+  FUNNEL.forEach((s,si)=>{
+    const isLast = si === FUNNEL.length-1;
+    const advancedCount = isLast ? s.n : FUNNEL[si+1].n;
+    const droppedCount  = isLast ? 0 : s.n - FUNNEL[si+1].n;
+    const waCount = Math.min(s.waCount||Math.round(s.n*0.68), ALL_LEADS_NAMES.length);
+    const igCount = Math.min((s.igCount||Math.round(s.n*0.32)), IG_NAMES.length);
+    const stageLeads = [
+      ...ALL_LEADS_NAMES.slice(0, waCount).map(n=>({n,pl:'WhatsApp'})),
+      ...IG_NAMES.slice(0, igCount).map(n=>({n,pl:'Instagram'}))
+    ];
+    const nextWaCount = isLast ? 0 : Math.min(FUNNEL[si+1].waCount||Math.round(FUNNEL[si+1].n*0.68), ALL_LEADS_NAMES.length);
+    const nextStageLeads = isLast ? [] : ALL_LEADS_NAMES.slice(0, nextWaCount);
+    const advanced = isLast ? stageLeads : stageLeads.filter(l=>nextStageLeads.includes(l.n));
+    const dropped = isLast ? [] : stageLeads.filter(l=>!nextStageLeads.includes(l.n));
+    const isPending = si===3;
+    const dropClass = isPending?'pending':'dropped';
+    const dropLabelClass = isPending?'fn-section-pending':'fn-section-dropped';
+    const dropIcon = isPending?'⏳':'✗';
+    const advHtml = `<div class="fn-section-label fn-section-advanced"><span>✓</span>${isLast?'Leads quentes confirmados':'Avançaram'} · ${advancedCount}</div><div class="leads-grid">${advanced.map((l,li)=>`<div class="lchip" data-tip="${l.n}"><div class="lav" style="background:${avc(li)}">${ini(l.n)}</div><div><div class="lname">${l.n}</div><span class="ptag ${l.pl==='Instagram'?'ig':'wa'}">${l.pl||'WhatsApp'}</span></div></div>`).join('')}</div>`;
+    const dropHtml = droppedCount>0?`<div class="fn-section-divider"></div><div class="fn-section-label ${dropLabelClass}"><span>${dropIcon}</span>Pararam · ${droppedCount} · ${dropLabels[si]}</div><div class="leads-grid">${dropped.map((l,li)=>`<div class="lchip ${dropClass}"><div class="lav" style="background:${isPending?'#4A3800':'#4A2030'}">${ini(l.n)}</div><div><div class="lname">${l.n}</div><span class="ptag ${l.pl==='Instagram'?'ig':'wa'}">${l.pl||'WhatsApp'}</span></div></div>`).join('')}</div>`:'';
+    const el = document.createElement('div');
+    el.className='fn-stage';
+    el.innerHTML=`<div class="fn-hdr" onclick="toggleFn(${si})"><div class="fn-dot" style="background:${s.c}"></div><div class="fn-name">${s.lbl}</div><div><span class="fn-cnt">${s.n}</span><span class="fn-pct"> leads (${s.p}%)</span></div>${droppedCount>0?`<span style="font-size:11px;font-weight:700;margin-left:auto;margin-right:12px;color:${isPending?'var(--ac)':'var(--red)'};background:${isPending?'rgba(212,175,55,.1)':'var(--red-bg)'};padding:2px 9px;border-radius:12px">${droppedCount} pararam</span>`:''}<div class="fn-arrow" id="fa-${si}">▸</div></div><div class="fn-track"><div class="fn-bar" style="width:${s.p}%;background:${s.c}"></div></div><div class="fn-body" id="fb-${si}">${dropHtml}${advHtml}</div>`;
+    wrap.appendChild(el);
+  });
+}
+function toggleFn(i){const b=document.getElementById('fb-'+i),a=document.getElementById('fa-'+i);const o=b.classList.contains('open');b.classList.toggle('open',!o);a.classList.toggle('open',!o);a.textContent=o?'▸':'▾';}
+
+// ============================================================
+// SCORE CHART
+// ============================================================
+function drawScoreChart(){
+  const c=document.getElementById('scChart');if(!c)return;
+  const ctx=c.getContext('2d'),w=680,h=300;
+  const getSc=(k,d)=>{const el=document.querySelector(`[data-score="${k}"]`);return el?(parseInt(el.textContent)||d):d;};
+  const bars=[{l:"0–20\nFrios",v:getSc('frios',6),c:"#38BDF8"},{l:"21–40\nMornos",v:getSc('mornos',10),c:"#22c55e"},{l:"41–60\nEngajados",v:getSc('engajados',15),c:"#EAB308"},{l:"61–80\nQuentes",v:getSc('quentes',13),c:"#F97316"},{l:"81–100\nPremium",v:getSc('premium',6),c:"#EF4444"}];
+  const max=Math.max(...bars.map(b=>b.v),1),bw=90,gap=36,bot=50,top=24,sl=(w-(bars.length*bw+(bars.length-1)*gap))/2;
+  ctx.clearRect(0,0,w,h);
+  ctx.strokeStyle='#1C1C1C';ctx.lineWidth=1;
+  [Math.round(max/3),Math.round(max*2/3),max].forEach(v=>{const y=h-bot-((v/max)*(h-top-bot));ctx.beginPath();ctx.moveTo(sl-10,y);ctx.lineTo(w-sl+10,y);ctx.stroke();ctx.fillStyle='#333';ctx.font="10px 'DM Mono'";ctx.textAlign='right';ctx.fillText(v,sl-14,y+4);});
+  bars.forEach((b,i)=>{const x=sl+i*(bw+gap),bh=((b.v/max)*(h-top-bot)),y=h-bot-bh;if(b.c!=="#404040"&&b.c!=="#606060"){ctx.shadowColor=b.c;ctx.shadowBlur=10;}ctx.fillStyle=b.c;ctx.beginPath();ctx.moveTo(x+6,y);ctx.lineTo(x+bw-6,y);ctx.arcTo(x+bw,y,x+bw,y+6,6);ctx.lineTo(x+bw,y+bh);ctx.lineTo(x,y+bh);ctx.arcTo(x,y,x+6,y,6);ctx.closePath();ctx.fill();ctx.shadowBlur=0;ctx.fillStyle='#F0F0F0';ctx.font="700 16px 'DM Mono'";ctx.textAlign='center';ctx.fillText(b.v,x+bw/2,y-10);ctx.fillStyle='#555';ctx.font="11px 'DM Sans'";b.l.split('\n').forEach((ln,li)=>ctx.fillText(ln,x+bw/2,h-bot+16+li*15));});
+}
+
+
+// ============================================================
+// NETWORK GRAPH — WhatsApp
+// ============================================================
+let currentNetworkCanal = 'whatsapp';
+let networkPeriod = 'dia';
+let networkLeads = [];
+let networkAnimFrame = null;
+let hoveredNode = null;
+
+const WA_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="62" height="62"><path fill="#25D366" d="M4.868 43.303l2.694-9.835a18.894 18.894 0 01-2.527-9.488C5.038 13.514 13.557 5 24.014 5c5.079.002 9.845 1.979 13.43 5.566a18.927 18.927 0 015.555 13.434c-.004 10.455-8.522 18.969-18.976 18.969a18.95 18.95 0 01-9.094-2.312L4.868 43.303z"/><path fill="#fff" d="M19.005 34.991a14.862 14.862 0 008.069 2.37c8.243 0 14.944-6.703 14.948-14.949.002-3.987-1.549-7.737-4.368-10.559A14.857 14.857 0 0027.078 7.5c-8.249 0-14.95 6.702-14.953 14.948a14.9 14.9 0 002.076 7.564l-2.22 8.107 8.024-2.128z"/><path fill="#25D366" d="M34.892 29.426c-.307-.153-1.813-.894-2.094-.996-.281-.103-.486-.154-.691.154-.205.307-.794.996-.972 1.2-.178.204-.357.23-.664.077-.307-.154-1.297-.478-2.47-1.523-.913-.813-1.529-1.817-1.708-2.124-.179-.307-.019-.473.134-.626.138-.138.307-.358.461-.537.153-.18.205-.307.307-.512.103-.205.051-.384-.025-.537-.077-.153-.691-1.666-.947-2.281-.249-.6-.502-.518-.691-.528-.179-.01-.384-.012-.589-.012-.205 0-.537.077-.818.384s-1.075 1.05-1.075 2.561c0 1.512 1.1 2.974 1.254 3.179.153.205 2.165 3.307 5.247 4.637.733.316 1.305.505 1.75.646.735.234 1.404.201 1.933.122.59-.088 1.813-.741 2.069-1.457.256-.716.256-1.33.179-1.457-.076-.128-.28-.205-.587-.358z"/></svg>`;
+
+function getLeadsForPeriod(period){
+  const wa = period==='dia'?NETWORK_LEADS_DIA:period==='semana'?NETWORK_LEADS_SEMANA:NETWORK_LEADS_MES;
+  const ig = period==='dia'?NETWORK_LEADS_IG_DIA:period==='semana'?NETWORK_LEADS_IG_SEMANA:NETWORK_LEADS_IG_MES;
+  return {wa, ig};
+}
+
+function setPeriod(p, btn){
+  networkPeriod = p;
+  document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  updateOrbCount();
+  if(document.getElementById('pltOpen').style.display!=='none'){
+    initNetwork();
+  }
+}
+
+function initNetwork(){
+  const canvas = document.getElementById('networkCanvas');
+  if(!canvas) return;
+  if(networkAnimFrame){ cancelAnimationFrame(networkAnimFrame); networkAnimFrame=null; }
+
+  const isWA = currentNetworkCanal !== 'instagram';
+  const {wa, ig} = getLeadsForPeriod(networkPeriod);
+  const sortedActive = [...(isWA ? wa : ig)].sort((a,b)=>b.score-a.score);
+  const activeColor = isWA ? '#25D366' : '#C837AB';
+  const activeLabel = isWA ? 'WhatsApp' : 'Instagram';
+
+  const wrap = canvas.parentElement;
+  const dpr  = window.devicePixelRatio || 1;
+  const cssW = wrap.clientWidth || 900;
+
+  const HUB_R      = 36;
+  const HUB_TOP_Y  = 52;
+  const BRANCH_LEN = 110;
+  const MAX_SHOW    = 15;
+  const shownActive = sortedActive.slice(0, MAX_SHOW);
+  const maxCount    = Math.max(shownActive.length, 1);
+  const SPACING    = Math.min(46, Math.max(32, Math.floor(470 / maxCount)));
+  const treeH      = maxCount * SPACING;
+  const cssH       = Math.max(600, HUB_TOP_Y + HUB_R + 54 + treeH + 44);
+
+  wrap.style.height    = cssH + 'px';
+  canvas.style.width   = cssW + 'px';
+  canvas.style.height  = cssH + 'px';
+  canvas.width  = Math.round(cssW * dpr);
+  canvas.height = Math.round(cssH * dpr);
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  const W = cssW, H = cssH;
+
+  const SPINE    = W * 0.30;
+  const NODES_Y0 = HUB_TOP_Y + HUB_R + 54;
+
+  function tempCol(sc){
+    if(sc>=81) return {fill:'#EF4444', glow:'rgba(239,68,68,.5)',   lbl:'Premium'};
+    if(sc>=61) return {fill:'#F97316', glow:'rgba(249,115,22,.45)', lbl:'Quente'};
+    if(sc>=41) return {fill:'#EAB308', glow:'rgba(234,179,8,.45)',  lbl:'Engajado'};
+    if(sc>=21) return {fill:'#22c55e', glow:'rgba(34,197,94,.45)',  lbl:'Morno'};
+    return            {fill:'#38BDF8', glow:'rgba(56,189,248,.45)', lbl:'Frio'};
+  }
+  function statusIcon(lead){
+    if(lead.score>=80 && lead.status==='Transferido') return {s:'$',c:'#22c55e'};
+    if(lead.status==='Transferido')  return {s:'✓',c:'#22c55e'};
+    if(lead.status==='Encerrado')    return {s:'✗',c:'#EF4444'};
+    return                                  {s:'⏸',c:'#F59E0B'};
+  }
+  const nodeR = sc => 13 + Math.round((sc/100)*8);
+
+  function buildNodes(leads, spineX){
+    return leads.map((lead,i)=>({
+      x: spineX + BRANCH_LEN,
+      y: NODES_Y0 + i * SPACING,
+      r: nodeR(lead.score),
+      lead, spineX
+    }));
+  }
+  const activeNodes = buildNodes(shownActive, SPINE);
+  const allNodes    = activeNodes;
+
+  const hubImg = new Image();
+  hubImg.src = URL.createObjectURL(new Blob([isWA ? WA_ICON_SVG : IG_ICON_SVG],{type:'image/svg+xml'}));
+  let hubReady = false; hubImg.onload = ()=>{ hubReady = true; };
+
+  let tick = 0;
+
+  function rrect(x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);
+    ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
+    ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);
+    ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();
+  }
+
+  function drawNode(nd, hov){
+    const {x,y,r,lead} = nd;
+    const tc = tempCol(lead.score); const col = tc.fill; const gl = tc.glow;
+    if(lead.score>=81||hov){
+      ctx.beginPath();ctx.arc(x,y,r+4,0,Math.PI*2);
+      ctx.fillStyle=gl.replace(/[\d.]+\)$/,'0.12)');ctx.fill();
+    }
+    ctx.shadowColor=gl; ctx.shadowBlur=hov?20:(lead.score>=81?12:5);
+    const ng=ctx.createRadialGradient(x-r*.25,y-r*.25,0,x,y,r);
+    ng.addColorStop(0,col+'FF');ng.addColorStop(0.6,col+'CC');ng.addColorStop(1,col+'77');
+    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=ng;ctx.fill();ctx.shadowBlur=0;
+    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);
+    ctx.strokeStyle=hov?'rgba(255,255,255,.85)':'rgba(255,255,255,.18)';
+    ctx.lineWidth=hov?1.8:1;ctx.stroke();
+    ctx.fillStyle='rgba(0,0,0,.88)';
+    ctx.font=`700 ${r>18?11:9}px 'DM Mono',monospace`;
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(lead.score,x,y);
+    const si = statusIcon(lead);
+    ctx.fillStyle=si.c;
+    ctx.font=`700 12px 'DM Mono',monospace`;
+    ctx.textAlign='left';ctx.textBaseline='middle';
+    ctx.fillText(si.s, x+r+6, y);
+    if(hov){
+      ctx.font="600 11px 'DM Sans',sans-serif";
+      const tw=ctx.measureText(lead.nome).width;
+      const bw=tw+18,bh=20,bx=x-bw/2,by=y-r-26;
+      ctx.shadowColor='rgba(0,0,0,.7)';ctx.shadowBlur=8;
+      ctx.fillStyle='rgba(8,6,2,.95)';rrect(bx,by,bw,bh,5);ctx.fill();ctx.shadowBlur=0;
+      ctx.strokeStyle=col+'66';ctx.lineWidth=1;rrect(bx,by,bw,bh,5);ctx.stroke();
+      ctx.fillStyle='#F0F0F0';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(lead.nome,x,by+bh/2);
+      ctx.font=`700 9px 'DM Mono',monospace`;
+      const tw2=ctx.measureText(tc.lbl).width;
+      const pw=tw2+14,ph=14,px2=x-pw/2,py2=by-ph-3;
+      ctx.fillStyle=col+'22';ctx.strokeStyle=col+'88';ctx.lineWidth=1;
+      rrect(px2,py2,pw,ph,7);ctx.fill();ctx.stroke();
+      ctx.fillStyle=col;ctx.textBaseline='middle';ctx.fillText(tc.lbl,x,py2+ph/2);
+    }
+  }
+
+  function drawHub(spineX, img, imgReady, color, label, count){
+    const cx=spineX, cy=HUB_TOP_Y;
+    ctx.shadowColor=color;ctx.shadowBlur=28;
+    ctx.beginPath();ctx.arc(cx,cy,HUB_R+6,0,Math.PI*2);
+    ctx.strokeStyle=color+'1A';ctx.lineWidth=8;ctx.stroke();ctx.shadowBlur=0;
+    ctx.save();ctx.translate(cx,cy);ctx.rotate(tick*0.010);
+    ctx.beginPath();ctx.arc(0,0,HUB_R+10,0,Math.PI*2);
+    ctx.strokeStyle=color+'2A';ctx.lineWidth=1.2;
+    ctx.setLineDash([6,15]);ctx.stroke();ctx.setLineDash([]);ctx.restore();
+    const hg=ctx.createRadialGradient(cx-HUB_R*.3,cy-HUB_R*.3,0,cx,cy,HUB_R);
+    hg.addColorStop(0,'#1E1600');hg.addColorStop(0.5,'#120E00');hg.addColorStop(1,'#060400');
+    ctx.shadowColor=color+'77';ctx.shadowBlur=16;
+    ctx.beginPath();ctx.arc(cx,cy,HUB_R,0,Math.PI*2);ctx.fillStyle=hg;ctx.fill();ctx.shadowBlur=0;
+    ctx.beginPath();ctx.arc(cx,cy,HUB_R,0,Math.PI*2);ctx.strokeStyle=color;ctx.lineWidth=1.8;ctx.stroke();
+    if(imgReady){const sz=HUB_R*1.48;ctx.drawImage(img,cx-sz/2,cy-sz/2,sz,sz);}
+    const lbl=`${count} lead${count!==1?'s':''}`;
+    ctx.font="700 10px 'DM Mono',monospace";ctx.textAlign='center';
+    const lw2=ctx.measureText(lbl).width;
+    const bx=cx-lw2/2-9,by=cy+HUB_R+5,bw=lw2+18,bh=18;
+    ctx.fillStyle='rgba(8,6,2,.88)';ctx.strokeStyle=color+'44';ctx.lineWidth=1;
+    rrect(bx,by,bw,bh,9);ctx.fill();ctx.stroke();
+    ctx.fillStyle=color;ctx.textBaseline='middle';ctx.fillText(lbl,cx,by+bh/2);
+  }
+
+  function drawTreeSkeleton(nodes, spineX, color, totalLeads){
+    if(!nodes.length) return;
+    const lastY = nodes[nodes.length-1].y;
+    ctx.beginPath();
+    ctx.moveTo(spineX, HUB_TOP_Y+HUB_R);
+    ctx.lineTo(spineX, lastY);
+    ctx.strokeStyle=color+'44'; ctx.lineWidth=1.8; ctx.stroke();
+    const GMAP={premium:{lbl:'Premium',c:'#EF4444'},hot:{lbl:'Quentes',c:'#F97316'},warm:{lbl:'Engajados',c:'#EAB308'},cool:{lbl:'Mornos',c:'#22c55e'},cold:{lbl:'Frios',c:'#38BDF8'}};
+    const getG=sc=>sc>=81?'premium':sc>=61?'hot':sc>=41?'warm':sc>=21?'cool':'cold';
+    let prevGroup=null;
+    nodes.forEach((nd,i)=>{
+      const g=getG(nd.lead.score);
+      if(prevGroup && g!==prevGroup){
+        const sepY=(nodes[i-1].y+nd.y)/2;
+        ctx.beginPath();
+        ctx.moveTo(spineX-12,sepY);ctx.lineTo(spineX+BRANCH_LEN+nd.r+28,sepY);
+        ctx.strokeStyle='rgba(255,255,255,.055)';ctx.lineWidth=1;
+        ctx.setLineDash([3,5]);ctx.stroke();ctx.setLineDash([]);
+        const gc=GMAP[g];
+        ctx.fillStyle=gc.c+'77';ctx.font="bold 9px 'DM Sans',sans-serif";
+        ctx.textAlign='right';ctx.textBaseline='middle';
+        ctx.fillText(gc.lbl,spineX-16,sepY+SPACING*0.4);
+      }
+      prevGroup=g;
+    });
+    if(nodes[0]){
+      const gc0=GMAP[getG(nodes[0].lead.score)];
+      ctx.fillStyle=gc0.c+'77';ctx.font="bold 9px 'DM Sans',sans-serif";
+      ctx.textAlign='right';ctx.textBaseline='middle';
+      ctx.fillText(gc0.lbl,spineX-16,nodes[0].y);
+    }
+    nodes.forEach(nd=>{
+      const hov=nd===hoveredNode;
+      const tc=tempCol(nd.lead.score);
+      ctx.beginPath();
+      ctx.moveTo(spineX,nd.y);ctx.lineTo(nd.x-nd.r-2,nd.y);
+      ctx.strokeStyle=hov?tc.fill+'BB':tc.fill+'3A';
+      ctx.lineWidth=hov?2:1.2;ctx.stroke();
+    });
+    if(totalLeads>MAX_SHOW){
+      const extras=totalLeads-MAX_SHOW;
+      const ey=lastY+SPACING*0.75;
+      ctx.fillStyle='rgba(255,255,255,.22)';
+      ctx.font="12px 'DM Sans',sans-serif";
+      ctx.textAlign='left';ctx.textBaseline='middle';
+      ctx.fillText(`+${extras} mais no período`,spineX+10,ey);
+    }
+  }
+
+  function drawLegend(){
+    const items=[
+      {c:'#22c55e',s:'✓',l:'Atendido'},
+      {c:'#F59E0B',s:'⏸',l:'Aguardando'},
+      {c:'#22c55e',s:'$',l:'Cliente'},
+      {c:'#EF4444',s:'✗',l:'Não fechou'}
+    ];
+    let lx=W/2-200; const ly=H-16;
+    ctx.textBaseline='middle';
+    items.forEach(it=>{
+      ctx.fillStyle=it.c;ctx.font="bold 11px 'DM Mono',monospace";ctx.textAlign='left';
+      ctx.fillText(it.s,lx,ly);
+      ctx.fillStyle='rgba(255,255,255,.30)';ctx.font="11px 'DM Sans',sans-serif";
+      ctx.fillText(it.l,lx+14,ly);lx+=112;
+    });
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,W,H); tick++;
+    ctx.fillStyle='#060504';ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle='rgba(255,255,255,.014)';ctx.lineWidth=1;
+    for(let x=0;x<W;x+=52){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+    for(let y=0;y<H;y+=52){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+    // single canal â no center divider
+    ctx.font="700 11px 'DM Sans',sans-serif";ctx.textBaseline='top';
+    ctx.fillStyle=activeColor+'88';ctx.textAlign='center';
+    ctx.fillText(activeLabel, SPINE+BRANCH_LEN/2, 8);
+    drawLegend();
+    drawTreeSkeleton(activeNodes, SPINE, activeColor, sortedActive.length);
+    drawHub(SPINE, hubImg, hubReady, activeColor, activeLabel, sortedActive.length);
+    allNodes.forEach(nd=>{ if(nd!==hoveredNode) drawNode(nd,false); });
+    if(hoveredNode) drawNode(hoveredNode,true);
+    networkAnimFrame = requestAnimationFrame(draw);
+  }
+  draw();
+
+  function getHovered(mx,my){
+    return allNodes.find(nd=>{
+      const dx=nd.x-mx,dy=nd.y-my;
+      return Math.sqrt(dx*dx+dy*dy)<=nd.r+10;
+    })||null;
+  }
+  canvas.onmousemove=function(e){
+    const rect=canvas.getBoundingClientRect();
+    hoveredNode=getHovered(
+      (e.clientX-rect.left)*(cssW/rect.width),
+      (e.clientY-rect.top)*(cssH/rect.height)
+    );
+    canvas.style.cursor=hoveredNode?'pointer':'default';
+  };
+  canvas.onclick=function(e){
+    const rect=canvas.getBoundingClientRect();
+    const nd=getHovered(
+      (e.clientX-rect.left)*(cssW/rect.width),
+      (e.clientY-rect.top)*(cssH/rect.height)
+    );
+    if(nd) openLeadCard(nd.lead);
+  };
+  canvas.onmouseleave=function(){hoveredNode=null;canvas.style.cursor='default';};
+}
+
+// ============================================================
+// CARD COMPLETO DO LEAD — 7 perguntas + todos os campos
+// ============================================================
+function openLeadCard(lead){
+  document.getElementById('lc-name').textContent = lead.nome;
+  const sc=lead.score;
+  const scCol=sc>=81?'#EF4444':sc>=61?'#F97316':sc>=41?'#EAB308':sc>=21?'#22c55e':'#38BDF8';
+  const tempCol=tempColor(lead.temperatura);
+  const sentCol=lead.sentimento==='Positivo'?'var(--grn-l)':lead.sentimento==='Frustrado'?'var(--red)':'var(--tx2)';
+  const stCol=lead.status==='Transferido'?'var(--ac)':lead.status==='Encerrado'?'var(--red)':'var(--tx2)';
+  const hrH=parseInt((lead.hora||'').split(':')[0]);
+  const isHuman=(()=>{if(isNaN(hrH))return false;const _d=new Date((lead.data||'')+'T12:00:00');const _w=_d.getDay();if(_w===0)return false;if(_w===6)return hrH>=8&&hrH<14;return hrH>=8&&hrH<19;})();
+  const isIG = lead.canal==='Instagram';
+  document.getElementById('lc-meta').innerHTML=`
+    <span class="ptag ${isIG?'ig':'wa'}">${lead.canal||'WhatsApp'}</span>
+    <span style="font-size:11px;font-weight:700;padding:2px 9px;border-radius:4px;background:${lead.status==='Transferido'?'rgba(212,175,55,.12)':lead.status==='Encerrado'?'var(--red-bg)':'rgba(30,80,200,.12)'};color:${stCol}">${lead.status}</span>
+    <span style="font-size:11px;padding:2px 9px;border-radius:4px;background:${isHuman?'var(--grn-bg)':'rgba(212,175,55,.08)'};color:${isHuman?'var(--grn-l)':'var(--ac)'};font-weight:600">${isHuman?'Horário humano':'Fora do horário'}</span>
+  `;
+  document.getElementById('lc-body').innerHTML=`
+    <!-- SCORE -->
+    <div class="lcard-section">
+      <div class="lcard-section-title">Score & Temperatura</div>
+      <div class="lcard-score-wrap">
+        <div class="lcard-score-num" style="color:${scCol}">${sc}</div>
+        <div style="flex:1">
+          <div class="lcard-score-bar"><div class="lcard-score-fill" style="width:${sc}%;background:${scCol}"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--tx3);margin-top:3px"><span>0</span><span>50</span><span>100</span></div>
+        </div>
+      </div>
+      <div class="lcard-row"><div class="lcard-key">Temperatura</div><div class="lcard-val" style="color:${tempCol};font-weight:700">${lead.temperatura}</div></div>
+      <div class="lcard-row"><div class="lcard-key">Sentimento</div><div class="lcard-val" style="color:${sentCol}">${lead.sentimento}</div></div>
+    </div>
+    <!-- IDENTIFICAÇÃO -->
+    <div class="lcard-section">
+      <div class="lcard-section-title">Identificação</div>
+      <div class="lcard-row"><div class="lcard-key">Nome capturado</div><div class="lcard-val">${lead.nome}</div></div>
+      <div class="lcard-row"><div class="lcard-key">Telefone</div><div class="lcard-val" style="font-family:'DM Mono',monospace;font-size:12px">${lead.telefone||'<span style="color:var(--tx3);font-style:italic">Não informado</span>'}</div></div>
+      <div class="lcard-row"><div class="lcard-key">Canal</div><div class="lcard-val">${lead.canal||'WhatsApp'}</div></div>
+      <div class="lcard-row"><div class="lcard-key">Data</div><div class="lcard-val" style="font-family:'DM Mono',monospace;font-size:12px">${lead.data} · ${lead.hora}</div></div>
+    </div>
+    <!-- 7 PERGUNTAS -->
+    <div class="lcard-section">
+      <div class="lcard-section-title">Qualificação — 7 Perguntas do Rui</div>
+      ${lead.perguntas.map(p=>`
+        <div class="lcard-q ${p.resposta?'answered':'skipped'}">
+          <div class="lcard-q-label">${p.num} · ${p.tema}</div>
+          <div class="lcard-q-pergunta">"${p.pergunta}"</div>
+          <div class="lcard-q-resposta ${p.resposta?'':'empty'}">${p.resposta||'Não respondeu esta pergunta'}</div>
+          ${p.detalhe?`<div style="font-size:11px;color:var(--ac);margin-top:4px;padding-top:4px;border-top:1px solid var(--bdr)">↳ Co-decisor: ${p.detalhe}</div>`:''}
+        </div>
+      `).join('')}
+    </div>
+  `;
+  // Chat simulado
+  const isIG2 = lead.canal === 'Instagram';
+  const senderIdChat = lead.telefone ? '55' + lead.telefone.replace(/[^0-9]/g,'') : lead.nome.replace(/[^a-zA-Z0-9]/g,'.').toLowerCase();
+  const chatHistory = buildSimulatedChat(lead);
+  const chatColor = isIG2 ? '#C837AB' : '#25D366';
+  const chatBg = isIG2 ? 'rgba(200,55,171,0.08)' : 'rgba(37,211,102,0.08)';
+  const chatLabel = isIG2 ? 'Instagram DM' : 'WhatsApp';
+  const chatIcon = isIG2
+    ? `<svg width="16" height="16" viewBox="0 0 48 48" style="vertical-align:middle;margin-right:6px"><defs><radialGradient id="igC" cx="19" cy="42" r="45" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#fd5"/><stop offset=".33" stop-color="#ff543f"/><stop offset=".5" stop-color="#e64771"/><stop offset=".84" stop-color="#c837ab"/></radialGradient></defs><path fill="url(#igC)" d="M34 42H14c-4.4 0-8-3.6-8-8V14c0-4.4 3.6-8 8-8h20c4.4 0 8 3.6 8 8v20c0 4.4-3.6 8-8 8z"/><path fill="#fff" d="M24 31c-3.9 0-7-3.1-7-7s3.1-7 7-7 7 3.1 7 7-3.1 7-7 7zm0-12c-2.8 0-5 2.2-5 5s2.2 5 5 5 5-2.2 5-5-2.2-5-5-5zm6.5-3.5c0 .8-.7 1.5-1.5 1.5s-1.5-.7-1.5-1.5.7-1.5 1.5-1.5 1.5.7 1.5 1.5z"/></svg>`
+    : `<svg width="16" height="16" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:6px" fill="${chatColor}"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.116 1.527 5.847L.057 23.882a.5.5 0 0 0 .612.612l6.035-1.47A11.942 11.942 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.65-.523-5.15-1.43l-.369-.218-3.827.932.933-3.827-.22-.371A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>`;
+
+  const chatHtml = `
+    <div class="lcard-section" style="padding:0">
+      <div style="padding:14px 18px 10px;display:flex;align-items:center;border-bottom:1px solid var(--bdr)">
+        ${chatIcon}
+        <span style="font-size:12px;font-weight:700;color:${chatColor}">${chatLabel}</span>
+        <span style="margin-left:auto;font-size:11px;color:var(--tx3)">Conversa com o Rui</span>
+      </div>
+      <div id="lc-chat-messages" style="padding:14px 18px;display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto;background:${chatBg}">
+        ${chatHistory.map(msg=>`
+          <div style="display:flex;flex-direction:column;align-items:${msg.from!=='lead'?'flex-end':'flex-start'};gap:2px">
+            <div style="font-size:10px;color:var(--tx3);padding:0 4px">${msg.from==='rui'?'Rui':msg.from==='vendedor'?'Você':lead.nome.split(' ')[0]} · ${msg.hora}</div>
+            <div style="max-width:80%;padding:9px 13px;border-radius:${msg.from!=='lead'?'14px 14px 4px 14px':'14px 14px 14px 4px'};background:${msg.from!=='lead'?chatColor:'var(--s2)'};color:${msg.from!=='lead'?'#fff':'var(--tx1)'};font-size:13px;line-height:1.45">${msg.texto}</div>
+          </div>
+        `).join('')}
+      </div>
+      <div style="padding:12px 18px;border-top:1px solid var(--bdr);display:flex;gap:8px;align-items:flex-end">
+        <textarea id="lc-chat-input" placeholder="Digite sua mensagem..." style="flex:1;background:var(--s2);border:1px solid var(--bdr);border-radius:8px;color:var(--tx1);font-size:13px;padding:9px 12px;resize:none;height:40px;font-family:inherit;outline:none;transition:border .15s" rows="1" oninput="this.style.height='40px';this.style.height=Math.min(this.scrollHeight,120)+'px'" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMsg('${lead.canal||'WhatsApp'}','${senderIdChat}',${isIG2})}"></textarea>
+        <button onclick="sendChatMsg('${lead.canal||'WhatsApp'}','${senderIdChat}',${isIG2})" style="background:${chatColor};border:none;border-radius:8px;width:40px;height:40px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        </button>
+      </div>
+    </div>
+  `;
+  document.getElementById('lc-body').innerHTML += chatHtml;
+  // Scroll ao fim do chat
+  setTimeout(()=>{const c=document.getElementById('lc-chat-messages');if(c)c.scrollTop=c.scrollHeight;},50);
+
+  document.getElementById('lcardOverlay').classList.add('show');
+  document.getElementById('leadCardFull').classList.add('show');
+}
+
+function buildSimulatedChat(lead){
+  const nome = lead.nome.split(' ')[0];
+  const modelo = lead.modelo || 'um veículo';
+  const pagamento = lead.pagamento || 'não informado';
+  const prazo = lead.prazo || 'não definido';
+  const sc = lead.score;
+  const isIG = lead.canal === 'Instagram';
+  const prefix = isIG ? '📩 ' : '';
+
+  const chatSets = [
+    [
+      {from:'lead',hora:'09:12',texto:`${prefix}Oi, tudo bem? Queria saber sobre o ${modelo}`},
+      {from:'rui',hora:'09:13',texto:`Olá, ${nome}. Temos sim o ${modelo} disponível. O senhor já tem alguma especificação em mente — ano, cor ou versão?`},
+      {from:'lead',hora:'09:15',texto:'Estou pensando em financiar. Tem condição boa?'},
+      {from:'rui',hora:'09:15',texto:'Trabalhamos com as principais financeiras. Me diz o valor que o senhor tem em mente para entrada e eu verifico as melhores opções.'},
+      {from:'lead',hora:'09:18',texto:prazo},
+      {from:'rui',hora:'09:19',texto:'Entendido. Vou conectar o senhor agora com nosso consultor, ele já tem todo o contexto da conversa.'},
+    ],
+    [
+      {from:'lead',hora:'14:03',texto:`${prefix}Boa tarde! Vi vocês no Instagram e queria saber do ${modelo}`},
+      {from:'rui',hora:'14:04',texto:`Boa tarde, ${nome}. O ${modelo} está disponível no nosso estoque. O senhor busca para uso próprio ou é um presente?`},
+      {from:'lead',hora:'14:06',texto:lead.intencao||'Uso próprio'},
+      {from:'rui',hora:'14:07',texto:'Perfeito. E o senhor tem algum veículo hoje que pensaria em incluir na negociação?'},
+      {from:'lead',hora:'14:10',texto:lead.veicAtual||'Não tenho veículo no momento'},
+      {from:'rui',hora:'14:11',texto:`Certo. Forma de pagamento preferida?`},
+      {from:'lead',hora:'14:12',texto:pagamento},
+      {from:'rui',hora:'14:13',texto:'Vou te conectar com nosso especialista. Ele entra em contato em instantes com as melhores opções.'},
+    ],
+    [
+      {from:'lead',hora:'21:47',texto:`${prefix}Olá, tenho interesse no ${modelo}. Vocês têm?`},
+      {from:'rui',hora:'21:48',texto:`Temos sim. Quando o senhor estaria disponível para conhecer pessoalmente, ${nome}?`},
+      {from:'lead',hora:'21:49',texto:prazo},
+      {from:'rui',hora:'21:50',texto:'Anotado. Nosso consultor vai confirmar com o senhor no próximo dia útil.'},
+    ],
+  ];
+  return chatSets[lead.score % chatSets.length];
+}
+
+function sendChatMsg(canal, senderId, isIG){
+  const input = document.getElementById('lc-chat-input');
+  const container = document.getElementById('lc-chat-messages');
+  const texto = (input.value || '').trim();
+  if(!texto || !container) return;
+  const hora = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  const chatColor = isIG ? '#C837AB' : '#25D366';
+  const msgEl = document.createElement('div');
+  msgEl.style.cssText = 'display:flex;flex-direction:column;align-items:flex-end;gap:2px';
+  msgEl.innerHTML = `
+    <div style="font-size:10px;color:var(--tx3);padding:0 4px">Você · ${hora}</div>
+    <div style="max-width:80%;padding:9px 13px;border-radius:14px 14px 4px 14px;background:${chatColor};color:#fff;font-size:13px;line-height:1.45">${texto.replace(/</g,'&lt;')}</div>
+  `;
+  container.appendChild(msgEl);
+  container.scrollTop = container.scrollHeight;
+  input.value = '';
+  input.style.height = '40px';
+  fetch(N8N_SEND_REPLY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({canal:canal.toLowerCase(),senderId,mensagem:texto})}).catch(e=>console.warn('[chat]',e));
+}
+
+function closeLeadCard(){
+  document.getElementById('lcardOverlay').classList.remove('show');
+  document.getElementById('leadCardFull').classList.remove('show');
+}
+
+// ============================================================
+// POPUP SIMPLES (legado — mantido para compatibilidade com tabela)
+// ============================================================
+function openPopup(lead){
+  document.getElementById('pName').textContent = lead.nome;
+  const canal = document.getElementById('pCanal');
+  canal.textContent = 'WhatsApp';
+  canal.className='popup-canal wa';
+  const sc = lead.score;
+  const col = sc>=81?'#EF4444':sc>=61?'#F97316':sc>=41?'#EAB308':sc>=21?'#22c55e':'#38BDF8';
+  document.getElementById('pRows').innerHTML=`
+    <div class="popup-row"><div class="popup-key">Score Rui</div><div class="popup-val" style="color:${col}">${sc}/100</div></div>
+    <div style="padding-left:110px;margin-top:4px;margin-bottom:10px"><div class="popup-score-bar"><div class="popup-score-fill" style="width:${sc}%;background:${col}"></div></div></div>
+    <div class="popup-row"><div class="popup-key">Temperatura</div><div class="popup-val" style="color:${tempColor(lead.temperatura)}">${lead.temperatura}</div></div>
+    <div class="popup-row"><div class="popup-key">Modelo</div><div class="popup-val">${lead.modelo||'—'}</div></div>
+    <div class="popup-row"><div class="popup-key">Pagamento</div><div class="popup-val">${lead.pagamento||'—'}</div></div>
+    <div class="popup-row"><div class="popup-key">Sentimento</div><div class="popup-val">${lead.sentimento||'—'}</div></div>
+    <div class="popup-row"><div class="popup-key">Status</div><div class="popup-val">${lead.status||'—'}</div></div>
+    <div class="popup-row"><div class="popup-key">Data/Hora</div><div class="popup-val" style="color:var(--tx3);font-size:12px;font-family:'DM Mono',monospace">${lead.data||'—'} · ${lead.hora||'—'}</div></div>
+  `;
+  document.getElementById('popupOverlay').classList.add('show');
+  document.getElementById('leadPopup').classList.add('show');
+}
+
+function closePopup(){
+  document.getElementById('popupOverlay').classList.remove('show');
+  document.getElementById('leadPopup').classList.remove('show');
+}
+
+// ============================================================
+// RELATÓRIO
+// ============================================================
+function openReportModal(){
+  const today = new Date();
+  const fmt = d => d.toISOString().split('T')[0];
+  const weekAgo = new Date(today); weekAgo.setDate(today.getDate()-7);
+  document.getElementById('rdFrom').value = fmt(weekAgo);
+  document.getElementById('rdTo').value = fmt(today);
+  document.getElementById('reportModal').classList.add('show');
+}
+
+function closeReportModal(){
+  document.getElementById('reportModal').classList.remove('show');
+}
+
+function generateReport(){
+  const from = document.getElementById('rdFrom').value;
+  const to = document.getElementById('rdTo').value;
+  if(!from || !to){ alert('Selecione as duas datas.'); return; }
+  closeReportModal();
+
+  const allLeads = NETWORK_LEADS_MES.concat(NETWORK_LEADS_SEMANA.filter(l=>!NETWORK_LEADS_MES.find(m=>m.nome===l.nome)));
+  const filtered = allLeads.filter(l=> l.data >= from && l.data <= to);
+  const reportLeads = filtered.length > 0 ? filtered : NETWORK_LEADS_SEMANA;
+
+  document.getElementById('reportViewTitle').textContent = `Leads · ${from} até ${to} · ${reportLeads.length} registros`;
+
+  const isHT=(hora,dateStr)=>{const h=parseInt((hora||'').split(':')[0]);if(isNaN(h))return false;const _d=new Date((dateStr||'')+'T12:00:00');const _w=_d.getDay();if(_w===0)return false;if(_w===6)return h>=8&&h<14;return h>=8&&h<19;};
+  const nd=(v)=>v?v:'—';
+
+  // Atualiza cabeçalho da tabela
+  const thead=document.querySelector('#reportTable thead tr');
+  thead.innerHTML=`<th>Lead</th><th>Canal</th><th>Telefone</th><th>Data</th><th>Hora</th><th>Score</th><th>Temperatura</th><th>Sentimento</th><th>Status</th><th>Cobertura</th><th>P1 · Intenção</th><th>P2 · Prazo</th><th>P3 · Modelo</th><th>P4 · Pagamento</th><th>P5 · Veículo atual</th><th>P6 · Decisão</th><th>Co-decisor</th><th>P7 · Localização</th>`;
+
+  const tbody=document.getElementById('reportBody');
+  tbody.innerHTML=reportLeads.map(l=>{
+    const sc=l.score;
+    const scCol=scoreColor(sc);
+    const human=isHT(l.hora,l.data);
+    const pm={};(l.perguntas||[]).forEach(p=>{pm[p.num]=p.resposta;});
+    return `<tr>
+      <td>${l.nome}</td>
+      <td><span class="ptag wa" style="display:inline-block">WhatsApp</span></td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--tx3)">${nd(l.telefone)}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px">${l.data}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px">${l.hora}</td>
+      <td style="color:${scCol};font-weight:700;font-family:'DM Mono',monospace">${sc}/100</td>
+      <td style="color:${tempColor(l.temperatura)};font-weight:600">${l.temperatura}</td>
+      <td style="color:${l.sentimento==='Positivo'?'var(--grn-l)':l.sentimento==='Frustrado'?'var(--red)':'var(--tx2)'}">${l.sentimento}</td>
+      <td style="color:${l.status==='Transferido'?'var(--ac)':l.status==='Encerrado'?'var(--red)':'var(--tx2)'}">${l.status}</td>
+      <td style="font-size:11px;font-weight:600;color:${human?'var(--grn-l)':'var(--ac)'}">${human?'Horário humano':'Fora do horário'}</td>
+      <td style="font-size:12px">${nd(pm['P1'])}</td>
+      <td style="font-size:12px">${nd(pm['P2'])}</td>
+      <td style="font-size:12px">${nd(pm['P3'])}</td>
+      <td style="font-size:12px">${nd(pm['P4'])}</td>
+      <td style="font-size:12px">${nd(pm['P5'])}</td>
+      <td style="font-size:12px">${nd(pm['P6'])}</td>
+      <td style="font-size:11px;color:var(--tx3)">${nd(l.codDetalhe)}</td>
+      <td style="font-size:12px">${nd(pm['P7'])}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('reportView').classList.add('show');
+}
+
+function closeReportView(){
+  document.getElementById('reportView').classList.remove('show');
+}
+
+// ============================================================
+// ANIMAÇÃO DE CONTADORES
+// ============================================================
+function animateCounters(){
+  document.querySelectorAll('[data-count]').forEach(el=>{
+    const target=parseInt(el.getAttribute('data-count'));
+    let current=0;const step=Math.ceil(target/28);
+    const timer=setInterval(()=>{current=Math.min(current+step,target);el.textContent=current;if(current>=target)clearInterval(timer);},35);
+  });
+}
+
+// ============================================================
+// REFRESH
+// ============================================================
+function refresh(){
+  document.getElementById('ld').classList.add('show');
+  setTimeout(()=>{
+    document.getElementById('tsVal').textContent=new Date().toLocaleString('pt-BR');
+    document.getElementById('ld').classList.remove('show');
+    const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);
+  },900);
+}
+
+// ============================================================
+// SEMANA ATUAL (sidebar footer)
+// ============================================================
+function setWeekLabel(){
+  const now = new Date();
+  const day = now.getDay(); // 0=dom
+  const mon = new Date(now); mon.setDate(now.getDate() - ((day+6)%7));
+  const sun = new Date(mon); sun.setDate(mon.getDate()+6);
+  const fmt = d => d.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'});
+  document.getElementById('sbWeekRange').textContent = `${fmt(mon)} – ${fmt(sun)}`;
+}
+
+// ============================================================
+// N8N CONNECTOR (real data when agent is live)
+// ============================================================
+const N8N_ENDPOINT = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/dashboard-data';
+const N8N_SEND_REPLY = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/jbs-send-reply';
+const N8N_CHAT_HISTORY = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/jbs-chat-history';
+const REFRESH_INTERVAL_MS = 30000;
+let cachedLeads = [];
+
+async function fetchDashboardData(){
+  try{
+    const res=await fetch(N8N_ENDPOINT,{method:'GET',headers:{'Content-Type':'application/json'}});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    return await res.json();
+  }catch(err){
+    // silently fail — dashboard runs on simulated data
+    return null;
+  }
+}
+
+async function atualizarDashboard(){
+  const data = await fetchDashboardData();
+  if(!data) return;
+  const {leads, stats} = data;
+  if(leads){ cachedLeads=leads; }
+  const set=(sel,v)=>{const el=document.querySelector(sel);if(el)el.textContent=v;};
+  set('[data-kpi="total"]', stats.total??'—');
+  set('[data-kpi="transferidos"]', stats.transferidos??'—');
+  set('[data-kpi="scoreMedio"]', stats.scoreMedio??'—');
+  const s=stats.sentimentos||{};
+  const tot=(s.positivo||0)+(s.neutro||0)+(s.frustrado||0);
+  const pct=v=>tot?Math.round((v||0)/tot*100)+'%':'0%';
+  set('[data-sent="positivo"]',pct(s.positivo));
+  set('[data-sent="neutro"]',pct(s.neutro));
+  set('[data-sent="frustrado"]',pct(s.frustrado));
+  const dist=stats.distribuicaoScore||{};
+  ['frios','mornos','engajados','quentes','premium'].forEach(k=>set(`[data-score="${k}"]`,dist[k]??0));
+  document.getElementById('tsVal').textContent=new Date().toLocaleString('pt-BR');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded',()=>{
+  setWeekLabel();
+  document.getElementById('tsVal').textContent=new Date().toLocaleString('pt-BR');
+  buildDiagnostico();
+  buildTable();
+  buildConv('convBars');
+  animateCounters();
+  atualizarDashboard();
+  setInterval(atualizarDashboard, REFRESH_INTERVAL_MS);
+});
+</script>
+<div style="position:fixed;bottom:0;left:0;right:0;background:rgba(8,8,8,0.96);border-top:1px solid rgba(255,255,255,0.07);padding:5px 24px;font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:.07em;text-align:center;z-index:9999;pointer-events:none;">&#9888; Todos os dados apresentados s&#227;o fict&#237;cios e criados exclusivamente para fins de demonstra&#231;&#227;o</div>
+</body>
+</html>
