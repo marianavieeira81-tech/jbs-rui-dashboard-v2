@@ -375,30 +375,6 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   <div style="margin-top:4px" id="pRows"></div>
 </div>
 
-<!-- modal fila de espera -->
-<div class="modal-bg" id="filaModal">
-  <div class="modal-box">
-    <div class="modal-title">Adicionar à Fila de Espera</div>
-    <div class="modal-sub">Registre o cliente que aceitou participar da fila após o follow-up do Rui.</div>
-    <div class="modal-row">
-      <div style="flex:1"><div class="modal-label">Nome do cliente *</div><input class="modal-input" type="text" id="filaNome" placeholder="Ex: Roberto Alves"/></div>
-    </div>
-    <div class="modal-row">
-      <div style="flex:1"><div class="modal-label">Telefone</div><input class="modal-input" type="tel" id="filaTelefone" placeholder="(81) 99000-0000"/></div>
-    </div>
-    <div class="modal-row">
-      <div style="flex:1"><div class="modal-label">Modelo de interesse</div><input class="modal-input" type="text" id="filaModelo" placeholder="Ex: Honda CB 500F"/></div>
-    </div>
-    <div class="modal-row">
-      <div style="flex:1"><div class="modal-label">Observações (opcional)</div><input class="modal-input" type="text" id="filaNotas" placeholder="Ex: Prefere cor preta"/></div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeFilaModal()">Cancelar</button>
-      <button class="btn-generate" onclick="addToFila()">Adicionar à Fila →</button>
-    </div>
-  </div>
-</div>
-
 <!-- modal relatório -->
 <div class="modal-bg" id="reportModal">
   <div class="modal-box">
@@ -525,12 +501,13 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   <div class="topbar">
     <div><div class="eye">Principal</div><h1>Fila de Espera</h1></div>
     <div class="topbar-r">
+      <div class="ts"><span>Atualizado automaticamente</span><strong id="filaTs">—</strong></div>
       <span class="fila-badge" id="filaBadge">0 na fila</span>
-      <button class="btn-add-fila" onclick="openFilaModal()">＋ Adicionar cliente</button>
+      <button class="btn-ref" onclick="fetchFilaData()">↺ Atualizar</button>
     </div>
   </div>
   <div class="fila-info-box">
-    Clientes que, após o follow-up do Rui, aceitaram participar da fila de espera. A ordem é <strong style="color:var(--ac)">cronológica</strong> — quem espera há mais tempo aparece no topo da lista. Novos clientes sempre entram no final da fila.
+    Alimentada automaticamente pelo Rui — quando um cliente aceita participar da fila após o follow-up, o agente registra e a lista se atualiza aqui. A ordem é <strong style="color:var(--ac)">cronológica</strong>: quem espera há mais tempo aparece no topo. Atualização automática a cada 30 segundos.
   </div>
   <div id="filaList"></div>
 </div>
@@ -878,7 +855,7 @@ function go(id){
   if(id==='plataformas') updateOrbCount();
   if(id==='cobertura') buildCobertura();
   if(id==='funil') buildFunil();
-  if(id==='filaespera') buildFilaEspera();
+  if(id==='filaespera') fetchFilaData();
 }
 
 function updateOrbCount(){
@@ -1556,34 +1533,23 @@ async function atualizarDashboard(){
 }
 
 // ============================================================
-// FILA DE ESPERA
+// FILA DE ESPERA — alimentada automaticamente via N8N/Rui
 // ============================================================
-const FILA_KEY = 'jbs_fila_espera_v2';
+const N8N_FILA_ENDPOINT = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/jbs-fila-espera';
+const FILA_CACHE_KEY = 'jbs_fila_espera_cache';
 
+// Dados de demonstração — usados enquanto o webhook não estiver ativo
 const DEMO_FILA = [
-  {id:'f1', nome:'Renata Queiroz',  telefone:'(81) 99100-2233', modelo:'Honda CB 500F',  notas:'Aguardando entrada de nova moto',  entradaISO:'2026-05-27T10:30:00'},
-  {id:'f2', nome:'Alex Monteiro',   telefone:'(81) 98200-4455', modelo:'Yamaha MT-07',    notas:'Prefere cor preta',                entradaISO:'2026-05-29T14:15:00'},
-  {id:'f3', nome:'Camila Borges',   telefone:'(81) 97300-6677', modelo:'Honda XRE 300',   notas:'',                                 entradaISO:'2026-05-31T09:45:00'},
+  {nome:'Renata Queiroz',  telefone:'(81) 99100-2233', modelo:'Honda CB 500F',  notas:'Aguardando entrada de nova moto',  entradaISO:'2026-05-27T10:30:00'},
+  {nome:'Alex Monteiro',   telefone:'(81) 98200-4455', modelo:'Yamaha MT-07',    notas:'Prefere cor preta',                entradaISO:'2026-05-29T14:15:00'},
+  {nome:'Camila Borges',   telefone:'(81) 97300-6677', modelo:'Honda XRE 300',   notas:'',                                 entradaISO:'2026-05-31T09:45:00'},
 ];
 
-function getFilaData(){
-  const raw = localStorage.getItem(FILA_KEY);
-  if(raw){ try{ return JSON.parse(raw); }catch(e){} }
-  localStorage.setItem(FILA_KEY, JSON.stringify(DEMO_FILA));
-  return JSON.parse(JSON.stringify(DEMO_FILA));
-}
-
-function saveFilaData(data){
-  localStorage.setItem(FILA_KEY, JSON.stringify(data));
-}
-
 function tempoEspera(isoStr){
-  const entrada = new Date(isoStr);
-  const agora = new Date();
-  const diff = Math.max(0, agora - entrada);
-  const diffMin = Math.floor(diff / 60000);
-  const diffH = Math.floor(diff / 3600000);
+  const diff = Math.max(0, new Date() - new Date(isoStr));
   const diffD = Math.floor(diff / 86400000);
+  const diffH = Math.floor(diff / 3600000);
+  const diffMin = Math.floor(diff / 60000);
   if(diffD >= 1) return `há ${diffD} dia${diffD>1?'s':''}`;
   if(diffH >= 1) return `há ${diffH}h`;
   if(diffMin >= 1) return `há ${diffMin}min`;
@@ -1596,7 +1562,11 @@ function fmtDataHoraFila(isoStr){
 }
 
 function buildFilaEspera(){
-  const fila = getFilaData().sort((a,b)=>new Date(a.entradaISO)-new Date(b.entradaISO));
+  const raw = localStorage.getItem(FILA_CACHE_KEY);
+  const fila = (raw ? JSON.parse(raw) : DEMO_FILA)
+    .slice()
+    .sort((a,b) => new Date(a.entradaISO) - new Date(b.entradaISO));
+
   const wrap = document.getElementById('filaList');
   if(!wrap) return;
 
@@ -1604,7 +1574,11 @@ function buildFilaEspera(){
   if(badge) badge.textContent = `${fila.length} na fila`;
 
   if(fila.length === 0){
-    wrap.innerHTML = `<div class="fila-empty"><div class="fila-empty-ico">⏳</div><div>Nenhum cliente na fila de espera ainda.</div><div style="margin-top:8px;font-size:12px;color:var(--tx3)">Clique em "Adicionar cliente" para registrar o primeiro.</div></div>`;
+    wrap.innerHTML = `<div class="fila-empty">
+      <div class="fila-empty-ico">⏳</div>
+      <div>Nenhum cliente na fila de espera no momento.</div>
+      <div style="margin-top:8px;font-size:12px;color:var(--tx3)">O Rui registra automaticamente quando um cliente aceita entrar na fila.</div>
+    </div>`;
     return;
   }
 
@@ -1621,47 +1595,27 @@ function buildFilaEspera(){
         <div><span class="fila-time-badge">${tempoEspera(c.entradaISO)}</span></div>
         <div class="fila-date">${fmtDataHoraFila(c.entradaISO)}</div>
         <div class="fila-phone">${c.telefone||'—'}</div>
-        <button class="btn-remove-fila" onclick="removeFromFila('${c.id}')">✕ Remover da fila</button>
       </div>
     </div>
   `).join('');
 }
 
-function openFilaModal(){
-  ['filaNome','filaTelefone','filaModelo','filaNotas'].forEach(id=>{document.getElementById(id).value='';});
-  document.getElementById('filaModal').classList.add('show');
-  setTimeout(()=>document.getElementById('filaNome').focus(), 100);
-}
-
-function closeFilaModal(){
-  document.getElementById('filaModal').classList.remove('show');
-}
-
-function addToFila(){
-  const nome = document.getElementById('filaNome').value.trim();
-  if(!nome){ alert('Informe o nome do cliente.'); return; }
-  const fila = getFilaData();
-  fila.push({
-    id: 'f' + Date.now(),
-    nome,
-    telefone: document.getElementById('filaTelefone').value.trim(),
-    modelo:   document.getElementById('filaModelo').value.trim(),
-    notas:    document.getElementById('filaNotas').value.trim(),
-    entradaISO: new Date().toISOString()
-  });
-  saveFilaData(fila);
-  closeFilaModal();
-  buildFilaEspera();
-  const t = document.getElementById('toast');
-  t.querySelector('span').textContent = `${nome} adicionado à fila`;
-  t.classList.add('show');
-  setTimeout(()=>{ t.querySelector('span').textContent='Dashboard atualizado'; t.classList.remove('show'); }, 2600);
-}
-
-function removeFromFila(id){
-  if(!confirm('Remover este cliente da fila de espera?')) return;
-  saveFilaData(getFilaData().filter(c=>c.id!==id));
-  buildFilaEspera();
+async function fetchFilaData(){
+  try{
+    const res = await fetch(N8N_FILA_ENDPOINT, {method:'GET', headers:{'Content-Type':'application/json'}});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data = await res.json();
+    // N8N deve retornar array de objetos: [{nome, telefone, modelo, notas, entradaISO}, ...]
+    if(Array.isArray(data) && data.length > 0){
+      localStorage.setItem(FILA_CACHE_KEY, JSON.stringify(data));
+    }
+  }catch(e){
+    // Falha silenciosa — continua exibindo cache ou dados de demonstração
+  }finally{
+    buildFilaEspera();
+    const el = document.getElementById('filaTs');
+    if(el) el.textContent = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  }
 }
 
 // ============================================================
@@ -1676,6 +1630,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   animateCounters();
   atualizarDashboard();
   setInterval(atualizarDashboard, REFRESH_INTERVAL_MS);
+  setInterval(()=>{ if(document.getElementById('p-filaespera').style.display!=='none') fetchFilaData(); }, REFRESH_INTERVAL_MS);
 });
 </script>
 <div style="position:fixed;bottom:0;left:0;right:0;background:rgba(8,8,8,0.96);border-top:1px solid rgba(255,255,255,0.07);padding:5px 24px;font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:.07em;text-align:center;z-index:9999;pointer-events:none;">&#9888; Todos os dados apresentados s&#227;o fict&#237;cios e criados exclusivamente para fins de demonstra&#231;&#227;o</div>
