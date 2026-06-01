@@ -348,6 +348,30 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 .fila-phone{font-size:12px;color:var(--tx2);font-family:'DM Mono',monospace;}
 .btn-remove-fila{background:none;border:1px solid rgba(225,29,72,.2);color:var(--red);padding:5px 12px;border-radius:var(--rsm);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;margin-top:8px;}
 .btn-remove-fila:hover{background:var(--red-bg);border-color:rgba(225,29,72,.4);}
+
+/* MODO DE DADOS (DEMO / PRODUÇÃO) */
+.mode-badge{margin-top:10px;display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;}
+.mode-badge.demo{background:rgba(212,175,55,.08);color:#8A7020;border:1px solid rgba(212,175,55,.15);}
+.mode-badge.prod{background:var(--grn-bg);color:var(--grn-l);border:1px solid rgba(0,160,101,.2);}
+.mode-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.mode-badge.demo .mode-dot{background:#8A7020;}
+.mode-badge.prod .mode-dot{background:var(--grn-l);animation:blink 2s ease-in-out infinite;}
+
+/* FILA — PERFIL EXPANSÍVEL */
+.fila-perfil-toggle{background:none;border:1px solid var(--bdr);color:var(--tx3);padding:4px 11px;border-radius:var(--rsm);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;margin-top:8px;}
+.fila-perfil-toggle:hover{border-color:rgba(212,175,55,.25);color:var(--ac);}
+.fila-perfil-body{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--bdr);}
+.fila-perfil-body.open{display:block;}
+.fila-perf-q{background:var(--s2);border-radius:6px;padding:7px 10px;margin-bottom:5px;border-left:2px solid var(--bdr);}
+.fila-perf-q.answered{border-left-color:var(--grn-l);}
+.fila-perf-q-label{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);font-weight:700;margin-bottom:2px;}
+.fila-perf-q-val{font-size:12px;color:var(--tx);font-weight:500;}
+.fila-score-line{display:flex;align-items:center;gap:6px;margin-top:3px;}
+.fila-score-num{font-size:12px;font-weight:700;}
+.fila-temp-tag{font-size:10px;padding:1px 8px;border-radius:10px;font-weight:600;}
+
+/* FUNIL — CHIP COM TELEFONE */
+.lchip-phone{font-size:9px;color:var(--tx3);font-family:'DM Mono',monospace;margin-top:2px;}
 </style>
 </head>
 <body>
@@ -417,6 +441,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     <div class="sb-eye">DEMO</div>
     <div class="sb-brand">RUI <span>AI</span></div>
     <div class="sb-pill"><span class="dot"></span><span>Agente ativo · 24h</span></div>
+    <div class="mode-badge demo" id="modeBadge"><span class="mode-dot"></span><span id="modeLabel">Dados fictícios</span></div>
   </div>
   <div class="sb-scroll">
     <div class="sb-group">
@@ -1117,17 +1142,28 @@ function cobBuildRelatorio(){
 // TABLE
 // ============================================================
 function buildTable(){
-  const tb = document.getElementById('ltbody');
+  const tb=document.getElementById('ltbody');
   if(!tb) return;
-  const stM = {'Transferido':'st-t','Qualificado':'st-q','Em andamento':'st-a','Encerrado':'st-i'};
-  const scC = s => s>=70?'sh':s>=45?'sm':'sl';
-  tb.innerHTML = LEADS.map(l=>`<tr>
-    <td><strong>${l.n}</strong></td>
-    <td><span class="ptag wa">WhatsApp</span></td>
-    <td><span class="sp ${scC(l.sc)}">${l.sc}/100</span></td>
-    <td>${l.md}</td><td>${l.py}</td>
-    <td><span class="stpill ${stM[l.ss]||'st-i'}">${l.ss}</span></td>
-  </tr>`).join('');
+  const stM={'Transferido':'st-t','Qualificado':'st-q','Em andamento':'st-a','Encerrado':'st-i'};
+  const scC=s=>s>=70?'sh':s>=45?'sm':'sl';
+  // Em produção usa ACTIVE_LEADS; em demo usa o array LEADS (formato curto)
+  if(DATA_MODE==='production'&&ACTIVE_LEADS.length>0){
+    tb.innerHTML=ACTIVE_LEADS.slice(0,15).map(l=>`<tr>
+      <td><strong>${l.nome}</strong></td>
+      <td><span class="ptag wa">WhatsApp</span></td>
+      <td><span class="sp ${scC(l.score)}">${l.score}/100</span></td>
+      <td>${l.modelo||'—'}</td><td>${l.pagamento||'—'}</td>
+      <td><span class="stpill ${stM[l.status]||'st-i'}">${l.status}</span></td>
+    </tr>`).join('');
+  } else {
+    tb.innerHTML=LEADS.map(l=>`<tr>
+      <td><strong>${l.n}</strong></td>
+      <td><span class="ptag wa">WhatsApp</span></td>
+      <td><span class="sp ${scC(l.sc)}">${l.sc}/100</span></td>
+      <td>${l.md}</td><td>${l.py}</td>
+      <td><span class="stpill ${stM[l.ss]||'st-i'}">${l.ss}</span></td>
+    </tr>`).join('');
+  }
 }
 
 function buildConv(id){
@@ -1143,6 +1179,12 @@ function buildConv(id){
 // ============================================================
 // FUNIL
 // ============================================================
+function getPhoneForLead(nome){
+  const src=(DATA_MODE==='production'&&ACTIVE_LEADS.length>0)?ACTIVE_LEADS:NETWORK_LEADS_MES;
+  const found=src.find(l=>(l.nome||l.n)===nome);
+  return found?.telefone||null;
+}
+
 function buildFunil(){
   const wrap = document.getElementById('funnelWrap');
   if(!wrap || wrap.children.length > 0) return;
@@ -1166,8 +1208,8 @@ function buildFunil(){
     const dropClass = isPending?'pending':'dropped';
     const dropLabelClass = isPending?'fn-section-pending':'fn-section-dropped';
     const dropIcon = isPending?'⏳':'✗';
-    const advHtml = `<div class="fn-section-label fn-section-advanced"><span>✓</span>${isLast?'Leads quentes confirmados':'Avançaram'} · ${advancedCount}</div><div class="leads-grid">${advanced.map((l,li)=>`<div class="lchip" data-tip="${l.n}"><div class="lav" style="background:${avc(li)}">${ini(l.n)}</div><div><div class="lname">${l.n}</div><span class="ptag wa">WhatsApp</span></div></div>`).join('')}</div>`;
-    const dropHtml = droppedCount>0?`<div class="fn-section-divider"></div><div class="fn-section-label ${dropLabelClass}"><span>${dropIcon}</span>Pararam · ${droppedCount} · ${dropLabels[si]}</div><div class="leads-grid">${dropped.map((l,li)=>`<div class="lchip ${dropClass}"><div class="lav" style="background:${isPending?'#4A3800':'#4A2030'}">${ini(l.n)}</div><div><div class="lname">${l.n}</div><span class="ptag wa">WhatsApp</span></div></div>`).join('')}</div>`:'';
+    const advHtml = `<div class="fn-section-label fn-section-advanced"><span>✓</span>${isLast?'Leads quentes confirmados':'Avançaram'} · ${advancedCount}</div><div class="leads-grid">${advanced.map((l,li)=>{const ph=getPhoneForLead(l.n);return `<div class="lchip" data-tip="${l.n}"><div class="lav" style="background:${avc(li)}">${ini(l.n)}</div><div><div class="lname">${l.n}</div><span class="ptag wa">WhatsApp</span>${ph?`<div class="lchip-phone">${ph}</div>`:''}</div></div>`;}).join('')}</div>`;
+    const dropHtml = droppedCount>0?`<div class="fn-section-divider"></div><div class="fn-section-label ${dropLabelClass}"><span>${dropIcon}</span>Pararam · ${droppedCount} · ${dropLabels[si]}</div><div class="leads-grid">${dropped.map((l,li)=>{const ph=getPhoneForLead(l.n);return `<div class="lchip ${dropClass}"><div class="lav" style="background:${isPending?'#4A3800':'#4A2030'}">${ini(l.n)}</div><div><div class="lname">${l.n}</div><span class="ptag wa">WhatsApp</span>${ph?`<div class="lchip-phone">${ph}</div>`:''}</div></div>`;}).join('')}</div>`:'';
     const el = document.createElement('div');
     el.className='fn-stage';
     el.innerHTML=`<div class="fn-hdr" onclick="toggleFn(${si})"><div class="fn-dot" style="background:${s.c}"></div><div class="fn-name">${s.lbl}</div><div><span class="fn-cnt">${s.n}</span><span class="fn-pct"> leads (${s.p}%)</span></div>${droppedCount>0?`<span style="font-size:11px;font-weight:700;margin-left:auto;margin-right:12px;color:${isPending?'var(--ac)':'var(--red)'};background:${isPending?'rgba(212,175,55,.1)':'var(--red-bg)'};padding:2px 9px;border-radius:12px">${droppedCount} pararam</span>`:''}<div class="fn-arrow" id="fa-${si}">▸</div></div><div class="fn-track"><div class="fn-bar" style="width:${s.p}%;background:${s.c}"></div></div><div class="fn-body" id="fb-${si}">${dropHtml}${advHtml}</div>`;
@@ -1196,11 +1238,6 @@ function drawScoreChart(){
 // PERÍODOS — WhatsApp
 // ============================================================
 let networkPeriod = 'dia';
-
-function getLeadsForPeriod(period){
-  const wa = period==='dia'?NETWORK_LEADS_DIA:period==='semana'?NETWORK_LEADS_SEMANA:NETWORK_LEADS_MES;
-  return {wa};
-}
 
 function setPeriod(p, btn){
   networkPeriod = p;
@@ -1499,123 +1536,241 @@ function setWeekLabel(){
 }
 
 // ============================================================
-// N8N CONNECTOR (real data when agent is live)
+// CONFIGURAÇÃO DE ENDPOINTS — 2 modos: demo e produção
 // ============================================================
-const N8N_ENDPOINT = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/dashboard-data';
-const N8N_SEND_REPLY = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/jbs-send-reply';
-const N8N_CHAT_HISTORY = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/jbs-chat-history';
-const REFRESH_INTERVAL_MS = 30000;
-let cachedLeads = [];
+//
+//  DATA_MODE = 'demo'       → usa dados fictícios embutidos no código (sem HTTP real)
+//  DATA_MODE = 'production' → busca dados reais dos fluxos N8N do Rui
+//
+//  Para ativar produção: altere DATA_MODE para 'production' abaixo.
+//  Os endpoints de produção devem estar configurados no N8N antes.
+//
+const DATA_MODE = 'demo'; // ← ALTERE PARA 'production' QUANDO O N8N ESTIVER PRONTO
 
-async function fetchDashboardData(){
-  try{
-    const res=await fetch(N8N_ENDPOINT,{method:'GET',headers:{'Content-Type':'application/json'}});
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    return await res.json();
-  }catch(err){
-    // silently fail — dashboard runs on simulated data
-    return null;
+const ENDPOINTS = {
+  // Endpoint DEMO — N8N retorna sempre dados fictícios pré-configurados (para testes de interface)
+  demo: {
+    dashboard: 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/jbs-rui-demo',
+    fila:      'https://n8n-n8n.lrdyzi.easypanel.host/webhook/jbs-fila-espera-demo'
+  },
+  // Endpoint PRODUÇÃO — conectado aos fluxos reais do agente Rui
+  // Formato esperado do JSON retornado:
+  // {
+  //   leads: [{ nome, telefone, canal, score, temperatura, status, hora, data,
+  //             modelo, pagamento, prazo, intencao, veicAtual, decisao, localizacao,
+  //             perguntas: [{num, tema, pergunta, resposta}] }],
+  //   filaEspera: [{ nome, telefone, modelo, notas, score, temperatura,
+  //                  entradaISO, perguntas: [{num, tema, resposta}] }],
+  //   stats: { total, transferidos, scoreMedio,
+  //            distribuicaoScore: {frios, mornos, engajados, quentes, premium} }
+  // }
+  production: {
+    dashboard: 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/jbs-rui-dashboard',
+    fila:      'https://n8n-n8n.lrdyzi.easypanel.host/webhook/jbs-fila-espera'
+  }
+};
+
+const N8N_SEND_REPLY    = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/jbs-send-reply';
+const N8N_CHAT_HISTORY  = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/jbs-chat-history';
+const REFRESH_INTERVAL_MS = 30000;
+
+// Dados ativos — populados pelo endpoint ativo (demo ou produção)
+let ACTIVE_LEADS = [];
+
+function applyModeUI(){
+  const badge=document.getElementById('modeBadge');
+  const label=document.getElementById('modeLabel');
+  if(!badge||!label) return;
+  if(DATA_MODE==='production'){
+    badge.className='mode-badge prod';
+    label.textContent='Ao vivo · N8N';
+  } else {
+    badge.className='mode-badge demo';
+    label.textContent='Dados fictícios';
   }
 }
 
+async function fetchAllData(){
+  applyModeUI();
+  if(DATA_MODE==='demo') return; // usa dados JS hardcoded — sem HTTP
+  try{
+    const res=await fetch(ENDPOINTS.production.dashboard,{method:'GET',headers:{'Content-Type':'application/json'}});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    if(data.leads&&Array.isArray(data.leads)&&data.leads.length>0) ACTIVE_LEADS=data.leads;
+    if(data.filaEspera&&Array.isArray(data.filaEspera)&&data.filaEspera.length>0) ACTIVE_FILA=data.filaEspera;
+    if(data.stats){
+      const s=data.stats;
+      const set=(sel,v)=>{const el=document.querySelector(sel);if(el)el.textContent=v;};
+      set('[data-kpi="total"]',s.total??'—');
+      set('[data-kpi="transferidos"]',s.transferidos??'—');
+      set('[data-kpi="scoreMedio"]',s.scoreMedio??'—');
+      const dist=s.distribuicaoScore||{};
+      ['frios','mornos','engajados','quentes','premium'].forEach(k=>set(`[data-score="${k}"]`,dist[k]??0));
+    }
+  }catch(err){
+    console.warn('[RuiAI] Produção indisponível, usando dados fictícios.',err);
+  }
+}
+
+function getLeadsForPeriod(period){
+  if(DATA_MODE==='production'&&ACTIVE_LEADS.length>0){
+    const today=new Date().toISOString().split('T')[0];
+    const weekAgo=new Date(Date.now()-7*86400000).toISOString().split('T')[0];
+    const wa=period==='dia'?ACTIVE_LEADS.filter(l=>l.data===today)
+            :period==='semana'?ACTIVE_LEADS.filter(l=>(l.data||'')>=weekAgo)
+            :ACTIVE_LEADS;
+    return {wa};
+  }
+  // modo demo — arrays pré-divididos por período
+  const wa=period==='dia'?NETWORK_LEADS_DIA:period==='semana'?NETWORK_LEADS_SEMANA:NETWORK_LEADS_MES;
+  return {wa};
+}
+
 async function atualizarDashboard(){
-  const data = await fetchDashboardData();
-  if(!data) return;
-  const {leads, stats} = data;
-  if(leads){ cachedLeads=leads; }
-  const set=(sel,v)=>{const el=document.querySelector(sel);if(el)el.textContent=v;};
-  set('[data-kpi="total"]', stats.total??'—');
-  set('[data-kpi="transferidos"]', stats.transferidos??'—');
-  set('[data-kpi="scoreMedio"]', stats.scoreMedio??'—');
-  const dist=stats.distribuicaoScore||{};
-  ['frios','mornos','engajados','quentes','premium'].forEach(k=>set(`[data-score="${k}"]`,dist[k]??0));
+  await fetchAllData();
+  buildTable();
+  updateOrbCount();
   document.getElementById('tsVal').textContent=new Date().toLocaleString('pt-BR');
 }
 
 // ============================================================
 // FILA DE ESPERA — alimentada automaticamente via N8N/Rui
 // ============================================================
-const N8N_FILA_ENDPOINT = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/jbs-fila-espera';
-const FILA_CACHE_KEY = 'jbs_fila_espera_cache';
 
-// Dados de demonstração — usados enquanto o webhook não estiver ativo
+// Dados fictícios completos com perfilação — usados no modo demo
 const DEMO_FILA = [
-  {nome:'Renata Queiroz',  telefone:'(81) 99100-2233', modelo:'Honda CB 500F',  notas:'Aguardando entrada de nova moto',  entradaISO:'2026-05-27T10:30:00'},
-  {nome:'Alex Monteiro',   telefone:'(81) 98200-4455', modelo:'Yamaha MT-07',    notas:'Prefere cor preta',                entradaISO:'2026-05-29T14:15:00'},
-  {nome:'Camila Borges',   telefone:'(81) 97300-6677', modelo:'Honda XRE 300',   notas:'',                                 entradaISO:'2026-05-31T09:45:00'},
+  {
+    nome:'Renata Queiroz', telefone:'(81) 99100-2233', modelo:'Honda CB 500F',
+    notas:'Aguardando entrada de nova moto', entradaISO:'2026-05-27T10:30:00',
+    score:74, temperatura:'Quente',
+    perguntas:[
+      {num:'P1',tema:'Intenção',      resposta:'Uso próprio'},
+      {num:'P2',tema:'Prazo',         resposta:'Nos próximos 30 dias'},
+      {num:'P3',tema:'Modelo',        resposta:'Honda CB 500F'},
+      {num:'P4',tema:'Pagamento',     resposta:'À vista'},
+      {num:'P5',tema:'Veículo atual', resposta:'Tenho um Corolla 2020 e quero incluir na negociação'},
+      {num:'P6',tema:'Decisão',       resposta:'Independente'},
+      {num:'P7',tema:'Localização',   resposta:'Recife'},
+    ]
+  },
+  {
+    nome:'Alex Monteiro', telefone:'(81) 98200-4455', modelo:'Yamaha MT-07',
+    notas:'Prefere cor preta', entradaISO:'2026-05-29T14:15:00',
+    score:61, temperatura:'Quente',
+    perguntas:[
+      {num:'P1',tema:'Intenção',      resposta:'Uso próprio'},
+      {num:'P2',tema:'Prazo',         resposta:'Nos próximos 15 dias'},
+      {num:'P3',tema:'Modelo',        resposta:'Yamaha MT-07'},
+      {num:'P4',tema:'Pagamento',     resposta:'Financiamento'},
+      {num:'P5',tema:'Veículo atual', resposta:'Não tenho veículo no momento'},
+      {num:'P6',tema:'Decisão',       resposta:'Envolve minha esposa'},
+      {num:'P7',tema:'Localização',   resposta:'Olinda'},
+    ]
+  },
+  {
+    nome:'Camila Borges', telefone:'(81) 97300-6677', modelo:'Honda XRE 300',
+    notas:'', entradaISO:'2026-05-31T09:45:00',
+    score:83, temperatura:'Premium',
+    perguntas:[
+      {num:'P1',tema:'Intenção',      resposta:'Uso próprio'},
+      {num:'P2',tema:'Prazo',         resposta:'Semana que vem'},
+      {num:'P3',tema:'Modelo',        resposta:'Honda XRE 300'},
+      {num:'P4',tema:'Pagamento',     resposta:'À vista'},
+      {num:'P5',tema:'Veículo atual', resposta:'Não tenho veículo'},
+      {num:'P6',tema:'Decisão',       resposta:'Independente'},
+      {num:'P7',tema:'Localização',   resposta:'Recife'},
+    ]
+  },
 ];
+
+// Armazena os dados da fila vindos do N8N (modo produção)
+let ACTIVE_FILA = [];
 
 function tempoEspera(isoStr){
   const diff = Math.max(0, new Date() - new Date(isoStr));
-  const diffD = Math.floor(diff / 86400000);
-  const diffH = Math.floor(diff / 3600000);
-  const diffMin = Math.floor(diff / 60000);
-  if(diffD >= 1) return `há ${diffD} dia${diffD>1?'s':''}`;
-  if(diffH >= 1) return `há ${diffH}h`;
-  if(diffMin >= 1) return `há ${diffMin}min`;
+  const diffD = Math.floor(diff/86400000), diffH = Math.floor(diff/3600000), diffMin = Math.floor(diff/60000);
+  if(diffD>=1) return `há ${diffD} dia${diffD>1?'s':''}`;
+  if(diffH>=1) return `há ${diffH}h`;
+  if(diffMin>=1) return `há ${diffMin}min`;
   return 'agora mesmo';
 }
 
 function fmtDataHoraFila(isoStr){
-  const d = new Date(isoStr);
-  return d.toLocaleDateString('pt-BR') + ' · ' + d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  const d=new Date(isoStr);
+  return d.toLocaleDateString('pt-BR')+' · '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+}
+
+function toggleFilaPerfil(idx){
+  const body=document.getElementById('fp-'+idx);
+  const btn=document.getElementById('fpbtn-'+idx);
+  if(!body) return;
+  const open=body.classList.toggle('open');
+  if(btn) btn.textContent=open?'▲ Ocultar qualificação':'▼ Ver qualificação completa';
 }
 
 function buildFilaEspera(){
-  const raw = localStorage.getItem(FILA_CACHE_KEY);
-  const fila = (raw ? JSON.parse(raw) : DEMO_FILA)
-    .slice()
-    .sort((a,b) => new Date(a.entradaISO) - new Date(b.entradaISO));
+  const source = (DATA_MODE==='production' && ACTIVE_FILA.length>0) ? ACTIVE_FILA : DEMO_FILA;
+  const fila = source.slice().sort((a,b)=>new Date(a.entradaISO)-new Date(b.entradaISO));
 
-  const wrap = document.getElementById('filaList');
+  const wrap=document.getElementById('filaList');
   if(!wrap) return;
+  const badge=document.getElementById('filaBadge');
+  if(badge) badge.textContent=`${fila.length} na fila`;
 
-  const badge = document.getElementById('filaBadge');
-  if(badge) badge.textContent = `${fila.length} na fila`;
-
-  if(fila.length === 0){
-    wrap.innerHTML = `<div class="fila-empty">
-      <div class="fila-empty-ico">⏳</div>
-      <div>Nenhum cliente na fila de espera no momento.</div>
-      <div style="margin-top:8px;font-size:12px;color:var(--tx3)">O Rui registra automaticamente quando um cliente aceita entrar na fila.</div>
-    </div>`;
+  if(fila.length===0){
+    wrap.innerHTML=`<div class="fila-empty"><div class="fila-empty-ico">⏳</div><div>Nenhum cliente na fila de espera no momento.</div><div style="margin-top:8px;font-size:12px;color:var(--tx3)">O Rui registra automaticamente quando um cliente aceita entrar na fila.</div></div>`;
     return;
   }
 
-  wrap.innerHTML = fila.map((c, i) => `
-    <div class="fila-card ${i===0?'first-in-line':''}">
+  wrap.innerHTML=fila.map((c,i)=>{
+    const scCol=c.score>=81?'#EF4444':c.score>=61?'#F97316':c.score>=41?'#EAB308':c.score>=21?'#22c55e':'#38BDF8';
+    const perfsHtml=(c.perguntas||[]).map(p=>`
+      <div class="fila-perf-q ${p.resposta?'answered':''}">
+        <div class="fila-perf-q-label">${p.num} · ${p.tema}</div>
+        <div class="fila-perf-q-val">${p.resposta||'<span style="color:var(--tx3);font-style:italic">Não respondeu</span>'}</div>
+      </div>`).join('');
+    const scoreLine=c.score?`<div class="fila-score-line">
+      <span class="fila-score-num" style="color:${scCol}">${c.score}/100</span>
+      <span class="fila-temp-tag" style="color:${scCol};background:rgba(255,255,255,.04);border:1px solid ${scCol}33">${c.temperatura||''}</span>
+    </div>`:'';
+    const perfToggle=perfsHtml?`
+      <button class="fila-perfil-toggle" id="fpbtn-${i}" onclick="toggleFilaPerfil(${i})">▼ Ver qualificação completa</button>
+      <div class="fila-perfil-body" id="fp-${i}">
+        <div style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx3);font-weight:700;margin-bottom:8px">Perfilação pelo Rui · 7 perguntas</div>
+        ${perfsHtml}
+      </div>`:'';
+    return `<div class="fila-card ${i===0?'first-in-line':''}">
       <div class="fila-pos ${i===0?'gold':''}">${i+1}</div>
       <div class="fila-av" style="background:${avc(i)}">${ini(c.nome)}</div>
-      <div class="fila-info">
+      <div class="fila-info" style="flex:1;min-width:0">
         <div class="fila-name">${c.nome}</div>
         <div class="fila-model">🏍 ${c.modelo||'Modelo não informado'}</div>
+        ${scoreLine}
         ${c.notas?`<div class="fila-notes">"${c.notas}"</div>`:''}
+        ${perfToggle}
       </div>
       <div class="fila-meta">
         <div><span class="fila-time-badge">${tempoEspera(c.entradaISO)}</span></div>
         <div class="fila-date">${fmtDataHoraFila(c.entradaISO)}</div>
         <div class="fila-phone">${c.telefone||'—'}</div>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 async function fetchFilaData(){
-  try{
-    const res = await fetch(N8N_FILA_ENDPOINT, {method:'GET', headers:{'Content-Type':'application/json'}});
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    const data = await res.json();
-    // N8N deve retornar array de objetos: [{nome, telefone, modelo, notas, entradaISO}, ...]
-    if(Array.isArray(data) && data.length > 0){
-      localStorage.setItem(FILA_CACHE_KEY, JSON.stringify(data));
-    }
-  }catch(e){
-    // Falha silenciosa — continua exibindo cache ou dados de demonstração
-  }finally{
-    buildFilaEspera();
-    const el = document.getElementById('filaTs');
-    if(el) el.textContent = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  if(DATA_MODE==='production'){
+    try{
+      const res=await fetch(ENDPOINTS.production.fila,{method:'GET',headers:{'Content-Type':'application/json'}});
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      const data=await res.json();
+      if(Array.isArray(data)&&data.length>0) ACTIVE_FILA=data;
+    }catch(e){ /* silencioso — usa DEMO_FILA como fallback */ }
   }
+  buildFilaEspera();
+  const el=document.getElementById('filaTs');
+  if(el) el.textContent=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
 }
 
 // ============================================================
