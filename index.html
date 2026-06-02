@@ -1,0 +1,366 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Agente Rui — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:#F2F3F5;color:#1A1A1A;min-height:100vh;padding:24px;}
+.agent-header{background:#fff;border-radius:14px;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,.06);border:1px solid #E8E8E8;}
+.agent-left{display:flex;align-items:center;gap:14px;}
+.agent-avatar{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,#1A1A2E,#16213E);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:16px;flex-shrink:0;}
+.agent-name{font-size:15px;font-weight:700;color:#1A1A1A;margin-bottom:3px;}
+.agent-status{display:flex;align-items:center;gap:6px;font-size:12px;color:#555;}
+.status-dot{width:7px;height:7px;border-radius:50%;background:#22C55E;box-shadow:0 0 0 2px rgba(34,197,94,.2);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 2px rgba(34,197,94,.2);}50%{box-shadow:0 0 0 4px rgba(34,197,94,.1);}}
+.agent-updated{font-size:12px;color:#999;display:flex;align-items:center;gap:5px;}
+.btn-refresh{background:none;border:1px solid #E0E0E0;border-radius:8px;padding:7px 14px;font-size:12px;color:#555;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;display:flex;align-items:center;gap:6px;}
+.btn-refresh:hover{background:#F8F8F8;border-color:#CCC;}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+.kpi{background:#fff;border-radius:12px;padding:20px 22px;border:1px solid #E8E8E8;box-shadow:0 1px 4px rgba(0,0,0,.05);}
+.kpi-icon{font-size:14px;margin-bottom:10px;opacity:.7;}
+.kpi-label{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#888;font-weight:600;margin-bottom:6px;}
+.kpi-value{font-size:34px;font-weight:700;color:#1A1A1A;line-height:1;margin-bottom:6px;}
+.kpi-sub{font-size:12px;display:flex;align-items:center;gap:5px;}
+.badge-up{background:#F0FDF4;color:#16A34A;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;}
+.badge-warn{background:#FFFBEB;color:#D97706;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;}
+.main-grid{display:grid;grid-template-columns:1fr 340px;gap:16px;margin-bottom:16px;}
+.panel{background:#fff;border-radius:14px;border:1px solid #E8E8E8;box-shadow:0 1px 4px rgba(0,0,0,.05);overflow:hidden;}
+.panel-header{padding:18px 22px 0;display:flex;align-items:center;gap:8px;}
+.panel-icon{font-size:14px;color:#888;}
+.panel-title{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#555;}
+.filter-tabs{display:flex;gap:8px;padding:14px 22px 0;flex-wrap:wrap;}
+.ftab{background:#F3F4F6;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:500;color:#555;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;}
+.ftab:hover{background:#E5E7EB;}
+.ftab.active{background:#1A1A2E;color:#fff;}
+.leads-list{padding:10px 0;}
+.lead-row{display:flex;align-items:center;gap:12px;padding:12px 22px;border-bottom:1px solid #F3F4F6;transition:background .15s;cursor:default;}
+.lead-row:last-child{border-bottom:none;}
+.lead-row:hover{background:#FAFAFA;}
+.lead-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;letter-spacing:.02em;}
+.lead-info{flex:1;min-width:0;}
+.lead-name{font-size:13px;font-weight:600;color:#1A1A1A;}
+.lead-meta{font-size:11px;color:#888;margin-top:2px;}
+.lead-temp{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;flex-shrink:0;}
+.temp-hot{background:#FFF1F0;color:#E53E3E;}
+.temp-warm{background:#FFFBEB;color:#D97706;}
+.temp-cold{background:#EFF6FF;color:#3B82F6;}
+.lead-score{font-size:16px;font-weight:700;color:#16A34A;width:32px;text-align:right;flex-shrink:0;}
+.leads-footer{padding:14px 22px;border-top:1px solid #F3F4F6;}
+.btn-ver-todos{width:100%;background:#fff;border:1.5px solid #E0E0E0;border-radius:10px;padding:11px;font-size:13px;font-weight:600;color:#444;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;}
+.btn-ver-todos:hover{background:#F8F8F8;border-color:#CCC;}
+.stock-panel{display:flex;flex-direction:column;}
+.stock-list{padding:12px 22px;flex:1;}
+.stock-item{padding:12px 0;border-bottom:1px solid #F3F4F6;}
+.stock-item:last-child{border-bottom:none;}
+.stock-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;}
+.stock-model{font-size:13px;font-weight:600;color:#1A1A1A;}
+.stock-units{font-size:13px;font-weight:700;}
+.units-low{color:#E53E3E;}
+.units-zero{color:#E53E3E;}
+.units-med{color:#D97706;}
+.units-ok{color:#16A34A;}
+.stock-leads{font-size:11px;color:#888;margin-bottom:8px;}
+.stock-bar-wrap{height:6px;background:#F0F0F0;border-radius:3px;overflow:hidden;}
+.stock-bar{height:100%;border-radius:3px;transition:width .8s ease;}
+.bar-red{background:#EF4444;}
+.bar-orange{background:#F59E0B;}
+.bar-green{background:#22C55E;}
+.stock-footer{padding:14px 22px;border-top:1px solid #F3F4F6;}
+.btn-prioriza{width:100%;background:#fff;border:1.5px solid #E0E0E0;border-radius:10px;padding:11px;font-size:12px;font-weight:600;color:#444;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;text-align:center;line-height:1.4;}
+.btn-prioriza:hover{background:#F8F8F8;border-color:#CCC;}
+.activity-panel{background:#fff;border-radius:14px;border:1px solid #E8E8E8;box-shadow:0 1px 4px rgba(0,0,0,.05);overflow:hidden;}
+.activity-header{padding:18px 22px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #F3F4F6;}
+.activity-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+.activity-col{padding:18px 22px;}
+.activity-col:first-child{border-right:1px solid #F3F4F6;}
+.activity-col-title{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#888;margin-bottom:14px;}
+.notif-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid #F7F7F7;}
+.notif-item:last-child{border-bottom:none;}
+.notif-ico{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.ico-sent{background:#F0FDF4;}
+.ico-reply{background:#EFF6FF;}
+.ico-sched{background:#FFF7ED;}
+.notif-body{flex:1;min-width:0;}
+.notif-name{font-size:12px;font-weight:600;color:#1A1A1A;}
+.notif-name .replied{color:#3B82F6;font-weight:600;}
+.notif-text{font-size:11px;color:#888;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.notif-time{font-size:11px;color:#AAA;flex-shrink:0;margin-top:1px;}
+.msg-box{background:#FFFBEB;border-radius:10px;padding:14px 16px;font-size:12px;line-height:1.7;color:#333;border:1px solid #FDE68A;}
+.msg-box strong{color:#1A1A1A;}
+@media(max-width:900px){
+  .kpi-grid{grid-template-columns:repeat(2,1fr);}
+  .main-grid{grid-template-columns:1fr;}
+  .activity-grid{grid-template-columns:1fr;}
+  .activity-col:first-child{border-right:none;border-bottom:1px solid #F3F4F6;}
+}
+</style>
+</head>
+<body>
+
+<div class="agent-header">
+  <div class="agent-left">
+    <div class="agent-avatar">R</div>
+    <div>
+      <div class="agent-name">Agente Rui</div>
+      <div class="agent-status">
+        <span class="status-dot"></span>
+        Ativo &mdash; Qualifica&ccedil;&atilde;o &amp; Follow-up de Leads
+      </div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:14px;">
+    <div class="agent-updated">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+      Atualizado agora
+    </div>
+    <button class="btn-refresh" onclick="location.reload()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+      Atualizar
+    </button>
+  </div>
+</div>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="kpi-icon">&#128101;</div>
+    <div class="kpi-label">Leads na Fila</div>
+    <div class="kpi-value">347</div>
+    <div class="kpi-sub"><span class="badge-up">&#8593; 23 esta semana</span></div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-icon">&#128172;</div>
+    <div class="kpi-label">Contatos Hoje</div>
+    <div class="kpi-value">41</div>
+    <div class="kpi-sub"><span class="badge-up">&#8593; 68% de resposta</span></div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-icon">&#9201;</div>
+    <div class="kpi-label">Tempo M&eacute;dio Espera</div>
+    <div class="kpi-value">18d</div>
+    <div class="kpi-sub"><span class="badge-warn">&#9888; Alta demanda</span></div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-icon">&#10003;</div>
+    <div class="kpi-label">Convertidos (30d)</div>
+    <div class="kpi-value">64</div>
+    <div class="kpi-sub"><span class="badge-up">&#8593; 12 vs. m&ecirc;s ant.</span></div>
+  </div>
+</div>
+
+<div class="main-grid">
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-icon">&#9776;</span>
+      <span class="panel-title">Leads Qualificados &mdash; Fila de Espera</span>
+    </div>
+    <div class="filter-tabs">
+      <button class="ftab active" onclick="filterLeads(this,'todos')">Todos</button>
+      <button class="ftab" onclick="filterLeads(this,'alta')">Prioridade alta</button>
+      <button class="ftab" onclick="filterLeads(this,'estoque')">Aguardando estoque</button>
+      <button class="ftab" onclick="filterLeads(this,'sem-resposta')">Sem resposta</button>
+    </div>
+    <div class="leads-list" id="leads-list">
+      <div class="lead-row" data-temp="hot" data-score="94" data-model="HB20 Comfort">
+        <div class="lead-av" style="background:#8B5CF6;">MS</div>
+        <div class="lead-info">
+          <div class="lead-name">Marcos Silva</div>
+          <div class="lead-meta">HB20 Comfort &middot; Aguardando 34d</div>
+        </div>
+        <span class="lead-temp temp-hot">&#128293; Quente</span>
+        <div class="lead-score">94</div>
+      </div>
+      <div class="lead-row" data-temp="hot" data-score="91" data-model="HB20 Comfort">
+        <div class="lead-av" style="background:#EC4899;">FS</div>
+        <div class="lead-info">
+          <div class="lead-name">Fernanda Santos</div>
+          <div class="lead-meta">HB20 Comfort &middot; Aguardando 28d</div>
+        </div>
+        <span class="lead-temp temp-hot">&#128293; Quente</span>
+        <div class="lead-score">91</div>
+      </div>
+      <div class="lead-row" data-temp="hot" data-score="87" data-model="Creta Ultimate">
+        <div class="lead-av" style="background:#3B82F6;">AP</div>
+        <div class="lead-info">
+          <div class="lead-name">Ana Paula R.</div>
+          <div class="lead-meta">Creta Ultimate &middot; Aguardando 21d</div>
+        </div>
+        <span class="lead-temp temp-hot">&#128293; Quente</span>
+        <div class="lead-score">87</div>
+      </div>
+      <div class="lead-row" data-temp="warm" data-score="72" data-model="Tucson Hybrid">
+        <div class="lead-av" style="background:#F59E0B;">CF</div>
+        <div class="lead-info">
+          <div class="lead-name">Carlos Ferreira</div>
+          <div class="lead-meta">Tucson Hybrid &middot; Aguardando 15d</div>
+        </div>
+        <span class="lead-temp temp-warm">Morno</span>
+        <div class="lead-score">72</div>
+      </div>
+      <div class="lead-row" data-temp="warm" data-score="68" data-model="HB20 Sport">
+        <div class="lead-av" style="background:#10B981;">JM</div>
+        <div class="lead-info">
+          <div class="lead-name">Juliana Melo</div>
+          <div class="lead-meta">HB20 Sport &middot; Aguardando 9d</div>
+        </div>
+        <span class="lead-temp temp-warm">Morno</span>
+        <div class="lead-score">68</div>
+      </div>
+      <div class="lead-row" data-temp="cold" data-score="51" data-model="Santa Fe">
+        <div class="lead-av" style="background:#6B7280;">RT</div>
+        <div class="lead-info">
+          <div class="lead-name">Roberto Teixeira</div>
+          <div class="lead-meta">Santa Fe &middot; Aguardando 42d</div>
+        </div>
+        <span class="lead-temp temp-cold">Frio</span>
+        <div class="lead-score">51</div>
+      </div>
+      <div class="lead-row" data-temp="cold" data-score="44" data-model="Creta Ultimate">
+        <div class="lead-av" style="background:#6B7280;">PO</div>
+        <div class="lead-info">
+          <div class="lead-name">Pedro Oliveira</div>
+          <div class="lead-meta">Creta Ultimate &middot; Aguardando 55d</div>
+        </div>
+        <span class="lead-temp temp-cold">Frio</span>
+        <div class="lead-score">44</div>
+      </div>
+    </div>
+    <div class="leads-footer">
+      <button class="btn-ver-todos">
+        Ver todos os 347 leads
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="panel stock-panel">
+    <div class="panel-header">
+      <span class="panel-icon">&#128663;</span>
+      <span class="panel-title">Estoque &times; Demanda Represada</span>
+    </div>
+    <div class="stock-list">
+      <div class="stock-item">
+        <div class="stock-top">
+          <div>
+            <div class="stock-model">HB20 Comfort</div>
+            <div class="stock-leads">127 leads aguardando</div>
+          </div>
+          <span class="stock-units units-low">2 un.</span>
+        </div>
+        <div class="stock-bar-wrap"><div class="stock-bar bar-red" style="width:2%"></div></div>
+      </div>
+      <div class="stock-item">
+        <div class="stock-top">
+          <div>
+            <div class="stock-model">Creta Ultimate</div>
+            <div class="stock-leads">98 leads aguardando</div>
+          </div>
+          <span class="stock-units units-zero">0 un.</span>
+        </div>
+        <div class="stock-bar-wrap"><div class="stock-bar bar-red" style="width:0%"></div></div>
+      </div>
+      <div class="stock-item">
+        <div class="stock-top">
+          <div>
+            <div class="stock-model">HB20 Sport</div>
+            <div class="stock-leads">63 leads aguardando</div>
+          </div>
+          <span class="stock-units units-med">5 un.</span>
+        </div>
+        <div class="stock-bar-wrap"><div class="stock-bar bar-orange" style="width:30%"></div></div>
+      </div>
+      <div class="stock-item">
+        <div class="stock-top">
+          <div>
+            <div class="stock-model">Tucson Hybrid</div>
+            <div class="stock-leads">41 leads aguardando</div>
+          </div>
+          <span class="stock-units units-med">4 un.</span>
+        </div>
+        <div class="stock-bar-wrap"><div class="stock-bar bar-orange" style="width:35%"></div></div>
+      </div>
+      <div class="stock-item">
+        <div class="stock-top">
+          <div>
+            <div class="stock-model">Santa Fe</div>
+            <div class="stock-leads">18 leads aguardando</div>
+          </div>
+          <span class="stock-units units-ok">9 un.</span>
+        </div>
+        <div class="stock-bar-wrap"><div class="stock-bar bar-green" style="width:75%"></div></div>
+      </div>
+    </div>
+    <div class="stock-footer">
+      <button class="btn-prioriza">
+        Como o Rui prioriza notifica&ccedil;&otilde;es
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="activity-panel">
+  <div class="activity-header">
+    <span style="font-size:14px;">&#129302;</span>
+    <span class="panel-title">Atividade Recente do Rui</span>
+  </div>
+  <div class="activity-grid">
+    <div class="activity-col">
+      <div class="activity-col-title">Notifica&ccedil;&otilde;es Enviadas</div>
+      <div class="notif-item">
+        <div class="notif-ico ico-sent">&#128228;</div>
+        <div class="notif-body">
+          <div class="notif-name">Marcos Silva</div>
+          <div class="notif-text">&ldquo;Ol&aacute; Marcos! O HB20 Comfort que voc&ecirc; esperava...&rdquo;</div>
+        </div>
+        <div class="notif-time">14:32</div>
+      </div>
+      <div class="notif-item">
+        <div class="notif-ico ico-reply">&#128172;</div>
+        <div class="notif-body">
+          <div class="notif-name">Ana Paula R. <span class="replied">respondeu</span></div>
+          <div class="notif-text">&ldquo;Sim! Ainda tenho interesse, pode reservar...&rdquo;</div>
+        </div>
+        <div class="notif-time">13:58</div>
+      </div>
+      <div class="notif-item">
+        <div class="notif-ico ico-sched">&#9200;</div>
+        <div class="notif-body">
+          <div class="notif-name">Carlos Ferreira</div>
+          <div class="notif-text">Follow-up agendado &mdash; 3&ordm; contato</div>
+        </div>
+        <div class="notif-time">amanh&atilde;</div>
+      </div>
+    </div>
+    <div class="activity-col">
+      <div class="activity-col-title">Exemplo de Mensagem do Rui</div>
+      <div class="msg-box">
+        <strong>Rui &rarr;</strong> &ldquo;Ol&aacute;, Marcos! Tudo bem? Sou o Rui, assistente da concession&aacute;ria. &#128522; Passando pra te avisar que o <strong>HB20 Comfort Prata</strong> que voc&ecirc; tanto esperava acabou de chegar ao nosso estoque. Temos apenas <strong>2 unidades</strong> dispon&iacute;veis. Posso reservar a sua? Fico &agrave; disposi&ccedil;&atilde;o para agendar uma visita quando preferir.&rdquo;
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function filterLeads(btn, filter) {
+  document.querySelectorAll('.ftab').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  var rows = document.querySelectorAll('.lead-row');
+  var outOfStock = ['HB20 Comfort', 'Creta Ultimate'];
+  rows.forEach(function(row){
+    var show = true;
+    if (filter === 'alta') {
+      show = parseInt(row.dataset.score) >= 80;
+    } else if (filter === 'estoque') {
+      show = outOfStock.some(function(m){ return row.dataset.model === m; });
+    } else if (filter === 'sem-resposta') {
+      show = row.dataset.temp === 'cold';
+    }
+    row.style.display = show ? 'flex' : 'none';
+  });
+}
+</script>
+</body>
+</html>
