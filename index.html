@@ -1565,8 +1565,8 @@ const ENDPOINTS = {
   //            distribuicaoScore: {frios, mornos, engajados, quentes, premium} }
   // }
   production: {
-    dashboard: 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/jbs-rui-dashboard',
-    fila:      'https://n8n-n8n.lrdyzi.easypanel.host/webhook/jbs-fila-espera'
+    dashboard: 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/ml-dashboard-data',
+    fila:      'https://n8n-n8n.lrdyzi.easypanel.host/webhook/adtsa-fila-espera'
   }
 };
 
@@ -1590,15 +1590,54 @@ function applyModeUI(){
   }
 }
 
+function calcTemperatura(score){
+  if(score<=25) return 'Frio';
+  if(score<=50) return 'Morno';
+  if(score<=70) return 'Engajado';
+  if(score<=85) return 'Quente';
+  return 'Premium';
+}
+
+function buildPerguntas(l){
+  const p=[];
+  if(l.perfil_uso)        p.push({num:'P1',tema:'Intenção',      pergunta:'Qual o objetivo da compra?',        resposta:l.perfil_uso});
+  if(l.urgencia)          p.push({num:'P2',tema:'Prazo',          pergunta:'Em quanto tempo pretende comprar?', resposta:l.urgencia});
+  if(l.veiculo_interesse) p.push({num:'P3',tema:'Modelo',         pergunta:'Tem algum modelo em mente?',        resposta:l.veiculo_interesse});
+  if(l.forma_pagamento)   p.push({num:'P4',tema:'Veículo atual',  pergunta:'Possui veículo para troca?',        resposta:l.forma_pagamento});
+  if(l.tem_veiculo_troca!=null) p.push({num:'P5',tema:'Troca',   pergunta:'Deseja incluir na negociação?',     resposta:l.tem_veiculo_troca?'Sim, possui veículo para troca':'Não possui veículo para troca'});
+  return p;
+}
+
 async function fetchAllData(){
   applyModeUI();
-  if(DATA_MODE==='demo') return; // usa dados JS hardcoded — sem HTTP
+  if(DATA_MODE==='demo') return;
   try{
-    const res=await fetch(ENDPOINTS.production.dashboard,{method:'GET',headers:{'Content-Type':'application/json'}});
+    const res=await fetch(ENDPOINTS.production.dashboard,{
+      method:'GET',
+      headers:{'Content-Type':'application/json','x-ml-secret':'ADTSA-RUI-2026-wR4kN8v2X5j1'}
+    });
     if(!res.ok) throw new Error('HTTP '+res.status);
     const data=await res.json();
-    if(data.leads&&Array.isArray(data.leads)&&data.leads.length>0) ACTIVE_LEADS=data.leads;
-    if(data.filaEspera&&Array.isArray(data.filaEspera)&&data.filaEspera.length>0) ACTIVE_FILA=data.filaEspera;
+    if(data.leads&&Array.isArray(data.leads)&&data.leads.length>0){
+      ACTIVE_LEADS=data.leads.map(l=>({
+        nome:        l.nome||'',
+        telefone:    l.telefone||l.sender_id||'',
+        canal:       l.canal||'WhatsApp',
+        score:       l.score_final||0,
+        temperatura: calcTemperatura(l.score_final||0),
+        status:      l.qualificado_em?'Transferido':(l.followup_status==='encerrado'?'Encerrado':'Em andamento'),
+        hora:        l.atualizado_em?new Date(l.atualizado_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'',
+        data:        l.atualizado_em?l.atualizado_em.split('T')[0]:'',
+        modelo:      l.veiculo_interesse||'',
+        pagamento:   l.forma_pagamento||'',
+        prazo:       l.urgencia||'',
+        intencao:    l.perfil_uso||'',
+        veicAtual:   l.tem_veiculo_troca?'Possui veículo para troca':'Sem troca',
+        decisao:     '',
+        localizacao: '',
+        perguntas:   buildPerguntas(l)
+      }));
+    }
     if(data.stats){
       const s=data.stats;
       const set=(sel,v)=>{const el=document.querySelector(sel);if(el)el.textContent=v;};
@@ -1762,10 +1801,26 @@ function buildFilaEspera(){
 async function fetchFilaData(){
   if(DATA_MODE==='production'){
     try{
-      const res=await fetch(ENDPOINTS.production.fila,{method:'GET',headers:{'Content-Type':'application/json'}});
+      const res=await fetch(ENDPOINTS.production.fila,{
+        method:'GET',
+        headers:{'Content-Type':'application/json','x-adtsa-secret':'ADTSA-RUI-2026-wR4kN8v2X5j1'}
+      });
       if(!res.ok) throw new Error('HTTP '+res.status);
       const data=await res.json();
-      if(Array.isArray(data)&&data.length>0) ACTIVE_FILA=data;
+      // N8N retorna {fila:[...], resumo_por_modelo:{...}, total:n}
+      const filaRaw=Array.isArray(data)?data:(data.fila||[]);
+      if(filaRaw.length>0){
+        ACTIVE_FILA=filaRaw.map(f=>({
+          nome:        f.nome||'',
+          telefone:    f.telefone||f.lead_sender_id||'',
+          modelo:      f.modelo||'',
+          notas:       f.observacao||f.especificacoes||'',
+          score:       f.score_final||0,
+          temperatura: calcTemperatura(f.score_final||0),
+          entradaISO:  f.registrado_em||new Date().toISOString(),
+          perguntas:   []
+        }));
+      }
     }catch(e){ /* silencioso — usa DEMO_FILA como fallback */ }
   }
   buildFilaEspera();
