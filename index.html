@@ -1680,45 +1680,45 @@ async function atualizarDashboard(){
 // Dados fictícios completos com perfilação — usados no modo demo
 const DEMO_FILA = [
   {
-    nome:'Renata Queiroz', telefone:'(81) 99100-2233', modelo:'Honda CB 500F',
-    notas:'Aguardando entrada de nova moto', entradaISO:'2026-05-27T10:30:00',
+    nome:'Renata Queiroz', telefone:'(81) 99100-2233', modelo:'GWM Tank 300',
+    notas:'Aguardando reposição de estoque', entradaISO:'2026-05-27T10:30:00',
     score:74, temperatura:'Quente',
+    motivo_fila:'Estoque esgotado · GWM Tank 300',
+    perfil:{ canal:'WhatsApp', pagamento:'À vista', prazo:'Nos próximos 30 dias', intencao:'Uso próprio', veicAtual:'Toyota Hilux 2021 para troca' },
     perguntas:[
       {num:'P1',tema:'Intenção',      resposta:'Uso próprio'},
       {num:'P2',tema:'Prazo',         resposta:'Nos próximos 30 dias'},
-      {num:'P3',tema:'Modelo',        resposta:'Honda CB 500F'},
+      {num:'P3',tema:'Modelo',        resposta:'GWM Tank 300'},
       {num:'P4',tema:'Pagamento',     resposta:'À vista'},
-      {num:'P5',tema:'Veículo atual', resposta:'Tenho um Corolla 2020 e quero incluir na negociação'},
-      {num:'P6',tema:'Decisão',       resposta:'Independente'},
-      {num:'P7',tema:'Localização',   resposta:'Recife'},
+      {num:'P5',tema:'Veículo atual', resposta:'Toyota Hilux 2021 — inclui na negociação'},
     ]
   },
   {
-    nome:'Alex Monteiro', telefone:'(81) 98200-4455', modelo:'Yamaha MT-07',
-    notas:'Prefere cor preta', entradaISO:'2026-05-29T14:15:00',
-    score:61, temperatura:'Quente',
+    nome:'Alex Monteiro', telefone:'(81) 98200-4455', modelo:'GWM Haval H6 Hybrid',
+    notas:'Prefere versão Hybrid, cor prata', entradaISO:'2026-05-29T14:15:00',
+    score:61, temperatura:'Engajado',
+    motivo_fila:'Versão solicitada indisponível · GWM Haval H6 Hybrid Prata',
+    perfil:{ canal:'WhatsApp', pagamento:'Financiamento', prazo:'Nos próximos 15 dias', intencao:'Uso familiar', veicAtual:'Sem troca' },
     perguntas:[
-      {num:'P1',tema:'Intenção',      resposta:'Uso próprio'},
+      {num:'P1',tema:'Intenção',      resposta:'Uso familiar'},
       {num:'P2',tema:'Prazo',         resposta:'Nos próximos 15 dias'},
-      {num:'P3',tema:'Modelo',        resposta:'Yamaha MT-07'},
+      {num:'P3',tema:'Modelo',        resposta:'GWM Haval H6 Hybrid'},
       {num:'P4',tema:'Pagamento',     resposta:'Financiamento'},
-      {num:'P5',tema:'Veículo atual', resposta:'Não tenho veículo no momento'},
-      {num:'P6',tema:'Decisão',       resposta:'Envolve minha esposa'},
-      {num:'P7',tema:'Localização',   resposta:'Olinda'},
+      {num:'P5',tema:'Veículo atual', resposta:'Não possui veículo para troca'},
     ]
   },
   {
-    nome:'Camila Borges', telefone:'(81) 97300-6677', modelo:'Honda XRE 300',
+    nome:'Camila Borges', telefone:'(81) 97300-6677', modelo:'GWM Ora 03',
     notas:'', entradaISO:'2026-05-31T09:45:00',
-    score:83, temperatura:'Premium',
+    score:83, temperatura:'Quente',
+    motivo_fila:'Modelo em pré-venda · GWM Ora 03',
+    perfil:{ canal:'WhatsApp', pagamento:'À vista', prazo:'Imediatamente', intencao:'Uso próprio', veicAtual:'Sem troca' },
     perguntas:[
       {num:'P1',tema:'Intenção',      resposta:'Uso próprio'},
-      {num:'P2',tema:'Prazo',         resposta:'Semana que vem'},
-      {num:'P3',tema:'Modelo',        resposta:'Honda XRE 300'},
+      {num:'P2',tema:'Prazo',         resposta:'Imediatamente'},
+      {num:'P3',tema:'Modelo',        resposta:'GWM Ora 03'},
       {num:'P4',tema:'Pagamento',     resposta:'À vista'},
-      {num:'P5',tema:'Veículo atual', resposta:'Não tenho veículo'},
-      {num:'P6',tema:'Decisão',       resposta:'Independente'},
-      {num:'P7',tema:'Localização',   resposta:'Recife'},
+      {num:'P5',tema:'Veículo atual', resposta:'Não possui veículo para troca'},
     ]
   },
 ];
@@ -1764,7 +1764,8 @@ function buildFilaEspera(){
 
   wrap.innerHTML=fila.map((c,i)=>{
     const scCol=c.score>=81?'#EF4444':c.score>=61?'#F97316':c.score>=41?'#EAB308':c.score>=21?'#22c55e':'#38BDF8';
-    const perfsHtml=(c.perguntas||[]).map(p=>`
+    const perfs=c.perguntas||[];
+    const perfsHtml=perfs.map(p=>`
       <div class="fila-perf-q ${p.resposta?'answered':''}">
         <div class="fila-perf-q-label">${p.num} · ${p.tema}</div>
         <div class="fila-perf-q-val">${p.resposta||'<span style="color:var(--tx3);font-style:italic">Não respondeu</span>'}</div>
@@ -1773,10 +1774,25 @@ function buildFilaEspera(){
       <span class="fila-score-num" style="color:${scCol}">${c.score}/100</span>
       <span class="fila-temp-tag" style="color:${scCol};background:rgba(255,255,255,.04);border:1px solid ${scCol}33">${c.temperatura||''}</span>
     </div>`:'';
+    // Motivo de ainda não ter comprado — sempre visível, em destaque
+    const motivoHtml=c.motivo_fila?`<div style="display:flex;align-items:flex-start;gap:7px;margin:9px 0 5px;padding:7px 11px;background:rgba(225,29,72,.07);border:1px solid rgba(225,29,72,.2);border-radius:7px;font-size:11px;line-height:1.4">
+      <span style="font-size:14px;flex-shrink:0;margin-top:1px">⚠</span>
+      <span style="color:#F87171"><strong style="color:#FCA5A5;font-weight:700">Por que ainda não comprou: </strong>${c.motivo_fila}</span>
+    </div>`:'';
+    // Perfil do lead — chips sempre visíveis sem precisar expandir
+    const pf=c.perfil||{};
+    const chips=[
+      pf.canal?`<span style="background:rgba(37,99,235,.1);color:#93C5FD;border:1px solid rgba(37,99,235,.2);padding:2px 9px;border-radius:20px;font-size:10px;font-weight:600">${pf.canal}</span>`:'',
+      pf.pagamento?`<span style="background:var(--grn-bg);color:var(--grn-l);border:1px solid rgba(0,160,101,.2);padding:2px 9px;border-radius:20px;font-size:10px;font-weight:600">${pf.pagamento}</span>`:'',
+      pf.prazo?`<span style="background:var(--ac-faint);color:var(--ac);border:1px solid rgba(212,175,55,.18);padding:2px 9px;border-radius:20px;font-size:10px;font-weight:600">${pf.prazo}</span>`:'',
+      pf.intencao?`<span style="background:var(--s2);color:var(--tx2);border:1px solid var(--bdr);padding:2px 9px;border-radius:20px;font-size:10px;font-weight:500">${pf.intencao}</span>`:'',
+      pf.veicAtual&&pf.veicAtual!=='Sem troca'?`<span style="background:rgba(251,146,60,.08);color:#FDBA74;border:1px solid rgba(251,146,60,.2);padding:2px 9px;border-radius:20px;font-size:10px;font-weight:500">🔄 ${pf.veicAtual}</span>`:'',
+    ].filter(Boolean).join('');
+    const perfilHtml=chips?`<div style="display:flex;flex-wrap:wrap;gap:5px;margin:7px 0 4px">${chips}</div>`:'';
     const perfToggle=perfsHtml?`
-      <button class="fila-perfil-toggle" id="fpbtn-${i}" onclick="toggleFilaPerfil(${i})">▼ Ver qualificação completa</button>
+      <button class="fila-perfil-toggle" id="fpbtn-${i}" onclick="toggleFilaPerfil(${i})">▼ Ver qualificação completa (${perfs.length} perguntas)</button>
       <div class="fila-perfil-body" id="fp-${i}">
-        <div style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx3);font-weight:700;margin-bottom:8px">Perfilação pelo Rui · 7 perguntas</div>
+        <div style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx3);font-weight:700;margin-bottom:8px">Perfilação pelo Rui · ${perfs.length} pergunta${perfs.length!==1?'s':''}</div>
         ${perfsHtml}
       </div>`:'';
     return `<div class="fila-card ${i===0?'first-in-line':''}">
@@ -1784,8 +1800,10 @@ function buildFilaEspera(){
       <div class="fila-av" style="background:${avc(i)}">${ini(c.nome)}</div>
       <div class="fila-info" style="flex:1;min-width:0">
         <div class="fila-name">${c.nome}</div>
-        <div class="fila-model">🏍 ${c.modelo||'Modelo não informado'}</div>
+        <div class="fila-model">🚗 ${c.modelo||'Modelo não informado'}</div>
         ${scoreLine}
+        ${motivoHtml}
+        ${perfilHtml}
         ${c.notas?`<div class="fila-notes">"${c.notas}"</div>`:''}
         ${perfToggle}
       </div>
@@ -1818,6 +1836,14 @@ async function fetchFilaData(){
           score:       f.score_final||0,
           temperatura: calcTemperatura(f.score_final||0),
           entradaISO:  f.registrado_em||new Date().toISOString(),
+          motivo_fila: 'Estoque esgotado · '+(f.modelo||'modelo solicitado'),
+          perfil:{
+            canal:     'WhatsApp',
+            pagamento: f.forma_pagamento||'',
+            prazo:     f.urgencia||'',
+            intencao:  f.perfil_uso||'',
+            veicAtual: f.tem_veiculo_troca?'Possui veículo para troca':'Sem troca'
+          },
           perguntas:   []
         }));
       }
