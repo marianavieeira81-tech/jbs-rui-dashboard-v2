@@ -878,7 +878,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       <div class="cob-sub">mais da metade vem fora do horário comercial</div>
     </div>
     <div class="cob-card" data-tip="Valor potencial dos leads qualificados fora do horário humano esta semana — sem o Rui, todos perderiam o timing.">
-      <div class="cob-val" style="font-size:28px">R$ 5,8M</div>
+      <div class="cob-val" data-kpi="cobCarteira" style="font-size:28px">R$ 5,8M</div>
       <div class="cob-lbl">Carteira potencial noturna</div>
       <div class="cob-sub">em leads qualificados pelo Rui fora do horário</div>
     </div>
@@ -1866,8 +1866,13 @@ async function fetchAllData(){
         pagamento:   l.forma_pagamento||'',
         prazo:       l.urgencia||'',
         intencao:    l.perfil_uso||'',
-        veicAtual:   l.tem_veiculo_troca?'Possui veículo para troca':'Sem troca',
-        decisao:     '',
+        veicAtual:   l.tem_veiculo_troca
+                       ? ('Possui veículo para troca' + (l.carro_troca && l.carro_troca !== 'a confirmar' ? ': ' + l.carro_troca : ''))
+                       : 'Sem troca',
+        decisao:     l.decide_sozinho != null
+                       ? (l.decide_sozinho ? 'Decide sozinho' : 'Decide com outra pessoa')
+                       : '',
+        codDetalhe:  l.co_decisor || '',
         localizacao: '',
         perguntas:   buildPerguntas(l)
       }));
@@ -1880,6 +1885,12 @@ async function fetchAllData(){
       set('[data-kpi="scoreMedio"]',s.scoreMedio??'—');
       const dist=s.distribuicaoScore||{};
       ['frios','mornos','engajados','quentes','premium'].forEach(k=>set(`[data-score="${k}"]`,dist[k]??0));
+      if (s.cobLeads     != null) set('[data-kpi="cobLeads"]', s.cobLeads);
+      if (s.cobPct       != null) set('[data-kpi="cobPct"]',   s.cobPct + '%');
+      if (s.carteiraNoturna)      {
+        const el = document.querySelector('[data-kpi="cobCarteira"]');
+        if (el) el.textContent = s.carteiraNoturna;
+      }
     }
   }catch(err){
     console.warn('[RuiAI] Produção indisponível, usando dados fictícios.',err);
