@@ -1515,7 +1515,7 @@ function ciClear(){
   const err=document.getElementById('ci-err');if(err)err.style.display='none';
 }
 
-function ciSave(){
+async function ciSave(){
   const nome    = document.getElementById('ci-nome').value.trim();
   const wa      = document.getElementById('ci-wa').value.trim();
   const vend    = document.getElementById('ci-vendedor').value.trim();
@@ -1542,23 +1542,43 @@ function ciSave(){
 
   const reg = {
     id: Date.now(),
-    nome, wa, vend, dt, intenc, modelo,
-    troca:  ciGetYN('ci-troca'),
-    finan:  ciGetYN('ci-finan'),
-    td:     ciGetYN('ci-td'),
-    prop:   ciGetYN('ci-prop'),
-    desfech,
-    obs: document.getElementById('ci-obs').value.trim()
+    nome, wa, vend, dt, intencao: intenc, modelos: modelo,
+    troca:      ciGetYN('ci-troca'),
+    financiamento: ciGetYN('ci-finan'),
+    test_drive: ciGetYN('ci-td'),
+    proposta:   ciGetYN('ci-prop'),
+    desfecho:   desfech,
+    observacoes: document.getElementById('ci-obs').value.trim()
   };
+
+  const saveBtn = document.querySelector('.btn-ci-save');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Enviando...';
+
+  try{
+    const res = await fetch('https://n8n-n8n.lrdyzi.easypanel.host/webhook/checkin-presencial',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(reg)
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+  }catch(e){
+    err.textContent = '⚠ Erro ao enviar para o servidor: '+e.message;
+    err.style.display='inline';
+    saveBtn.disabled = false;
+    saveBtn.textContent = '✔ Salvar Check-in';
+    return;
+  }
 
   const arr = ciLoad();
   arr.unshift(reg);
   localStorage.setItem('ci_registros', JSON.stringify(arr));
   document.getElementById('ciCount').textContent = arr.length;
-  fetch('https://n8n-n8n.lrdyzi.easypanel.host/webhook/checkin-presencial',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(reg)}).catch(e=>console.warn('[checkin]',e));
+  saveBtn.disabled = false;
+  saveBtn.textContent = '✔ Salvar Check-in';
   ciClear();
   ciRenderHistory();
-  const t=document.getElementById('toast');t.querySelector('span').textContent='Check-in salvo!';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);
+  const t=document.getElementById('toast');t.querySelector('span').textContent='Check-in enviado!';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);
 }
 
 function ciLoad(){
