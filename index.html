@@ -448,7 +448,54 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 .fnotif-body{flex:1;min-width:0;}
 .fnotif-name{font-size:12px;font-weight:600;color:var(--tx);}
 .fnotif-text{font-size:11px;color:var(--tx3);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.fnotif-time{font-size:11px;color:var(--tx3);flex-shrink:0;margin-top:1px;font-family:'DM Mono',monospace;}</style>
+.fnotif-time{font-size:11px;color:var(--tx3);flex-shrink:0;margin-top:1px;font-family:'DM Mono',monospace;}
+
+/* ============================================================
+   CHECK-IN DE ATENDIMENTO
+   ============================================================ */
+.ci-form{max-width:780px;}
+.ci-sec-title{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--tx3);font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+.ci-sec-title::after{content:'';flex:1;height:1px;background:var(--bdr);}
+.ci-field{margin-bottom:18px;}
+.ci-label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--tx3);margin-bottom:7px;font-weight:600;}
+.ci-opt{font-size:9px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--tx3);margin-left:4px;}
+.ci-input{background:var(--s2);border:1px solid var(--bdr);color:var(--tx);padding:10px 14px;border-radius:var(--rsm);font-size:13px;font-family:inherit;width:100%;transition:border .2s;}
+.ci-input:focus{outline:none;border-color:rgba(212,175,55,.4);background:var(--s3);}
+.ci-input::placeholder{color:var(--tx3);}
+.ci-row2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.ci-chips{display:flex;flex-wrap:wrap;gap:8px;}
+.ci-chip{background:var(--s2);border:1px solid var(--bdr);color:var(--tx2);padding:8px 18px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;transition:all .18s;user-select:none;}
+.ci-chip:hover{background:var(--s3);color:var(--tx);}
+.ci-chip.sel-gold{background:var(--ac-faint);color:var(--ac);border-color:rgba(212,175,55,.35);}
+.ci-chip.sel-green{background:var(--grn-bg);color:var(--grn-l);border-color:rgba(0,160,101,.3);}
+.ci-chip.sel-red{background:var(--red-bg);color:var(--red);border-color:rgba(225,29,72,.3);}
+.ci-yesno{display:flex;gap:8px;}
+.ci-yn{flex:1;padding:9px;border-radius:var(--rsm);font-size:13px;font-weight:700;cursor:pointer;border:1px solid var(--bdr);background:var(--s2);color:var(--tx3);transition:all .18s;text-align:center;font-family:inherit;}
+.ci-yn:hover{background:var(--s3);}
+.ci-yn.yes.sel{background:var(--grn-bg);color:var(--grn-l);border-color:rgba(0,160,101,.3);}
+.ci-yn.no.sel{background:var(--red-bg);color:var(--red);border-color:rgba(225,29,72,.3);}
+.ci-textarea{background:var(--s2);border:1px solid var(--bdr);color:var(--tx);padding:10px 14px;border-radius:var(--rsm);font-size:13px;font-family:inherit;width:100%;min-height:80px;resize:vertical;transition:border .2s;}
+.ci-textarea:focus{outline:none;border-color:rgba(212,175,55,.4);background:var(--s3);}
+.ci-textarea::placeholder{color:var(--tx3);}
+.btn-ci-save{background:linear-gradient(135deg,var(--ac),var(--ac-d));color:#000;border:none;padding:12px 32px;border-radius:var(--rsm);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;box-shadow:0 4px 16px rgba(212,175,55,.25);}
+.btn-ci-save:hover{background:linear-gradient(135deg,var(--ac-l),var(--ac));transform:translateY(-2px);box-shadow:0 6px 24px rgba(212,175,55,.45);}
+.btn-ci-clear{background:none;border:1px solid var(--bdr);color:var(--tx3);padding:12px 20px;border-radius:var(--rsm);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;}
+.btn-ci-clear:hover{border-color:var(--s4);color:var(--tx2);}
+.ci-hi{background:var(--surface);border:1px solid var(--bdr);border-radius:var(--r);padding:18px 22px;margin-bottom:10px;transition:all .2s;animation:fadeUp .3s ease both;}
+.ci-hi:hover{border-color:var(--s4);}
+.ci-hi-head{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.ci-hi-av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0;font-family:'Bebas Neue',cursive;}
+.ci-hi-name{font-size:14px;font-weight:700;color:var(--tx);}
+.ci-hi-sub{font-size:11px;color:var(--tx3);margin-top:2px;}
+.ci-hi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(176px,1fr));gap:8px;}
+.ci-hi-f{background:var(--s2);border-radius:var(--rsm);padding:8px 12px;}
+.ci-hi-k{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);font-weight:600;margin-bottom:3px;}
+.ci-hi-v{font-size:12px;font-weight:600;color:var(--tx);line-height:1.4;}
+.ci-hi-obs{background:var(--s2);border-radius:var(--rsm);padding:8px 12px;margin-top:8px;font-size:12px;color:var(--tx2);font-style:italic;border-left:3px solid var(--ac-d);}
+.btn-del-ci{background:none;border:none;color:var(--tx3);font-size:15px;cursor:pointer;padding:4px 8px;border-radius:5px;transition:color .15s;margin-left:auto;flex-shrink:0;}
+.btn-del-ci:hover{color:var(--red);}
+.ci-empty{text-align:center;padding:60px 0;color:var(--tx3);font-size:13px;}
+.ci-empty-ico{font-size:42px;margin-bottom:14px;}</style>
 </head>
 <body>
 
@@ -535,6 +582,10 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     <div class="sb-group">
       <div class="sb-lbl">Análise</div>
       <div class="sb-item" onclick="go('diagnostico')"><i class="sb-ico">🔬</i>Diagnóstico</div>
+    </div>
+    <div class="sb-group">
+      <div class="sb-lbl">Vendedor</div>
+      <div class="sb-item" onclick="go('checkin')"><i class="sb-ico">📋</i>Check-in</div>
     </div>
   </div>
   <div class="sb-chess"></div>
@@ -1114,6 +1165,135 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   </div>
 </div>
 
+<!-- ============ CHECK-IN DE ATENDIMENTO ============ -->
+<div id="p-checkin" style="display:none">
+  <div class="topbar">
+    <div><div class="eye">Vendedor</div><h1>Check-in de Atendimento</h1></div>
+    <div class="topbar-r">
+      <div class="ts"><span>Registros salvos</span><strong id="ciCount">0</strong></div>
+    </div>
+  </div>
+
+  <div class="g2" style="align-items:flex-start;gap:28px;">
+
+    <!-- FORMULÁRIO -->
+    <div>
+      <div class="card ci-form">
+
+        <!-- CLIENTE -->
+        <div class="ci-sec-title">Dados do cliente</div>
+        <div class="ci-row2">
+          <div class="ci-field">
+            <div class="ci-label">Nome do cliente</div>
+            <input class="ci-input" id="ci-nome" type="text" placeholder="Nome completo ou apelido"/>
+          </div>
+          <div class="ci-field">
+            <div class="ci-label">WhatsApp</div>
+            <input class="ci-input" id="ci-wa" type="tel" placeholder="(00) 00000-0000"/>
+          </div>
+        </div>
+
+        <!-- ATENDIMENTO -->
+        <div class="ci-sec-title" style="margin-top:6px">Dados do atendimento</div>
+        <div class="ci-row2">
+          <div class="ci-field">
+            <div class="ci-label">Vendedor responsável</div>
+            <input class="ci-input" id="ci-vendedor" type="text" placeholder="Seu nome"/>
+          </div>
+          <div class="ci-field">
+            <div class="ci-label">Data e hora do atendimento</div>
+            <input class="ci-input" id="ci-dt" type="datetime-local"/>
+          </div>
+        </div>
+
+        <!-- INTENÇÃO -->
+        <div class="ci-field">
+          <div class="ci-label">Intenção de compra</div>
+          <div class="ci-chips" id="ci-intencao">
+            <div class="ci-chip" data-val="Comprar agora" onclick="ciChip(this,'ci-intencao','sel-green')">Comprar agora</div>
+            <div class="ci-chip" data-val="Em breve (até 30d)" onclick="ciChip(this,'ci-intencao','sel-gold')">Em breve (até 30d)</div>
+            <div class="ci-chip" data-val="Pesquisando" onclick="ciChip(this,'ci-intencao','sel-gold')">Pesquisando</div>
+            <div class="ci-chip" data-val="Só curiosidade" onclick="ciChip(this,'ci-intencao','sel-red')">Só curiosidade</div>
+          </div>
+        </div>
+
+        <!-- MODELO -->
+        <div class="ci-field">
+          <div class="ci-label">Modelo(s) de interesse</div>
+          <input class="ci-input" id="ci-modelo" type="text" placeholder="Ex: Honda CB 500, Yamaha MT-07..."/>
+        </div>
+
+        <!-- QUALIFICAÇÃO -->
+        <div class="ci-sec-title" style="margin-top:6px">Qualificação</div>
+
+        <div class="ci-row2">
+          <div class="ci-field">
+            <div class="ci-label">Tem veículo para troca?</div>
+            <div class="ci-yesno" id="ci-troca">
+              <button class="ci-yn yes" onclick="ciYN('ci-troca','S')">✔ Sim</button>
+              <button class="ci-yn no"  onclick="ciYN('ci-troca','N')">✖ Não</button>
+            </div>
+          </div>
+          <div class="ci-field">
+            <div class="ci-label">CPF/CNPJ aprova financiamento?</div>
+            <div class="ci-yesno" id="ci-finan">
+              <button class="ci-yn yes" onclick="ciYN('ci-finan','S')">✔ Sim</button>
+              <button class="ci-yn no"  onclick="ciYN('ci-finan','N')">✖ Não</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="ci-row2">
+          <div class="ci-field">
+            <div class="ci-label">Cliente fez test drive?</div>
+            <div class="ci-yesno" id="ci-td">
+              <button class="ci-yn yes" onclick="ciYN('ci-td','S')">✔ Sim</button>
+              <button class="ci-yn no"  onclick="ciYN('ci-td','N')">✖ Não</button>
+            </div>
+          </div>
+          <div class="ci-field">
+            <div class="ci-label">Pediu proposta / simulação?</div>
+            <div class="ci-yesno" id="ci-prop">
+              <button class="ci-yn yes" onclick="ciYN('ci-prop','S')">✔ Sim</button>
+              <button class="ci-yn no"  onclick="ciYN('ci-prop','N')">✖ Não</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- DESFECHO -->
+        <div class="ci-field">
+          <div class="ci-label">Como o atendimento terminou?</div>
+          <div class="ci-chips" id="ci-desfecho">
+            <div class="ci-chip" data-val="Vai pensar"       onclick="ciChip(this,'ci-desfecho','sel-gold')">Vai pensar</div>
+            <div class="ci-chip" data-val="Pediu retorno"    onclick="ciChip(this,'ci-desfecho','sel-gold')">Pediu retorno</div>
+            <div class="ci-chip" data-val="Comprou"          onclick="ciChip(this,'ci-desfecho','sel-green')">🏆 Comprou</div>
+            <div class="ci-chip" data-val="Desistiu"         onclick="ciChip(this,'ci-desfecho','sel-red')">Desistiu</div>
+            <div class="ci-chip" data-val="Saiu sem definição" onclick="ciChip(this,'ci-desfecho','sel-red')">Saiu sem definição</div>
+          </div>
+        </div>
+
+        <!-- OBSERVAÇÕES -->
+        <div class="ci-field">
+          <div class="ci-label">Observações <span class="ci-opt">(opcional)</span></div>
+          <textarea class="ci-textarea" id="ci-obs" placeholder="Informações relevantes sobre o atendimento, preferências do cliente, objeções, etc."></textarea>
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:center;">
+          <button class="btn-ci-save" onclick="ciSave()">✔ Salvar Check-in</button>
+          <button class="btn-ci-clear" onclick="ciClear()">Limpar</button>
+          <span id="ci-err" style="font-size:12px;color:var(--red);display:none;margin-left:4px;"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTÓRICO -->
+    <div>
+      <div class="sec">Últimos check-ins registrados</div>
+      <div id="ci-history"></div>
+    </div>
+
+  </div>
+</div>
 
 </main>
 
@@ -1276,6 +1456,180 @@ function go(id){
   if(id==='funil') buildFunil();
   if(id==='filaespera') fetchFilaData();
   if(id==='diagnostico') buildDiagnostico();
+  if(id==='checkin') ciInit();
+}
+
+// ============================================================
+// CHECK-IN DE ATENDIMENTO
+// ============================================================
+function ciInit(){
+  // preenche datetime com agora se vazio
+  const dtEl = document.getElementById('ci-dt');
+  if(dtEl && !dtEl.value){
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    dtEl.value = now.toISOString().slice(0,16);
+  }
+  ciRenderHistory();
+  document.getElementById('ciCount').textContent = ciLoad().length;
+}
+
+function ciChip(el, groupId, selClass){
+  document.querySelectorAll('#'+groupId+' .ci-chip').forEach(c=>{
+    c.classList.remove('sel-gold','sel-green','sel-red');
+  });
+  el.classList.add(selClass);
+}
+
+function ciYN(groupId, val){
+  const grp = document.getElementById(groupId);
+  grp.querySelectorAll('.ci-yn').forEach(b=>b.classList.remove('sel'));
+  const target = grp.querySelector('.ci-yn.'+(val==='S'?'yes':'no'));
+  if(target) target.classList.add('sel');
+  grp.dataset.val = val;
+}
+
+function ciGetChip(groupId){
+  const sel = document.querySelector('#'+groupId+' .ci-chip.sel-gold, #'+groupId+' .ci-chip.sel-green, #'+groupId+' .ci-chip.sel-red');
+  return sel ? sel.dataset.val : '';
+}
+
+function ciGetYN(groupId){
+  const grp = document.getElementById(groupId);
+  return grp ? (grp.dataset.val || '') : '';
+}
+
+function ciClear(){
+  ['ci-nome','ci-wa','ci-vendedor','ci-modelo','ci-obs'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  const dtEl=document.getElementById('ci-dt');
+  if(dtEl){const now=new Date();now.setMinutes(now.getMinutes()-now.getTimezoneOffset());dtEl.value=now.toISOString().slice(0,16);}
+  ['ci-intencao','ci-desfecho'].forEach(g=>{
+    document.querySelectorAll('#'+g+' .ci-chip').forEach(c=>c.classList.remove('sel-gold','sel-green','sel-red'));
+  });
+  ['ci-troca','ci-finan','ci-td','ci-prop'].forEach(g=>{
+    const el=document.getElementById(g);
+    if(el){el.querySelectorAll('.ci-yn').forEach(b=>b.classList.remove('sel'));delete el.dataset.val;}
+  });
+  const err=document.getElementById('ci-err');if(err)err.style.display='none';
+}
+
+function ciSave(){
+  const nome    = document.getElementById('ci-nome').value.trim();
+  const wa      = document.getElementById('ci-wa').value.trim();
+  const vend    = document.getElementById('ci-vendedor').value.trim();
+  const dt      = document.getElementById('ci-dt').value;
+  const intenc  = ciGetChip('ci-intencao');
+  const modelo  = document.getElementById('ci-modelo').value.trim();
+  const desfech = ciGetChip('ci-desfecho');
+  const err     = document.getElementById('ci-err');
+
+  const missing = [];
+  if(!nome)    missing.push('Nome');
+  if(!wa)      missing.push('WhatsApp');
+  if(!vend)    missing.push('Vendedor');
+  if(!dt)      missing.push('Data/hora');
+  if(!intenc)  missing.push('Intenção de compra');
+  if(!desfech) missing.push('Desfecho');
+
+  if(missing.length){
+    err.textContent = 'Preencha: '+missing.join(', ');
+    err.style.display='inline';
+    return;
+  }
+  err.style.display='none';
+
+  const reg = {
+    id: Date.now(),
+    nome, wa, vend, dt, intenc, modelo,
+    troca:  ciGetYN('ci-troca'),
+    finan:  ciGetYN('ci-finan'),
+    td:     ciGetYN('ci-td'),
+    prop:   ciGetYN('ci-prop'),
+    desfech,
+    obs: document.getElementById('ci-obs').value.trim()
+  };
+
+  const arr = ciLoad();
+  arr.unshift(reg);
+  localStorage.setItem('ci_registros', JSON.stringify(arr));
+  document.getElementById('ciCount').textContent = arr.length;
+  ciClear();
+  ciRenderHistory();
+  const t=document.getElementById('toast');t.querySelector('span').textContent='Check-in salvo!';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+function ciLoad(){
+  try{ return JSON.parse(localStorage.getItem('ci_registros')||'[]'); }catch(e){return [];}
+}
+
+function ciDelete(id){
+  const arr = ciLoad().filter(r=>r.id!==id);
+  localStorage.setItem('ci_registros', JSON.stringify(arr));
+  document.getElementById('ciCount').textContent = arr.length;
+  ciRenderHistory();
+}
+
+const CI_CORES=['#D4AF37','#00A065','#E11D48','#6090FF','#F59E0B','#C09060','#9B59B6'];
+function ciAvatarColor(nome){return CI_CORES[(nome.charCodeAt(0)||0)%CI_CORES.length];}
+
+function ciYNLabel(v){return v==='S'?'✔ Sim':v==='N'?'✖ Não':'—';}
+
+function ciIntencaoBadgeClass(v){
+  if(v==='Comprar agora') return 'sel-green';
+  if(v==='Em breve (até 30d)'||v==='Pesquisando') return 'sel-gold';
+  return 'sel-red';
+}
+function ciDesfechoBadgeClass(v){
+  if(v==='Comprou') return 'sel-green';
+  if(v==='Vai pensar'||v==='Pediu retorno') return 'sel-gold';
+  return 'sel-red';
+}
+function ciBadgeStyle(cls){
+  if(cls==='sel-green') return 'background:var(--grn-bg);color:var(--grn-l);border:1px solid rgba(0,160,101,.3);';
+  if(cls==='sel-gold')  return 'background:var(--ac-faint);color:var(--ac);border:1px solid rgba(212,175,55,.3);';
+  return 'background:var(--red-bg);color:var(--red);border:1px solid rgba(225,29,72,.3);';
+}
+
+function ciRenderHistory(){
+  const arr = ciLoad();
+  const el = document.getElementById('ci-history');
+  if(!el) return;
+  if(!arr.length){
+    el.innerHTML='<div class="ci-empty"><div class="ci-empty-ico">📋</div>Nenhum check-in registrado ainda.</div>';
+    return;
+  }
+  el.innerHTML = arr.map(r=>{
+    const ini = r.nome.charAt(0).toUpperCase();
+    const clrAv = ciAvatarColor(r.nome);
+    const dtFmt = r.dt ? new Date(r.dt).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
+    const iCls = ciIntencaoBadgeClass(r.intenc);
+    const dCls = ciDesfechoBadgeClass(r.desfech);
+    return `<div class="ci-hi">
+      <div class="ci-hi-head">
+        <div class="ci-hi-av" style="background:${clrAv}">${ini}</div>
+        <div>
+          <div class="ci-hi-name">${r.nome}</div>
+          <div class="ci-hi-sub">${r.vend} · ${dtFmt}</div>
+        </div>
+        <div style="display:flex;gap:6px;margin-left:auto;align-items:center;flex-wrap:wrap;">
+          <span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;${ciBadgeStyle(iCls)}">${r.intenc||'—'}</span>
+          <span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;${ciBadgeStyle(dCls)}">${r.desfech||'—'}</span>
+          <button class="btn-del-ci" onclick="ciDelete(${r.id})" title="Excluir">✕</button>
+        </div>
+      </div>
+      <div class="ci-hi-grid">
+        <div class="ci-hi-f"><div class="ci-hi-k">WhatsApp</div><div class="ci-hi-v">${r.wa||'—'}</div></div>
+        <div class="ci-hi-f"><div class="ci-hi-k">Modelo(s)</div><div class="ci-hi-v">${r.modelo||'—'}</div></div>
+        <div class="ci-hi-f"><div class="ci-hi-k">Troca</div><div class="ci-hi-v">${ciYNLabel(r.troca)}</div></div>
+        <div class="ci-hi-f"><div class="ci-hi-k">Financiamento</div><div class="ci-hi-v">${ciYNLabel(r.finan)}</div></div>
+        <div class="ci-hi-f"><div class="ci-hi-k">Test drive</div><div class="ci-hi-v">${ciYNLabel(r.td)}</div></div>
+        <div class="ci-hi-f"><div class="ci-hi-k">Proposta/Simulação</div><div class="ci-hi-v">${ciYNLabel(r.prop)}</div></div>
+      </div>
+      ${r.obs?`<div class="ci-hi-obs">${r.obs}</div>`:''}
+    </div>`;
+  }).join('');
 }
 
 function updateOrbCount(){
