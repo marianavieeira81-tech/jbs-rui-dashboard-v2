@@ -1555,6 +1555,7 @@ function ciSave(){
   arr.unshift(reg);
   localStorage.setItem('ci_registros', JSON.stringify(arr));
   document.getElementById('ciCount').textContent = arr.length;
+  fetch('https://n8n-n8n.lrdyzi.easypanel.host/webhook/checkin-presencial',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(reg)}).catch(e=>console.warn('[checkin]',e));
   ciClear();
   ciRenderHistory();
   const t=document.getElementById('toast');t.querySelector('span').textContent='Check-in salvo!';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);
