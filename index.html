@@ -1746,11 +1746,47 @@ function renderLeadsPresenciais(){
 // FLUXO CHECK-IN — 5 modelos GWM
 // ============================================================
 const CI_GWM_MODELS = [
-  {name:'Haval', ico:'🚙', color:'#D4AF37', bg:'rgba(212,175,55,.07)', bdr:'rgba(212,175,55,.25)'},
-  {name:'ORA',   ico:'⚡', color:'#00A065', bg:'rgba(0,160,101,.07)',  bdr:'rgba(0,160,101,.25)'},
-  {name:'Tank',  ico:'🏔️', color:'#E11D48', bg:'rgba(225,29,72,.07)',  bdr:'rgba(225,29,72,.25)'},
-  {name:'Poer',  ico:'🛻', color:'#6090FF', bg:'rgba(96,144,255,.07)', bdr:'rgba(96,144,255,.25)'},
-  {name:'WEY',   ico:'💎', color:'#F97316', bg:'rgba(249,115,22,.07)', bdr:'rgba(249,115,22,.25)'},
+  {
+    name:'Haval', color:'#D4AF37', bg:'rgba(212,175,55,.07)', bdr:'rgba(212,175,55,.25)',
+    ico:`<svg width="46" height="46" viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 38 L17 10 L23 21 L28 13 L42 38 Z" fill="currentColor" opacity=".9"/>
+      <path d="M3 41 H43" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" opacity=".4"/>
+    </svg>`
+  },
+  {
+    name:'ORA', color:'#00A065', bg:'rgba(0,160,101,.07)', bdr:'rgba(0,160,101,.25)',
+    ico:`<svg width="46" height="46" viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="23" cy="23" r="17" stroke="currentColor" stroke-width="2.5"/>
+      <path d="M27 8 L15 24 H22 L18 38 L33 20 H26 Z" fill="currentColor"/>
+    </svg>`
+  },
+  {
+    name:'Tank', color:'#E11D48', bg:'rgba(225,29,72,.07)', bdr:'rgba(225,29,72,.25)',
+    ico:`<svg width="46" height="46" viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M23 3 L5 11 V24 C5 34.5 13.5 41 23 43 C32.5 41 41 34.5 41 24 V11 Z" fill="currentColor"/>
+      <path d="M16 24 L23 16 L30 24 L23 31 Z" fill="white" opacity=".35"/>
+    </svg>`
+  },
+  {
+    name:'Poer', color:'#6090FF', bg:'rgba(96,144,255,.07)', bdr:'rgba(96,144,255,.25)',
+    ico:`<svg width="46" height="46" viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="3" y="24" width="40" height="7" rx="2" fill="currentColor"/>
+      <path d="M3 24 V19 L12 17.5 L16 11 H27 V24 Z" fill="currentColor" opacity=".85"/>
+      <rect x="28" y="18" width="14" height="6" rx="1.5" fill="currentColor"/>
+      <rect x="9" y="13" width="9" height="6" rx="1" fill="white" opacity=".4"/>
+      <circle cx="13" cy="34" r="4.5" fill="currentColor" stroke="white" stroke-width="2"/>
+      <circle cx="33" cy="34" r="4.5" fill="currentColor" stroke="white" stroke-width="2"/>
+    </svg>`
+  },
+  {
+    name:'WEY', color:'#F97316', bg:'rgba(249,115,22,.07)', bdr:'rgba(249,115,22,.25)',
+    ico:`<svg width="46" height="46" viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8 20 L23 4 L38 20 Z" fill="currentColor"/>
+      <path d="M8 20 L23 42 L38 20 Z" fill="currentColor" opacity=".6"/>
+      <line x1="8" y1="20" x2="38" y2="20" stroke="white" stroke-width="1.5" opacity=".45"/>
+      <line x1="23" y1="4" x2="23" y2="20" stroke="white" stroke-width="1" opacity=".3"/>
+    </svg>`
+  },
 ];
 
 function openCICategories(){
@@ -1771,7 +1807,7 @@ function renderCIModelCards(){
   container.innerHTML = CI_GWM_MODELS.map(m=>{
     const leads = arr.filter(r=>(r.modelos||'').toLowerCase().includes(m.name.toLowerCase()));
     return `<div class="cat-card" onclick="openCIModel('${m.name}')" style="border-color:${m.bdr};background:${m.bg};">
-      <div class="cat-card-ico">${m.ico}</div>
+      <div class="cat-card-ico" style="color:${m.color};display:flex;align-items:center;justify-content:center;margin-bottom:14px;">${m.ico}</div>
       <div class="cat-card-lbl" style="color:${m.color};">${m.name}</div>
       <div class="cat-card-cnt" style="color:${m.color};">${leads.length}</div>
       <div class="cat-card-sub">leads com interesse</div>
