@@ -658,6 +658,13 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     </div>
   </div>
 
+  <!-- BUSCA POR TELEFONE -->
+  <div style="margin-bottom:22px;display:flex;gap:10px;align-items:center;">
+    <div style="position:relative;max-width:360px;flex:1;"><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none;opacity:.45;">📞</span><input id="ps-filaespera" type="tel" class="ci-input" style="padding-left:36px;" placeholder="Buscar lead por número..." oninput="phoneSearch(this.value,'filaespera')"/></div>
+    <button onclick="document.getElementById('ps-filaespera').value='';phoneSearch('','filaespera')" style="background:none;border:1px solid var(--bdr);color:var(--tx3);padding:9px 13px;border-radius:var(--rsm);font-size:12px;cursor:pointer;font-family:inherit;" title="Limpar">✕</button>
+  </div>
+  <div id="psr-filaespera" style="margin-bottom:4px;"></div>
+
   <!-- KPIs -->
   <div class="kpi-grid" style="margin-bottom:20px;">
     <div class="kpi">
@@ -874,6 +881,13 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     <div><div class="eye">Principal</div><h1>Central de Leads</h1></div>
   </div>
 
+  <!-- BUSCA POR TELEFONE -->
+  <div style="margin-bottom:22px;display:flex;gap:10px;align-items:center;">
+    <div style="position:relative;max-width:360px;flex:1;"><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none;opacity:.45;">📞</span><input id="ps-plataformas" type="tel" class="ci-input" style="padding-left:36px;" placeholder="Buscar lead por número..." oninput="phoneSearch(this.value,'plataformas')"/></div>
+    <button onclick="document.getElementById('ps-plataformas').value='';phoneSearch('','plataformas')" style="background:none;border:1px solid var(--bdr);color:var(--tx3);padding:9px 13px;border-radius:var(--rsm);font-size:12px;cursor:pointer;font-family:inherit;" title="Limpar">✕</button>
+  </div>
+  <div id="psr-plataformas" style="margin-bottom:4px;"></div>
+
   <!-- controles de período + relatório -->
   <div class="plt-controls">
     <button class="period-btn active" onclick="setPeriod('dia',this)">Diário</button>
@@ -1037,6 +1051,13 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 <!-- ============ FUNIL ============ -->
 <div id="p-funil" style="display:none">
   <div class="topbar"><div><div class="eye">Leads</div><h1>Funil de Qualificação</h1></div></div>
+  <!-- BUSCA POR TELEFONE -->
+  <div style="margin-bottom:22px;display:flex;gap:10px;align-items:center;">
+    <div style="position:relative;max-width:360px;flex:1;"><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none;opacity:.45;">📞</span><input id="ps-funil" type="tel" class="ci-input" style="padding-left:36px;" placeholder="Buscar lead por número..." oninput="phoneSearch(this.value,'funil')"/></div>
+    <button onclick="document.getElementById('ps-funil').value='';phoneSearch('','funil')" style="background:none;border:1px solid var(--bdr);color:var(--tx3);padding:9px 13px;border-radius:var(--rsm);font-size:12px;cursor:pointer;font-family:inherit;" title="Limpar">✕</button>
+  </div>
+  <div id="psr-funil" style="margin-bottom:4px;"></div>
+
   <div style="font-size:13px;color:var(--tx2);margin-bottom:24px;line-height:1.7;max-width:600px">Clique em cada etapa para expandir. Cada fase mostra <span style="color:var(--grn-l);font-weight:600">✓ quem avançou</span> e <span style="color:var(--red);font-weight:600">✗ quem parou</span> naquela etapa — com nome e canal de origem.</div>
   <div id="funnelWrap"></div>
 </div>
@@ -1065,6 +1086,13 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       <div class="ts"><strong>Últimos 30 dias</strong>100 leads analisados</div>
     </div>
   </div>
+
+  <!-- BUSCA POR TELEFONE -->
+  <div style="margin-bottom:22px;display:flex;gap:10px;align-items:center;">
+    <div style="position:relative;max-width:360px;flex:1;"><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none;opacity:.45;">📞</span><input id="ps-diagnostico" type="tel" class="ci-input" style="padding-left:36px;" placeholder="Buscar lead por número..." oninput="phoneSearch(this.value,'diagnostico')"/></div>
+    <button onclick="document.getElementById('ps-diagnostico').value='';phoneSearch('','diagnostico')" style="background:none;border:1px solid var(--bdr);color:var(--tx3);padding:9px 13px;border-radius:var(--rsm);font-size:12px;cursor:pointer;font-family:inherit;" title="Limpar">✕</button>
+  </div>
+  <div id="psr-diagnostico" style="margin-bottom:4px;"></div>
 
   <div class="kpi-grid">
     <div class="kpi gold">
@@ -1726,6 +1754,88 @@ function renderLeadsPresenciais(){
         </div>`;
       }).join('')}
     </div>`;
+}
+
+// ============================================================
+// BUSCA POR TELEFONE — compartilhada entre as 4 abas
+// ============================================================
+function phoneSearch(term, pageId){
+  const resEl = document.getElementById('psr-'+pageId);
+  if(!resEl) return;
+  const digits = term.replace(/[^0-9]/g,'');
+  if(!digits){ resEl.innerHTML=''; return; }
+
+  const results = [];
+  const seen = new Set();
+  const add = (nome,tel,extra,src)=>{
+    const key = (tel||'').replace(/[^0-9]/g,'')+nome;
+    if(seen.has(key)) return;
+    seen.add(key);
+    results.push({nome,tel,extra,src});
+  };
+
+  // Leads WA (demo ou produção)
+  const waLeads = (DATA_MODE==='production'&&ACTIVE_LEADS.length>0)
+    ? ACTIVE_LEADS
+    : NETWORK_LEADS_MES;
+  waLeads.forEach(l=>{
+    if((l.telefone||'').replace(/[^0-9]/g,'').includes(digits))
+      add(l.nome, l.telefone, l.modelo||'—', 'WhatsApp');
+  });
+
+  // Fila de espera (demo ou produção)
+  const filaLeads = (DATA_MODE==='production'&&ACTIVE_FILA.length>0)
+    ? ACTIVE_FILA : DEMO_FILA;
+  filaLeads.forEach(l=>{
+    if((l.telefone||'').replace(/[^0-9]/g,'').includes(digits))
+      add(l.nome, l.telefone, l.modelo||'—', 'Fila de Espera');
+  });
+
+  // Check-ins presenciais (localStorage)
+  ciLoad().forEach(r=>{
+    if((r.wa||'').replace(/[^0-9]/g,'').includes(digits))
+      add(r.nome, r.wa, r.modelos||'—', 'Check-in');
+  });
+
+  // Diagnóstico
+  Object.values(DIAG_LEADS||{}).forEach(arr=>{
+    arr.forEach(l=>{
+      const telD = (l.tel||'').replace(/[^0-9]/g,'');
+      if(telD.includes(digits)) add(l.nome, l.tel, l.meta||'—', 'Diagnóstico');
+    });
+  });
+
+  if(!results.length){
+    resEl.innerHTML=`<div style="background:var(--surface);border:1px solid var(--bdr);border-radius:var(--rsm);padding:14px 20px;font-size:13px;color:var(--tx3);">Nenhum lead encontrado com esse número.</div>`;
+    return;
+  }
+
+  const src_style = {
+    'WhatsApp':       'background:rgba(37,211,102,.1);color:#25D366;border:1px solid rgba(37,211,102,.2);',
+    'Fila de Espera': 'background:var(--ac-faint);color:var(--ac);border:1px solid rgba(212,175,55,.2);',
+    'Check-in':       'background:rgba(99,102,241,.1);color:#818CF8;border:1px solid rgba(99,102,241,.2);',
+    'Diagnóstico':    'background:var(--red-bg);color:var(--red);border:1px solid rgba(225,29,72,.2);',
+  };
+
+  resEl.innerHTML = `<div style="background:var(--surface);border:1px solid rgba(212,175,55,.18);border-radius:var(--r);overflow:hidden;">
+    <div style="padding:10px 20px;border-bottom:1px solid var(--bdr);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--tx3);font-weight:700;">
+      ${results.length} lead${results.length!==1?'s':''} encontrado${results.length!==1?'s':''}
+    </div>
+    ${results.map(r=>{
+      const col = ciAvatarColor(r.nome||'?');
+      const ini = (r.nome||'?').charAt(0).toUpperCase();
+      const waLink = (r.tel||'').replace(/[^0-9]/g,'');
+      return `<div style="display:flex;align-items:center;gap:14px;padding:12px 20px;border-bottom:1px solid var(--s2);transition:background .15s;" onmouseover="this.style.background='var(--s2)'" onmouseout="this.style.background=''">
+        <div style="width:34px;height:34px;border-radius:50%;background:${col};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;font-family:'Bebas Neue',cursive;flex-shrink:0;">${ini}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:600;color:var(--tx);">${r.nome||'—'}</div>
+          <div style="font-size:11px;color:var(--tx3);margin-top:2px;font-family:'DM Mono',monospace;">${r.tel||'—'} · ${r.extra}</div>
+        </div>
+        <span style="padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;flex-shrink:0;${src_style[r.src]||'background:var(--s2);color:var(--tx2);border:1px solid var(--bdr);'}">${r.src}</span>
+        ${waLink?`<a href="https://wa.me/55${waLink}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:5px;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.2);color:#25D366;padding:5px 11px;border-radius:20px;font-size:11px;font-weight:700;text-decoration:none;white-space:nowrap;flex-shrink:0;transition:all .2s;" onmouseover="this.style.background='rgba(37,211,102,.2)'" onmouseout="this.style.background='rgba(37,211,102,.1)'">📞 WA</a>`:''}
+      </div>`;
+    }).join('')}
+  </div>`;
 }
 
 function updateOrbCount(){
