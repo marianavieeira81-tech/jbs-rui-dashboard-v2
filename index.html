@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
@@ -182,6 +182,52 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 .diag-item{display:flex;align-items:flex-start;gap:12px;font-size:13px;line-height:1.6;color:var(--tx2);}
 .diag-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
 .diag-item strong{color:var(--tx);}
+
+/* ============================================================
+   DIAGNÓSTICO DE LEADS ESFRIADOS
+   ============================================================ */
+.dr-row{display:flex;align-items:center;gap:12px;margin-bottom:10px;cursor:pointer;padding:3px 0;}
+.dr-row:hover .dr-fill{filter:brightness(1.18);}
+.dr-lbl{font-size:12px;font-weight:500;color:var(--tx2);width:220px;flex-shrink:0;text-align:right;line-height:1.4;}
+.dr-track{flex:1;height:28px;background:var(--s2);border-radius:5px;overflow:hidden;border:1px solid var(--bdr);}
+.dr-fill{height:100%;display:flex;align-items:center;padding:0 10px;font-size:11px;font-weight:700;color:rgba(0,0,0,.82);border-radius:5px;width:0;transition:width .9s cubic-bezier(.4,0,.2,1);}
+.dr-num{font-size:13px;font-weight:700;color:var(--tx);width:42px;text-align:right;font-family:'DM Mono',monospace;}
+.dr-pct{font-size:11px;color:var(--tx3);width:36px;text-align:right;font-family:'DM Mono',monospace;}
+.dr-cat-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;box-shadow:0 0 6px currentColor;}
+.dr-legend{display:flex;gap:20px;margin-bottom:22px;flex-wrap:wrap;}
+.dr-legend-item{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:600;color:var(--tx2);letter-spacing:.04em;}
+.dr-cat-card{background:var(--surface);border-radius:var(--r);border:1px solid var(--bdr);padding:24px;display:flex;align-items:center;gap:18px;transition:all .25s;}
+.dr-cat-card:hover{transform:translateY(-2px);box-shadow:var(--sh-md);}
+.dr-cat-ring{flex-shrink:0;}
+.dr-cat-info{flex:1;}
+.dr-cat-pct{font-size:32px;font-weight:700;font-family:'Bebas Neue',cursive;line-height:1;margin-bottom:4px;}
+.dr-cat-name{font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--tx3);margin-bottom:8px;}
+.dr-cat-items{font-size:11px;color:var(--tx3);line-height:1.9;}
+.dr-cat-items strong{color:var(--tx2);font-weight:600;}
+.dr-method-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px;}
+.dr-step{background:var(--s2);border-radius:var(--rsm);padding:16px 18px;border:1px solid var(--bdr);}
+.dr-step-n{font-size:20px;font-weight:700;font-family:'Bebas Neue',cursive;color:var(--ac);margin-bottom:6px;}
+.dr-step-t{font-size:12px;font-weight:700;color:var(--tx);margin-bottom:4px;}
+.dr-step-d{font-size:11px;color:var(--tx3);line-height:1.6;}
+/* MODAL LEADS POR MOTIVO */
+.diag-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:800;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.diag-modal-bg.show{display:flex;}
+.diag-modal-box{background:var(--surface);border:1px solid rgba(212,175,55,.2);border-radius:var(--r);width:480px;max-height:82vh;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,.9);}
+.diag-modal-head{padding:22px 24px 16px;border-bottom:1px solid var(--bdr);flex-shrink:0;position:relative;}
+.diag-modal-title{font-size:16px;font-weight:700;color:var(--tx);margin-bottom:6px;padding-right:28px;}
+.diag-modal-sub{font-size:11px;color:var(--tx3);}
+.diag-modal-close{position:absolute;top:14px;right:16px;background:none;border:none;color:var(--tx3);font-size:18px;cursor:pointer;line-height:1;padding:4px;transition:color .15s;}
+.diag-modal-close:hover{color:var(--tx);}
+.diag-modal-body{overflow-y:auto;padding:8px 24px 20px;flex:1;scrollbar-width:thin;scrollbar-color:var(--s3) transparent;}
+.diag-lead-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--s2);}
+.diag-lead-row:last-child{border-bottom:none;}
+.diag-lead-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;font-family:'Bebas Neue',cursive;}
+.diag-lead-info{flex:1;}
+.diag-lead-name{font-size:13px;font-weight:600;color:var(--tx);margin-bottom:2px;}
+.diag-lead-meta{font-size:11px;color:var(--tx3);}
+.diag-wa-btn{display:flex;align-items:center;gap:6px;background:rgba(37,211,102,.12);border:1px solid rgba(37,211,102,.25);color:#25D366;padding:6px 13px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;text-decoration:none;transition:all .2s;flex-shrink:0;}
+.diag-wa-btn:hover{background:rgba(37,211,102,.22);transform:scale(1.04);}
+.diag-modal-more{font-size:11px;color:var(--tx3);text-align:center;padding:12px 0 4px;font-style:italic;}
 
 /* ============================================================
    COBERTURA FORA DO HORÁRIO
@@ -372,7 +418,37 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 
 /* FUNIL — CHIP COM TELEFONE */
 .lchip-phone{font-size:9px;color:var(--tx3);font-family:'DM Mono',monospace;margin-top:2px;}
-</style>
+
+/* ============================================================
+   FILA DE LEADS — novos componentes
+   ============================================================ */
+.ftab{background:var(--s2);border:1px solid var(--bdr);border-radius:var(--rsm);padding:6px 14px;font-size:12px;font-weight:500;color:var(--tx2);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.ftab:hover{background:var(--s3);color:var(--tx);}
+.ftab.active{background:var(--ac-faint);color:var(--ac);border-color:rgba(212,175,55,.2);}
+.flead-row{display:flex;align-items:center;gap:12px;padding:12px 24px;border-bottom:1px solid var(--s2);transition:background .15s;cursor:default;}
+.flead-row:hover{background:var(--s2);}
+.flead-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
+.flead-info{flex:1;min-width:0;}
+.flead-name{font-size:13px;font-weight:600;color:var(--tx);}
+.flead-meta{font-size:11px;color:var(--tx3);margin-top:2px;}
+.flead-temp{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;flex-shrink:0;}
+.ft-hot{background:rgba(225,29,72,.12);color:#FF6B6B;}
+.ft-warm{background:rgba(212,175,55,.1);color:var(--ac);}
+.ft-cold{background:rgba(30,80,200,.12);color:#6090FF;}
+.flead-score{font-size:16px;font-weight:700;color:var(--grn-l);width:32px;text-align:right;flex-shrink:0;}
+.fstock-item{padding:12px 0;border-bottom:1px solid var(--s2);}
+.fstock-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;}
+.fstock-model{font-size:13px;font-weight:600;color:var(--tx);}
+.fstock-leads{font-size:11px;color:var(--tx3);margin-top:2px;}
+.fstock-un{font-size:13px;font-weight:700;}
+.fstock-bar-bg{height:5px;background:var(--s2);border-radius:3px;overflow:hidden;}
+.fstock-bar{height:100%;border-radius:3px;transition:width .8s ease;}
+.fnotif-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--s2);}
+.fnotif-ico{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.fnotif-body{flex:1;min-width:0;}
+.fnotif-name{font-size:12px;font-weight:600;color:var(--tx);}
+.fnotif-text{font-size:11px;color:var(--tx3);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.fnotif-time{font-size:11px;color:var(--tx3);flex-shrink:0;margin-top:1px;font-family:'DM Mono',monospace;}</style>
 </head>
 <body>
 
@@ -458,6 +534,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     </div>
     <div class="sb-group">
       <div class="sb-lbl">Análise</div>
+      <div class="sb-item" onclick="go('diagnostico')"><i class="sb-ico">🔬</i>Diagnóstico</div>
     </div>
   </div>
   <div class="sb-chess"></div>
@@ -524,20 +601,224 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 <!-- ============ FILA DE ESPERA ============ -->
 <div id="p-filaespera" style="display:none">
   <div class="topbar">
-    <div><div class="eye">Principal</div><h1>Fila de Espera</h1></div>
+    <div><div class="eye">Pipeline do Agente</div><h1>Fila de Leads</h1></div>
     <div class="topbar-r">
-      <div class="ts"><span>Atualizado automaticamente</span><strong id="filaTs">—</strong></div>
-      <span class="fila-badge" id="filaBadge">0 na fila</span>
-      <button class="btn-ref" onclick="fetchFilaData()">↺ Atualizar</button>
+      <div class="ts"><span>2 de junho de 2026</span><strong>06:25</strong></div>
+      <button class="btn-ref" onclick="filterFila(document.querySelector('.ftab.active'),'todos')">&#8629; Atualizar</button>
     </div>
   </div>
-  <div class="fila-info-box">
-    Alimentada automaticamente pelo Rui — quando um cliente aceita participar da fila após o follow-up, o agente registra e a lista se atualiza aqui. A ordem é <strong style="color:var(--ac)">cronológica</strong>: quem espera há mais tempo aparece no topo. Atualização automática a cada 30 segundos.
-  </div>
-  <div id="filaList"></div>
-</div>
 
-<!-- ============ PLATAFORMAS ============ -->
+  <!-- KPIs -->
+  <div class="kpi-grid" style="margin-bottom:20px;">
+    <div class="kpi">
+      <div class="kpi-tag">FILA</div>
+      <div class="kpi-lbl">Leads na Fila</div>
+      <div class="kpi-val">347</div>
+      <div class="kpi-sub"><span class="pill up">&#8593; 23 esta semana</span></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-tag">HOJE</div>
+      <div class="kpi-lbl">Contatos Hoje</div>
+      <div class="kpi-val">41</div>
+      <div class="kpi-sub"><span class="pill up">&#8593; 68% de resposta</span></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-tag">ESPERA</div>
+      <div class="kpi-lbl">Tempo M&eacute;dio</div>
+      <div class="kpi-val">18d</div>
+      <div class="kpi-sub"><span class="pill nu">&#9888; Alta demanda</span></div>
+    </div>
+    <div class="kpi gold">
+      <div class="kpi-tag">30D</div>
+      <div class="kpi-lbl">Convertidos</div>
+      <div class="kpi-val">64</div>
+      <div class="kpi-sub"><span class="pill up">&#8593; 12 vs. m&ecirc;s ant.</span></div>
+    </div>
+  </div>
+
+  <!-- GRID PRINCIPAL: LEADS + ESTOQUE -->
+  <div style="display:grid;grid-template-columns:1fr 320px;gap:18px;margin-bottom:18px;">
+
+    <!-- PAINEL DE LEADS -->
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div style="padding:20px 24px 0;display:flex;align-items:center;gap:10px;">
+        <span style="font-size:13px;opacity:.5;">&#9776;</span>
+        <span class="ctitle" style="margin:0;">Leads Qualificados &mdash; Fila de Espera</span>
+      </div>
+      <!-- FILTROS -->
+      <div style="display:flex;gap:8px;padding:14px 24px 0;flex-wrap:wrap;">
+        <button class="ftab active" onclick="filterFila(this,'todos')">Todos</button>
+        <button class="ftab" onclick="filterFila(this,'alta')">Prioridade alta</button>
+        <button class="ftab" onclick="filterFila(this,'estoque')">Aguardando estoque</button>
+        <button class="ftab" onclick="filterFila(this,'frio')">Sem resposta</button>
+      </div>
+      <!-- LISTA -->
+      <div id="filaLeadsList" style="padding:8px 0;">
+        <div class="flead-row" data-temp="hot" data-score="94" data-model="HB20 Comfort">
+          <div class="flead-av" style="background:#7C3AED;">MS</div>
+          <div class="flead-info">
+            <div class="flead-name">Marcos Silva</div>
+            <div class="flead-meta">HB20 Comfort &middot; Aguardando 34d</div>
+          </div>
+          <span class="flead-temp ft-hot">&#128293; Quente</span>
+          <div class="flead-score">94</div>
+        </div>
+        <div class="flead-row" data-temp="hot" data-score="91" data-model="HB20 Comfort">
+          <div class="flead-av" style="background:#DB2777;">FS</div>
+          <div class="flead-info">
+            <div class="flead-name">Fernanda Santos</div>
+            <div class="flead-meta">HB20 Comfort &middot; Aguardando 28d</div>
+          </div>
+          <span class="flead-temp ft-hot">&#128293; Quente</span>
+          <div class="flead-score">91</div>
+        </div>
+        <div class="flead-row" data-temp="hot" data-score="87" data-model="Creta Ultimate">
+          <div class="flead-av" style="background:#2563EB;">AP</div>
+          <div class="flead-info">
+            <div class="flead-name">Ana Paula R.</div>
+            <div class="flead-meta">Creta Ultimate &middot; Aguardando 21d</div>
+          </div>
+          <span class="flead-temp ft-hot">&#128293; Quente</span>
+          <div class="flead-score">87</div>
+        </div>
+        <div class="flead-row" data-temp="warm" data-score="72" data-model="Tucson Hybrid">
+          <div class="flead-av" style="background:#D97706;">CF</div>
+          <div class="flead-info">
+            <div class="flead-name">Carlos Ferreira</div>
+            <div class="flead-meta">Tucson Hybrid &middot; Aguardando 15d</div>
+          </div>
+          <span class="flead-temp ft-warm">Morno</span>
+          <div class="flead-score">72</div>
+        </div>
+        <div class="flead-row" data-temp="warm" data-score="68" data-model="HB20 Sport">
+          <div class="flead-av" style="background:#059669;">JM</div>
+          <div class="flead-info">
+            <div class="flead-name">Juliana Melo</div>
+            <div class="flead-meta">HB20 Sport &middot; Aguardando 9d</div>
+          </div>
+          <span class="flead-temp ft-warm">Morno</span>
+          <div class="flead-score">68</div>
+        </div>
+        <div class="flead-row" data-temp="cold" data-score="51" data-model="Santa Fe">
+          <div class="flead-av" style="background:#4B5563;">RT</div>
+          <div class="flead-info">
+            <div class="flead-name">Roberto Teixeira</div>
+            <div class="flead-meta">Santa Fe &middot; Aguardando 42d</div>
+          </div>
+          <span class="flead-temp ft-cold">Frio</span>
+          <div class="flead-score">51</div>
+        </div>
+        <div class="flead-row" data-temp="cold" data-score="44" data-model="Creta Ultimate">
+          <div class="flead-av" style="background:#4B5563;">PO</div>
+          <div class="flead-info">
+            <div class="flead-name">Pedro Oliveira</div>
+            <div class="flead-meta">Creta Ultimate &middot; Aguardando 55d</div>
+          </div>
+          <span class="flead-temp ft-cold">Frio</span>
+          <div class="flead-score">44</div>
+        </div>
+      </div>
+      <div style="padding:14px 24px;border-top:1px solid var(--bdr);">
+        <button class="btn-ref" style="width:100%;justify-content:center;background:transparent;border:1px solid var(--s4);color:var(--tx2);border-radius:var(--rsm);padding:11px;font-size:13px;display:flex;align-items:center;gap:7px;">
+          Ver todos os 347 leads &#8599;
+        </button>
+      </div>
+    </div>
+
+    <!-- PAINEL ESTOQUE -->
+    <div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;">
+      <div style="padding:20px 22px 0;display:flex;align-items:center;gap:10px;">
+        <span style="font-size:13px;opacity:.5;">&#128663;</span>
+        <span class="ctitle" style="margin:0;">Estoque &times; Demanda Represada</span>
+      </div>
+      <div style="padding:10px 22px;flex:1;">
+        <div class="fstock-item">
+          <div class="fstock-top">
+            <div><div class="fstock-model">HB20 Comfort</div><div class="fstock-leads">127 leads aguardando</div></div>
+            <span class="fstock-un" style="color:var(--red);">2 un.</span>
+          </div>
+          <div class="fstock-bar-bg"><div class="fstock-bar" style="width:2%;background:var(--red);"></div></div>
+        </div>
+        <div class="fstock-item">
+          <div class="fstock-top">
+            <div><div class="fstock-model">Creta Ultimate</div><div class="fstock-leads">98 leads aguardando</div></div>
+            <span class="fstock-un" style="color:var(--red);">0 un.</span>
+          </div>
+          <div class="fstock-bar-bg"><div class="fstock-bar" style="width:0%;background:var(--red);"></div></div>
+        </div>
+        <div class="fstock-item">
+          <div class="fstock-top">
+            <div><div class="fstock-model">HB20 Sport</div><div class="fstock-leads">63 leads aguardando</div></div>
+            <span class="fstock-un" style="color:#F59E0B;">5 un.</span>
+          </div>
+          <div class="fstock-bar-bg"><div class="fstock-bar" style="width:30%;background:#F59E0B;"></div></div>
+        </div>
+        <div class="fstock-item">
+          <div class="fstock-top">
+            <div><div class="fstock-model">Tucson Hybrid</div><div class="fstock-leads">41 leads aguardando</div></div>
+            <span class="fstock-un" style="color:#F59E0B;">4 un.</span>
+          </div>
+          <div class="fstock-bar-bg"><div class="fstock-bar" style="width:35%;background:#F59E0B;"></div></div>
+        </div>
+        <div class="fstock-item" style="border-bottom:none;">
+          <div class="fstock-top">
+            <div><div class="fstock-model">Santa Fe</div><div class="fstock-leads">18 leads aguardando</div></div>
+            <span class="fstock-un" style="color:var(--grn-l);">9 un.</span>
+          </div>
+          <div class="fstock-bar-bg"><div class="fstock-bar" style="width:75%;background:var(--grn-l);"></div></div>
+        </div>
+      </div>
+      <div style="padding:14px 22px;border-top:1px solid var(--bdr);">
+        <button class="btn-ref" style="width:100%;justify-content:center;background:transparent;border:1px solid var(--s4);color:var(--tx2);border-radius:var(--rsm);padding:11px;font-size:12px;display:flex;align-items:center;gap:7px;">
+          Como o Rui prioriza notifica&ccedil;&otilde;es &#8599;
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ATIVIDADE RECENTE DO RUI -->
+  <div class="card" style="padding:0;overflow:hidden;">
+    <div style="padding:18px 24px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--bdr);">
+      <span style="font-size:14px;">&#129302;</span>
+      <span class="ctitle" style="margin:0;">Atividade Recente do Rui</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;">
+      <div style="padding:18px 24px;border-right:1px solid var(--bdr);">
+        <div class="ctitle" style="margin-bottom:14px;">Notifica&ccedil;&otilde;es Enviadas</div>
+        <div class="fnotif-item">
+          <div class="fnotif-ico" style="background:var(--grn-bg);">&#128228;</div>
+          <div class="fnotif-body">
+            <div class="fnotif-name">Marcos Silva</div>
+            <div class="fnotif-text">&ldquo;Ol&aacute; Marcos! O HB20 Comfort que voc&ecirc; esperava...&rdquo;</div>
+          </div>
+          <div class="fnotif-time">14:32</div>
+        </div>
+        <div class="fnotif-item">
+          <div class="fnotif-ico" style="background:rgba(30,80,200,.15);">&#128172;</div>
+          <div class="fnotif-body">
+            <div class="fnotif-name">Ana Paula R. <span style="color:#6090FF;font-weight:600;">respondeu</span></div>
+            <div class="fnotif-text">&ldquo;Sim! Ainda tenho interesse, pode reservar...&rdquo;</div>
+          </div>
+          <div class="fnotif-time">13:58</div>
+        </div>
+        <div class="fnotif-item" style="border-bottom:none;">
+          <div class="fnotif-ico" style="background:rgba(212,175,55,.1);">&#9200;</div>
+          <div class="fnotif-body">
+            <div class="fnotif-name">Carlos Ferreira</div>
+            <div class="fnotif-text">Follow-up agendado &mdash; 3&ordm; contato</div>
+          </div>
+          <div class="fnotif-time">amanh&atilde;</div>
+        </div>
+      </div>
+      <div style="padding:18px 24px;">
+        <div class="ctitle" style="margin-bottom:14px;">Exemplo de Mensagem do Rui</div>
+        <div style="background:rgba(212,175,55,.07);border:1px solid rgba(212,175,55,.18);border-radius:10px;padding:16px;font-size:13px;line-height:1.8;color:var(--tx2);">
+          <strong style="color:var(--ac);">Rui &rarr;</strong> &ldquo;Ol&aacute;, Marcos! Tudo bem? Sou o Rui, assistente da concession&aacute;ria. &#128522; Passando pra te avisar que o <strong style="color:var(--tx);">HB20 Comfort Prata</strong> que voc&ecirc; tanto esperava acabou de chegar ao nosso estoque. Temos apenas <strong style="color:var(--tx);">2 unidades</strong> dispon&iacute;veis. Posso reservar a sua? Fico &agrave; disposi&ccedil;&atilde;o para agendar uma visita quando preferir.&rdquo;
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 <div id="p-plataformas" style="display:none">
   <div class="topbar">
     <div><div class="eye">Principal</div><h1>Plataformas</h1></div>
@@ -644,7 +925,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       <div class="cob-sub">mais da metade vem fora do horário comercial</div>
     </div>
     <div class="cob-card" data-tip="Valor potencial dos leads qualificados fora do horário humano esta semana — sem o Rui, todos perderiam o timing.">
-      <div class="cob-val" style="font-size:28px">R$ 5,8M</div>
+      <div class="cob-val" data-kpi="cobCarteira" style="font-size:28px">R$ 5,8M</div>
       <div class="cob-lbl">Carteira potencial noturna</div>
       <div class="cob-sub">em leads qualificados pelo Rui fora do horário</div>
     </div>
@@ -719,6 +1000,119 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   </div>
 </div>
 
+<!-- MODAL DIAGNÓSTICO — LEADS POR MOTIVO -->
+<div class="diag-modal-bg" id="diagModalBg" onclick="if(event.target===this)closeDiagModal()">
+  <div class="diag-modal-box">
+    <div class="diag-modal-head">
+      <div class="diag-modal-title" id="diagModalTitle"></div>
+      <div class="diag-modal-sub" id="diagModalSub"></div>
+      <button class="diag-modal-close" onclick="closeDiagModal()">✕</button>
+    </div>
+    <div class="diag-modal-body" id="diagModalBody"></div>
+  </div>
+</div>
+
+<!-- ============ DIAGNÓSTICO ============ -->
+<div id="p-diagnostico" style="display:none">
+  <div class="topbar">
+    <div>
+      <div class="eye">Análise Post-mortem · Claude IA</div>
+      <h1>Diagnóstico de Leads Esfriados</h1>
+    </div>
+    <div class="topbar-r">
+      <div class="ts"><strong>Últimos 30 dias</strong>100 leads analisados</div>
+    </div>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi gold">
+      <div class="kpi-lbl">Total Esfriados</div>
+      <div class="kpi-val">100</div>
+      <div class="kpi-sub">leads sem conversão no período</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Diagnóstico Concluído</div>
+      <div class="kpi-val" style="color:var(--grn-l)">78</div>
+      <div class="kpi-sub"><span class="pill up">78%</span> com causa identificada</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Motivo Principal</div>
+      <div class="kpi-val" style="font-size:20px;font-family:'DM Sans',sans-serif;font-weight:700;line-height:1.2;padding-top:4px">Sem resposta</div>
+      <div class="kpi-sub">após follow-up · <span style="color:var(--ac);font-weight:700">28 leads</span></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Tempo de Diagnóstico</div>
+      <div class="kpi-val" style="color:var(--ac)">2.3s</div>
+      <div class="kpi-sub">por lead · análise via Claude</div>
+    </div>
+  </div>
+
+  <div class="sec">Distribuição por Motivo · clique em qualquer barra para ver os leads</div>
+  <div class="card">
+    <div class="dr-legend">
+      <div class="dr-legend-item"><span class="dr-cat-dot" style="background:#E11D48;color:#E11D48"></span>Gestão do Lead</div>
+      <div class="dr-legend-item"><span class="dr-cat-dot" style="background:#D4AF37;color:#D4AF37"></span>Produto / Estoque</div>
+      <div class="dr-legend-item"><span class="dr-cat-dot" style="background:#6090FF;color:#6090FF"></span>Processo Comercial</div>
+    </div>
+    <div id="diagBars"></div>
+  </div>
+
+  <div class="sec">Responsabilidade por Área</div>
+  <div class="g3">
+    <div class="dr-cat-card" style="border-color:rgba(225,29,72,.2)">
+      <div class="dr-cat-ring">
+        <svg width="80" height="80" viewBox="0 0 80 80">
+          <circle cx="40" cy="40" r="30" fill="none" stroke="var(--s3)" stroke-width="7"/>
+          <circle cx="40" cy="40" r="30" fill="none" stroke="#E11D48" stroke-width="7" stroke-dasharray="60.3 188.5" stroke-dashoffset="47.1" stroke-linecap="round" style="filter:drop-shadow(0 0 6px #E11D48)"/>
+          <text x="40" y="45" text-anchor="middle" font-size="14" font-weight="700" font-family="'Bebas Neue',cursive" fill="#E11D48">32%</text>
+        </svg>
+      </div>
+      <div class="dr-cat-info">
+        <div class="dr-cat-pct" style="color:#E11D48">32 leads</div>
+        <div class="dr-cat-name">Gestão do Lead</div>
+        <div class="dr-cat-items"><strong>28</strong> Sem resposta após follow-up<br><strong>3</strong> Perdido na transferência<br><strong>1</strong> Qualificação incompleta</div>
+      </div>
+    </div>
+    <div class="dr-cat-card" style="border-color:rgba(212,175,55,.2)">
+      <div class="dr-cat-ring">
+        <svg width="80" height="80" viewBox="0 0 80 80">
+          <circle cx="40" cy="40" r="30" fill="none" stroke="var(--s3)" stroke-width="7"/>
+          <circle cx="40" cy="40" r="30" fill="none" stroke="#D4AF37" stroke-width="7" stroke-dasharray="107.4 188.5" stroke-dashoffset="47.1" stroke-linecap="round" style="filter:drop-shadow(0 0 6px #D4AF37)"/>
+          <text x="40" y="45" text-anchor="middle" font-size="14" font-weight="700" font-family="'Bebas Neue',cursive" fill="#D4AF37">57%</text>
+        </svg>
+      </div>
+      <div class="dr-cat-info">
+        <div class="dr-cat-pct" style="color:#D4AF37">57 leads</div>
+        <div class="dr-cat-name">Produto / Estoque</div>
+        <div class="dr-cat-items"><strong>22</strong> Preço fora do orçamento<br><strong>15</strong> Financiamento provável negado<br><strong>12</strong> Modelo indisponível<br><strong>8</strong> Desistência por concorrente</div>
+      </div>
+    </div>
+    <div class="dr-cat-card" style="border-color:rgba(96,144,255,.2)">
+      <div class="dr-cat-ring">
+        <svg width="80" height="80" viewBox="0 0 80 80">
+          <circle cx="40" cy="40" r="30" fill="none" stroke="var(--s3)" stroke-width="7"/>
+          <circle cx="40" cy="40" r="30" fill="none" stroke="#6090FF" stroke-width="7" stroke-dasharray="20.7 188.5" stroke-dashoffset="47.1" stroke-linecap="round" style="filter:drop-shadow(0 0 6px #6090FF)"/>
+          <text x="40" y="45" text-anchor="middle" font-size="14" font-weight="700" font-family="'Bebas Neue',cursive" fill="#6090FF">11%</text>
+        </svg>
+      </div>
+      <div class="dr-cat-info">
+        <div class="dr-cat-pct" style="color:#6090FF">11 leads</div>
+        <div class="dr-cat-name">Processo Comercial</div>
+        <div class="dr-cat-items"><strong>6</strong> Sem urgência<br><strong>4</strong> Co-decisor dependente<br><strong>1</strong> Intenção de troca sem acordo</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">Como Funciona</div>
+  <div class="diag-box">
+    <div class="diag-label">Metodologia · Análise Post-mortem Assíncrona via Claude</div>
+    <div class="dr-method-grid">
+      <div class="dr-step"><div class="dr-step-n">01</div><div class="dr-step-t">Lead encerra sem comprar</div><div class="dr-step-d">Quando há timeout no follow-up ou encerramento explícito, o sistema identifica o lead como esfriado e aciona o diagnóstico.</div></div>
+      <div class="dr-step"><div class="dr-step-n">02</div><div class="dr-step-t">Claude analisa o histórico</div><div class="dr-step-d">O histórico completo da conversa é enviado ao Claude, que identifica o motivo principal, os sinais observados e a área responsável.</div></div>
+      <div class="dr-step"><div class="dr-step-n">03</div><div class="dr-step-t">Diagnóstico estruturado</div><div class="dr-step-d">O resultado classifica o problema em: Gestão do Lead, Produto/Estoque ou Processo Comercial — e atualiza este painel automaticamente.</div></div>
+    </div>
+  </div>
+</div>
 
 
 </main>
@@ -881,6 +1275,7 @@ function go(id){
   if(id==='cobertura') buildCobertura();
   if(id==='funil') buildFunil();
   if(id==='filaespera') fetchFilaData();
+  if(id==='diagnostico') buildDiagnostico();
 }
 
 function updateOrbCount(){
@@ -1632,8 +2027,13 @@ async function fetchAllData(){
         pagamento:   l.forma_pagamento||'',
         prazo:       l.urgencia||'',
         intencao:    l.perfil_uso||'',
-        veicAtual:   l.tem_veiculo_troca?'Possui veículo para troca':'Sem troca',
-        decisao:     '',
+        veicAtual:   l.tem_veiculo_troca
+                       ? ('Possui veículo para troca' + (l.carro_troca && l.carro_troca !== 'a confirmar' ? ': ' + l.carro_troca : ''))
+                       : 'Sem troca',
+        decisao:     l.decide_sozinho != null
+                       ? (l.decide_sozinho ? 'Decide sozinho' : 'Decide com outra pessoa')
+                       : '',
+        codDetalhe:  l.co_decisor || '',
         localizacao: '',
         perguntas:   buildPerguntas(l)
       }));
@@ -1646,6 +2046,12 @@ async function fetchAllData(){
       set('[data-kpi="scoreMedio"]',s.scoreMedio??'—');
       const dist=s.distribuicaoScore||{};
       ['frios','mornos','engajados','quentes','premium'].forEach(k=>set(`[data-score="${k}"]`,dist[k]??0));
+      if (s.cobLeads     != null) set('[data-kpi="cobLeads"]', s.cobLeads);
+      if (s.cobPct       != null) set('[data-kpi="cobPct"]',   s.cobPct + '%');
+      if (s.carteiraNoturna)      {
+        const el = document.querySelector('[data-kpi="cobCarteira"]');
+        if (el) el.textContent = s.carteiraNoturna;
+      }
     }
   }catch(err){
     console.warn('[RuiAI] Produção indisponível, usando dados fictícios.',err);
@@ -1868,7 +2274,155 @@ document.addEventListener('DOMContentLoaded',()=>{
   setInterval(atualizarDashboard, REFRESH_INTERVAL_MS);
   setInterval(()=>{ if(document.getElementById('p-filaespera').style.display!=='none') fetchFilaData(); }, REFRESH_INTERVAL_MS);
 });
-</script>
+
+function filterFila(btn, filter) {
+  document.querySelectorAll('.ftab').forEach(function(b){ b.classList.remove('active'); });
+  if(btn) btn.classList.add('active');
+  var rows = document.querySelectorAll('.flead-row');
+  var outOfStock = ['HB20 Comfort', 'Creta Ultimate'];
+  rows.forEach(function(row){
+    var show = true;
+    if (filter === 'alta') {
+      show = parseInt(row.dataset.score) >= 80;
+    } else if (filter === 'estoque') {
+      show = outOfStock.some(function(m){ return row.dataset.model === m; });
+    } else if (filter === 'frio') {
+      show = row.dataset.temp === 'cold';
+    }
+    row.style.display = show ? 'flex' : 'none';
+  });
+}
+
+// ============================================================
+// DIAGNÓSTICO DE LEADS ESFRIADOS
+// ============================================================
+const DIAG_REASONS = [
+  {id:"followup",     label:"Sem resposta após follow-up",  count:28, cat:"gestao",   color:"#E11D48"},
+  {id:"preco",        label:"Preço fora do orçamento",      count:22, cat:"produto",  color:"#D4AF37"},
+  {id:"financiamento",label:"Financiamento provável negado",count:15, cat:"produto",  color:"#D4AF37"},
+  {id:"modelo",       label:"Modelo indisponível",           count:12, cat:"produto",  color:"#D4AF37"},
+  {id:"concorrente",  label:"Desistência por concorrente",   count:8,  cat:"produto",  color:"#D4AF37"},
+  {id:"urgencia",     label:"Sem urgência",                  count:6,  cat:"processo", color:"#6090FF"},
+  {id:"codecisor",    label:"Co-decisor dependente",         count:4,  cat:"processo", color:"#6090FF"},
+  {id:"transferencia",label:"Perdido na transferência",      count:3,  cat:"gestao",   color:"#E11D48"},
+  {id:"troca",        label:"Intenção de troca sem acordo",  count:1,  cat:"processo", color:"#6090FF"},
+  {id:"qualificacao", label:"Qualificação incompleta",       count:1,  cat:"gestao",   color:"#E11D48"},
+];
+
+const DIAG_LEADS = {
+  followup:[
+    {nome:"Marcos Oliveira",      tel:"5511987654321", meta:"Score 38 · Morto após 3 msgs"},
+    {nome:"Juliana Ferreira",     tel:"5521976543210", meta:"Score 22 · Sem resposta há 8 dias"},
+    {nome:"André Carvalho",       tel:"5531965432109", meta:"Score 45 · Follow-up não realizado"},
+    {nome:"Patrícia Mendes",      tel:"5541954321098", meta:"Score 31 · Encerrado por timeout"},
+    {nome:"Ricardo Sousa",        tel:"5551943210987", meta:"Score 18 · Sumiu após orçamento"},
+    {nome:"Fernanda Lima",        tel:"5561932109876", meta:"Score 27 · 4 tentativas sem retorno"},
+  ],
+  preco:[
+    {nome:"Bruno Almeida",        tel:"5511923456789", meta:"Score 62 · Orçamento R$ 3.000 abaixo"},
+    {nome:"Camila Rodrigues",     tel:"5521912345678", meta:"Score 55 · Pediu desconto não autorizado"},
+    {nome:"Diego Nascimento",     tel:"5531901234567", meta:"Score 48 · Comparou com concorrente"},
+    {nome:"Elaine Costa",         tel:"5541890123456", meta:"Score 39 · Achou entrada muito alta"},
+    {nome:"Fábio Martins",        tel:"5551889012345", meta:"Score 51 · Preço acima do esperado"},
+  ],
+  financiamento:[
+    {nome:"Gustavo Pereira",      tel:"5511878901234", meta:"Score 44 · CPF com restrição"},
+    {nome:"Helena Santos",        tel:"5521867890123", meta:"Score 38 · Renda insuficiente"},
+    {nome:"Igor Barbosa",         tel:"5531856789012", meta:"Score 29 · Financiamento negado 2x"},
+    {nome:"Jéssica Rocha",        tel:"5541845678901", meta:"Score 33 · Score de crédito baixo"},
+  ],
+  modelo:[
+    {nome:"Leonardo Teixeira",    tel:"5511834567890", meta:"Score 71 · Honda CB 500 indisponível"},
+    {nome:"Marina Azevedo",       tel:"5521823456789", meta:"Score 65 · Yamaha MT-07 sem estoque"},
+    {nome:"Nelson Cardoso",       tel:"5531812345678", meta:"Score 58 · Cor específica esgotada"},
+    {nome:"Olivia Fonseca",       tel:"5541801234567", meta:"Score 49 · Aguardando reposição"},
+  ],
+  concorrente:[
+    {nome:"Pedro Gomes",          tel:"5511790123456", meta:"Score 66 · Comprou em outra loja"},
+    {nome:"Renata Cavalcanti",    tel:"5521789012345", meta:"Score 72 · Preço menor encontrado"},
+    {nome:"Sérgio Moraes",        tel:"5531778901234", meta:"Score 61 · Levado por indicação"},
+  ],
+  urgencia:[
+    {nome:"Tatiana Pinto",        tel:"5511767890123", meta:"Score 41 · Quer comprar em 6 meses"},
+    {nome:"Ulisses Macedo",       tel:"5521756789012", meta:"Score 35 · Aguardando rescisão"},
+    {nome:"Vanessa Cunha",        tel:"5531745678901", meta:"Score 28 · Sem pressa declarada"},
+  ],
+  codecisor:[
+    {nome:"Wagner Correia",       tel:"5511734567890", meta:"Score 54 · Depende do cônjuge"},
+    {nome:"Xênia Freitas",        tel:"5521723456789", meta:"Score 47 · Aguardando aprovação familiar"},
+    {nome:"Yasmin Batista",       tel:"5531712345678", meta:"Score 43 · Parceiro não respondeu"},
+    {nome:"Zé Roberto Nunes",     tel:"5541701234567", meta:"Score 38 · Decisão em família"},
+  ],
+  transferencia:[
+    {nome:"Alexandre Leal",       tel:"5511690123456", meta:"Score 69 · Perdido na passagem pro vendedor"},
+    {nome:"Beatriz Melo",         tel:"5521689012345", meta:"Score 58 · Vendedor não atendeu a tempo"},
+    {nome:"Caio Araújo",          tel:"5531678901234", meta:"Score 61 · Lead sumiu durante handoff"},
+  ],
+  troca:[
+    {nome:"Débora Vasconcelos",   tel:"5511667890123", meta:"Score 52 · Moto atual sem valor de troca aceito"},
+  ],
+  qualificacao:[
+    {nome:"Eduardo Rezende",      tel:"5511656789012", meta:"Score 14 · Conversa encerrada sem qualificar"},
+  ],
+};
+
+const DIAG_AVATARCOLORS=['#E11D48','#D4AF37','#6090FF','#00A065','#F97316','#8B5CF6','#EC4899','#14B8A6'];
+
+function buildDiagnostico(){
+  const container = document.getElementById('diagBars');
+  if(!container) return;
+  const max = Math.max(...DIAG_REASONS.map(r=>r.count));
+  const total = DIAG_REASONS.reduce((s,r)=>s+r.count, 0);
+  container.innerHTML = DIAG_REASONS.map(r=>{
+    const pct = Math.round((r.count/total)*100);
+    const barW = Math.round((r.count/max)*100);
+    return `<div class="dr-row" onclick="openDiagModal('${r.id}')" data-tip="Clique para ver os leads · ${r.count} leads (${pct}%)">
+      <div class="dr-lbl">${r.label}</div>
+      <div class="dr-track"><div class="dr-fill" style="background:${r.color};width:0" data-w="${barW}%">${barW>=30?r.count+' leads':''}</div></div>
+      <div class="dr-num">${r.count}</div>
+      <div class="dr-pct">${pct}%</div>
+      <div class="dr-cat-dot" style="background:${r.color};color:${r.color}"></div>
+    </div>`;
+  }).join('');
+  requestAnimationFrame(()=>{
+    container.querySelectorAll('.dr-fill').forEach((el,i)=>{
+      setTimeout(()=>{ el.style.width = el.dataset.w; }, i * 60);
+    });
+  });
+}
+
+function openDiagModal(id){
+  const reason = DIAG_REASONS.find(r=>r.id===id);
+  const leads  = DIAG_LEADS[id] || [];
+  if(!reason) return;
+  document.getElementById('diagModalTitle').textContent = reason.label;
+  document.getElementById('diagModalSub').innerHTML =
+    `<span style="color:${reason.color};font-weight:700">${reason.count} leads</span> com este diagnóstico · amostra de ${leads.length}`;
+  const body = document.getElementById('diagModalBody');
+  body.innerHTML = leads.map((l,i)=>{
+    const initials = l.nome.split(' ').slice(0,2).map(w=>w[0]).join('');
+    const col = DIAG_AVATARCOLORS[i % DIAG_AVATARCOLORS.length];
+    return `<div class="diag-lead-row">
+      <div class="diag-lead-av" style="background:${col}">${initials}</div>
+      <div class="diag-lead-info">
+        <div class="diag-lead-name">${l.nome}</div>
+        <div class="diag-lead-meta">${l.meta}</div>
+      </div>
+      <a class="diag-wa-btn" href="https://wa.me/${l.tel}" target="_blank" rel="noopener">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        WhatsApp
+      </a>
+    </div>`;
+  }).join('') + (reason.count > leads.length ? `<div class="diag-modal-more">mostrando ${leads.length} de ${reason.count} leads</div>` : '');
+  document.getElementById('diagModalBg').classList.add('show');
+}
+
+function closeDiagModal(){
+  document.getElementById('diagModalBg').classList.remove('show');
+}</script>
 <div style="position:fixed;bottom:0;left:0;right:0;background:rgba(8,8,8,0.96);border-top:1px solid rgba(255,255,255,0.07);padding:5px 24px;font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:.07em;text-align:center;z-index:9999;pointer-events:none;">&#9888; Todos os dados apresentados s&#227;o fict&#237;cios e criados exclusivamente para fins de demonstra&#231;&#227;o</div>
 </body>
 </html>
+
+
+
