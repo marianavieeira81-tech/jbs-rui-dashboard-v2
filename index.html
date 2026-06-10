@@ -1441,7 +1441,6 @@ function go(id){
   document.getElementById('p-'+id).style.display='block';
   document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
   document.querySelectorAll('.sb-item').forEach(i=>{if(i.getAttribute('onclick')?.includes("'"+id+"'"))i.classList.add('active');});
-  if(id==='score') drawScoreChart();
   if(id==='plataformas'){updateOrbCount();renderLeadsPresenciais();}
   if(id==='cobertura') buildCobertura();
   if(id==='funil') buildFunil();
@@ -2065,19 +2064,6 @@ function buildFunil(){
 function toggleFn(i){const b=document.getElementById('fb-'+i),a=document.getElementById('fa-'+i);const o=b.classList.contains('open');b.classList.toggle('open',!o);a.classList.toggle('open',!o);a.textContent=o?'▸':'▾';}
 
 // ============================================================
-// SCORE CHART
-// ============================================================
-function drawScoreChart(){
-  const c=document.getElementById('scChart');if(!c)return;
-  const ctx=c.getContext('2d'),w=680,h=300;
-  const getSc=(k,d)=>{const el=document.querySelector(`[data-score="${k}"]`);return el?(parseInt(el.textContent)||d):d;};
-  const bars=[{l:"0–20\nFrios",v:getSc('frios',6),c:"#38BDF8"},{l:"21–40\nMornos",v:getSc('mornos',10),c:"#22c55e"},{l:"41–60\nEngajados",v:getSc('engajados',15),c:"#EAB308"},{l:"61–80\nQuentes",v:getSc('quentes',13),c:"#F97316"},{l:"81–100\nPremium",v:getSc('premium',6),c:"#EF4444"}];
-  const max=Math.max(...bars.map(b=>b.v),1),bw=90,gap=36,bot=50,top=24,sl=(w-(bars.length*bw+(bars.length-1)*gap))/2;
-  ctx.clearRect(0,0,w,h);
-  ctx.strokeStyle='#1C1C1C';ctx.lineWidth=1;
-  [Math.round(max/3),Math.round(max*2/3),max].forEach(v=>{const y=h-bot-((v/max)*(h-top-bot));ctx.beginPath();ctx.moveTo(sl-10,y);ctx.lineTo(w-sl+10,y);ctx.stroke();ctx.fillStyle='#333';ctx.font="10px 'DM Mono'";ctx.textAlign='right';ctx.fillText(v,sl-14,y+4);});
-  bars.forEach((b,i)=>{const x=sl+i*(bw+gap),bh=((b.v/max)*(h-top-bot)),y=h-bot-bh;if(b.c!=="#404040"&&b.c!=="#606060"){ctx.shadowColor=b.c;ctx.shadowBlur=10;}ctx.fillStyle=b.c;ctx.beginPath();ctx.moveTo(x+6,y);ctx.lineTo(x+bw-6,y);ctx.arcTo(x+bw,y,x+bw,y+6,6);ctx.lineTo(x+bw,y+bh);ctx.lineTo(x,y+bh);ctx.arcTo(x,y,x+6,y,6);ctx.closePath();ctx.fill();ctx.shadowBlur=0;ctx.fillStyle='#F0F0F0';ctx.font="700 16px 'DM Mono'";ctx.textAlign='center';ctx.fillText(b.v,x+bw/2,y-10);ctx.fillStyle='#555';ctx.font="11px 'DM Sans'";b.l.split('\n').forEach((ln,li)=>ctx.fillText(ln,x+bw/2,h-bot+16+li*15));});
-}
 
 
 // ============================================================
