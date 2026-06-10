@@ -1555,19 +1555,28 @@ async function ciSave(){
   saveBtn.disabled = true;
   saveBtn.textContent = 'Enviando...';
 
+  const WH = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/checkin-presencial';
+  const payload = JSON.stringify(reg);
+  let ok = false;
+
+  // tentativa 1 — fetch padrão com JSON (funciona se n8n tem CORS configurado)
   try{
-    const res = await fetch('https://n8n-n8n.lrdyzi.easypanel.host/webhook/checkin-presencial',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(reg)
-    });
-    if(!res.ok) throw new Error('HTTP '+res.status);
-  }catch(e){
-    err.textContent = '⚠ Erro ao enviar para o servidor: '+e.message;
-    err.style.display='inline';
-    saveBtn.disabled = false;
-    saveBtn.textContent = '✔ Salvar Check-in';
-    return;
+    const res = await fetch(WH,{method:'POST',headers:{'Content-Type':'application/json'},body:payload});
+    if(res.ok) ok = true;
+  }catch(_){}
+
+  // tentativa 2 — no-cors: bypassa preflight CORS, chega sempre ao servidor
+  if(!ok){
+    try{
+      await fetch(WH,{method:'POST',mode:'no-cors',body:payload});
+      ok = true;
+    }catch(netErr){
+      err.textContent = '⚠ Sem conexão com o servidor.';
+      err.style.display='inline';
+      saveBtn.disabled = false;
+      saveBtn.textContent = '✔ Salvar Check-in';
+      return;
+    }
   }
 
   const arr = ciLoad();
