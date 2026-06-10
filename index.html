@@ -571,13 +571,12 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       <div class="sb-lbl">Principal</div>
       <div class="sb-item active" onclick="go('dash')"><i class="sb-ico">◉</i>Dashboard</div>
       <div class="sb-item" onclick="go('filaespera')"><i class="sb-ico">⏳</i>Fila de Espera</div>
-      <div class="sb-item" onclick="go('plataformas')"><i class="sb-ico">⊞</i>Plataformas</div>
+      <div class="sb-item" onclick="go('plataformas')"><i class="sb-ico">⊞</i>Central de Leads</div>
       <div class="sb-item" onclick="go('cobertura')"><i class="sb-ico">🌙</i>Cobertura Noturna</div>
     </div>
     <div class="sb-group">
       <div class="sb-lbl">Leads</div>
       <div class="sb-item" onclick="go('funil')"><i class="sb-ico">⬇</i>Funil de Qualificação</div>
-      <div class="sb-item" onclick="go('score')"><i class="sb-ico">◎</i>Distribuição de Score</div>
     </div>
     <div class="sb-group">
       <div class="sb-lbl">Análise</div>
@@ -872,7 +871,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 </div>
 <div id="p-plataformas" style="display:none">
   <div class="topbar">
-    <div><div class="eye">Principal</div><h1>Plataformas</h1></div>
+    <div><div class="eye">Principal</div><h1>Central de Leads</h1></div>
   </div>
 
   <!-- controles de período + relatório -->
@@ -955,6 +954,13 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     </div>
     <div id="pltLeadListContent"></div>
   </div>
+
+  <!-- LEADS PRESENCIAIS -->
+  <div style="margin-top:48px;">
+    <div class="sec">Leads Presenciais · registrados via Check-in</div>
+    <div id="pltPresKpis" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;"></div>
+    <div id="pltPresList"></div>
+  </div>
 </div>
 
 <!-- ============ COBERTURA NOTURNA ============ -->
@@ -1035,21 +1041,6 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   <div id="funnelWrap"></div>
 </div>
 
-<!-- ============ SCORE ============ -->
-<div id="p-score" style="display:none">
-  <div class="topbar"><div><div class="eye">Leads</div><h1>Distribuição de Score</h1></div></div>
-  <div class="card">
-    <div class="ctitle">Score calculado pelo Rui · escala 0–100 · 7 dimensões</div>
-    <canvas id="scChart" width="680" height="300"></canvas>
-    <div class="sc-grid">
-      <div class="sc-cell" style="background:rgba(56,189,248,.07);border:1px solid rgba(56,189,248,.25)" data-tip="Leads frios. Sem intenção clara. Aguardar."><div class="sc-n" style="color:#38BDF8" data-score="frios">6</div><div class="sc-l">0–20 · Frios</div></div>
-      <div class="sc-cell" style="background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.22)" data-tip="Leads mornos. Interesse presente mas tímido."><div class="sc-n" style="color:#22c55e" data-score="mornos">10</div><div class="sc-l">21–40 · Mornos</div></div>
-      <div class="sc-cell" style="background:rgba(234,179,8,.07);border:1px solid rgba(234,179,8,.22)" data-tip="Leads engajados. Responderam bem ao Rui."><div class="sc-n" style="color:#EAB308" data-score="engajados">15</div><div class="sc-l">41–60 · Engajados</div></div>
-      <div class="sc-cell" style="background:rgba(249,115,22,.07);border:1px solid rgba(249,115,22,.22)" data-tip="Leads quentes. Transferir imediatamente ao vendedor."><div class="sc-n" style="color:#F97316" data-score="quentes">13</div><div class="sc-l">61–80 · Quentes</div></div>
-      <div class="sc-cell" style="background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.25)" data-tip="Leads premium. Prioridade máxima. Acionar gerente."><div class="sc-n" style="color:#EF4444" data-score="premium">6</div><div class="sc-l">81–100 · Premium</div></div>
-    </div>
-  </div>
-</div>
 
 <!-- MODAL DIAGNÓSTICO — LEADS POR MOTIVO -->
 <div class="diag-modal-bg" id="diagModalBg" onclick="if(event.target===this)closeDiagModal()">
@@ -1451,7 +1442,7 @@ function go(id){
   document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
   document.querySelectorAll('.sb-item').forEach(i=>{if(i.getAttribute('onclick')?.includes("'"+id+"'"))i.classList.add('active');});
   if(id==='score') drawScoreChart();
-  if(id==='plataformas') updateOrbCount();
+  if(id==='plataformas'){updateOrbCount();renderLeadsPresenciais();}
   if(id==='cobertura') buildCobertura();
   if(id==='funil') buildFunil();
   if(id==='filaespera') fetchFilaData();
@@ -1660,6 +1651,82 @@ function ciRenderHistory(){
       ${r.obs?`<div class="ci-hi-obs">${r.obs}</div>`:''}
     </div>`;
   }).join('');
+}
+
+// ============================================================
+// LEADS PRESENCIAIS — resumo na Central de Leads
+// ============================================================
+function renderLeadsPresenciais(){
+  const arr = ciLoad();
+  const kpisEl  = document.getElementById('pltPresKpis');
+  const listEl  = document.getElementById('pltPresList');
+  if(!kpisEl||!listEl) return;
+
+  const total    = arr.length;
+  const comprou  = arr.filter(r=>r.desfecho==='Comprou').length;
+  const retorno  = arr.filter(r=>r.desfecho==='Pediu retorno').length;
+  const agora    = arr.filter(r=>r.intencao==='Comprar agora').length;
+  const pct      = total ? Math.round(comprou/total*100) : 0;
+
+  kpisEl.innerHTML = [
+    {lbl:'Total de check-ins', val:total,    tag:'',                        cor:'var(--ac)',     bg:'var(--ac-faint)',       bdr:'rgba(212,175,55,.2)'},
+    {lbl:'Vendas fechadas',    val:comprou,  tag:'🏆',                       cor:'var(--grn-l)', bg:'var(--grn-bg)',         bdr:'rgba(0,160,101,.2)'},
+    {lbl:'Taxa de conversão',  val:pct+'%',  tag:'',                        cor:'var(--tx)',     bg:'var(--surface)',        bdr:'var(--bdr)'},
+    {lbl:'Comprando agora',    val:agora,    tag:'🔥',                       cor:'#F97316',      bg:'rgba(249,115,22,.07)',  bdr:'rgba(249,115,22,.2)'},
+  ].map(k=>`
+    <div style="background:${k.bg};border:1px solid ${k.bdr};border-radius:var(--r);padding:18px 20px;">
+      <div style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx3);font-weight:600;margin-bottom:8px;">${k.lbl}</div>
+      <div style="font-size:34px;font-weight:700;font-family:'Bebas Neue',cursive;color:${k.cor};line-height:1;">${k.tag}${k.val}</div>
+    </div>`).join('');
+
+  if(!total){
+    listEl.innerHTML='<div class="ci-empty"><div class="ci-empty-ico">📋</div>Nenhum lead presencial registrado ainda.<br><span style="font-size:11px">Use a aba Check-in para registrar atendimentos.</span></div>';
+    return;
+  }
+
+  const desfechoStyle = {
+    'Comprou':           'background:var(--grn-bg);color:var(--grn-l);border:1px solid rgba(0,160,101,.3);',
+    'Pediu retorno':     'background:var(--ac-faint);color:var(--ac);border:1px solid rgba(212,175,55,.3);',
+    'Vai pensar':        'background:var(--ac-faint);color:var(--ac);border:1px solid rgba(212,175,55,.3);',
+    'Desistiu':          'background:var(--red-bg);color:var(--red);border:1px solid rgba(225,29,72,.3);',
+    'Saiu sem definição':'background:var(--red-bg);color:var(--red);border:1px solid rgba(225,29,72,.3);',
+  };
+  const intencaoStyle = {
+    'Comprar agora':     'background:var(--grn-bg);color:var(--grn-l);',
+    'Em breve (até 30d)':'background:var(--ac-faint);color:var(--ac);',
+    'Pesquisando':       'background:var(--ac-faint);color:var(--ac);',
+    'Só curiosidade':    'background:var(--red-bg);color:var(--red);',
+  };
+
+  listEl.innerHTML = `
+    <div style="background:var(--surface);border:1px solid var(--bdr);border-radius:var(--r);overflow:hidden;">
+      <div style="display:grid;grid-template-columns:2fr 1fr 1.2fr 1.2fr 1fr;gap:0;padding:10px 20px;border-bottom:1px solid var(--bdr);">
+        <div style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx3);font-weight:600;">Cliente / Vendedor</div>
+        <div style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx3);font-weight:600;">Modelo</div>
+        <div style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx3);font-weight:600;">Intenção</div>
+        <div style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx3);font-weight:600;">Desfecho</div>
+        <div style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx3);font-weight:600;">Data</div>
+      </div>
+      ${arr.map(r=>{
+        const dtFmt = r.dt ? new Date(r.dt).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
+        const dSty  = desfechoStyle[r.desfecho]||'background:var(--s2);color:var(--tx2);';
+        const iSty  = intencaoStyle[r.intencao]||'background:var(--s2);color:var(--tx2);';
+        const cor   = ciAvatarColor(r.nome);
+        return `<div style="display:grid;grid-template-columns:2fr 1fr 1.2fr 1.2fr 1fr;gap:0;padding:12px 20px;border-bottom:1px solid var(--s2);align-items:center;transition:background .15s;" onmouseover="this.style.background='var(--s2)'" onmouseout="this.style.background=''">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:32px;height:32px;border-radius:50%;background:${cor};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;font-family:'Bebas Neue',cursive;flex-shrink:0;">${r.nome.charAt(0).toUpperCase()}</div>
+            <div>
+              <div style="font-size:13px;font-weight:600;color:var(--tx);">${r.nome}</div>
+              <div style="font-size:11px;color:var(--tx3);">${r.vend} · ${r.wa||'—'}</div>
+            </div>
+          </div>
+          <div style="font-size:12px;color:var(--tx2);">${r.modelos||'—'}</div>
+          <div><span style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;${iSty}">${r.intencao||'—'}</span></div>
+          <div><span style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;${dSty}">${r.desfecho||'—'}</span></div>
+          <div style="font-size:11px;color:var(--tx3);font-family:'DM Mono',monospace;">${dtFmt}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
 }
 
 function updateOrbCount(){
