@@ -2724,7 +2724,7 @@ async function fetchAllData(){
                        : '',
         codDetalhe:  l.co_decisor || '',
         localizacao: '',
-        causa:       l.causa_esfriamento||'',
+        causa:       l.submotivo||l.causa_esfriamento||'',
         perguntas:   buildPerguntas(l)
       }));
     }
