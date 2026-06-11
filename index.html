@@ -1939,12 +1939,10 @@ function phoneSearch(term, pageId){
       add(r.nome, r.wa, r.modelos||'—', 'Check-in');
   });
 
-  // Diagnóstico
-  Object.values(DIAG_LEADS||{}).forEach(arr=>{
-    arr.forEach(l=>{
-      const telD = (l.tel||'').replace(/[^0-9]/g,'');
-      if(telD.includes(digits)) add(l.nome, l.tel, l.meta||'—', 'Diagnóstico');
-    });
+  // Diagnóstico — busca em leads com causa de esfriamento registrada
+  ACTIVE_LEADS.filter(l=>l.causa).forEach(l=>{
+    const telD=(l.telefone||'').replace(/[^0-9]/g,'');
+    if(telD.includes(digits)) add(l.nome, l.telefone, l.causa||'—', 'Diagnóstico');
   });
 
   if(!results.length){
@@ -2658,29 +2656,10 @@ const N8N_SEND_REPLY    = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/jbs-sen
 const N8N_CHAT_HISTORY  = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/jbs-chat-history';
 const REFRESH_INTERVAL_MS = 30000;
 
-// ============================================================
-// SUPABASE — Diagnóstico (anon key + RLS)
-// A anon key é a "publishable key" do Supabase — segura para expor no frontend.
-// RLS na view/tabela controla o que o usuário anônimo pode ver.
-// Alternativa via N8N: crie um webhook separado para diagnóstico e chame via fetch.
-// ============================================================
-const SUPABASE_URL      = 'https://yyqgoytuudpvacawjqaw.supabase.co';
-const SUPABASE_ANON_KEY = ''; // Cole aqui a anon key do painel Supabase → Settings → API
-
-async function supabaseGet(table, params){
-  if(!SUPABASE_ANON_KEY) return null;
-  const qs = params ? '?'+params : '';
-  try {
-    const r = await fetch(SUPABASE_URL+'/rest/v1/'+table+qs,
-      { headers:{ apikey:SUPABASE_ANON_KEY, Authorization:'Bearer '+SUPABASE_ANON_KEY }});
-    return r.ok ? r.json() : null;
-  } catch(e){ console.warn('[Supabase]',table,e.message); return null; }
-}
-
-let DIAG_REASONS_LIVE = null; // preenchido após fetch; usado no modal
-
-// Dados ativos — populados pelo endpoint ativo (demo ou produção)
-let ACTIVE_LEADS = [];
+// Dados ativos — populados pelo endpoint de produção (N8N)
+let ACTIVE_LEADS  = [];
+let ACTIVE_CAUSAS = []; // stats.causasEsfriamento retornado pelo N8N
+let ACTIVE_STATS  = null;
 
 function applyModeUI(){
   const badge=document.getElementById('modeBadge');
@@ -2745,11 +2724,14 @@ async function fetchAllData(){
                        : '',
         codDetalhe:  l.co_decisor || '',
         localizacao: '',
+        causa:       l.causa_esfriamento||'',
         perguntas:   buildPerguntas(l)
       }));
     }
     if(data.stats){
       const s=data.stats;
+      ACTIVE_STATS  = s;
+      ACTIVE_CAUSAS = Array.isArray(s.causasEsfriamento) ? s.causasEsfriamento : [];
       const set=(sel,v)=>{const el=document.querySelector(sel);if(el)el.textContent=v;};
       set('[data-kpi="total"]',s.total??'—');
       set('[data-kpi="transferidos"]',s.transferidos??'—');
@@ -3004,231 +2986,188 @@ function filterFila(btn, filter) {
 }
 
 // ============================================================
-// DIAGNÓSTICO DE LEADS ESFRIADOS
+// DIAGNÓSTICO DE LEADS ESFRIADOS — dados reais via N8N
 // ============================================================
-const DIAG_REASONS = [
-  {id:"followup",     label:"Sem resposta após follow-up",  count:28, cat:"gestao",   color:"#E11D48"},
-  {id:"preco",        label:"Preço fora do orçamento",      count:22, cat:"produto",  color:"#D4AF37"},
-  {id:"financiamento",label:"Financiamento provável negado",count:15, cat:"produto",  color:"#D4AF37"},
-  {id:"modelo",       label:"Modelo indisponível",           count:12, cat:"produto",  color:"#D4AF37"},
-  {id:"concorrente",  label:"Desistência por concorrente",   count:8,  cat:"produto",  color:"#D4AF37"},
-  {id:"urgencia",     label:"Sem urgência",                  count:6,  cat:"processo", color:"#6090FF"},
-  {id:"codecisor",    label:"Co-decisor dependente",         count:4,  cat:"processo", color:"#6090FF"},
-  {id:"transferencia",label:"Perdido na transferência",      count:3,  cat:"gestao",   color:"#E11D48"},
-  {id:"troca",        label:"Intenção de troca sem acordo",  count:1,  cat:"processo", color:"#6090FF"},
-  {id:"qualificacao", label:"Qualificação incompleta",       count:1,  cat:"gestao",   color:"#E11D48"},
-];
 
-const DIAG_LEADS = {
-  followup:[
-    {nome:"Marcos Oliveira",      tel:"5511987654321", meta:"Score 38 · Morto após 3 msgs"},
-    {nome:"Juliana Ferreira",     tel:"5521976543210", meta:"Score 22 · Sem resposta há 8 dias"},
-    {nome:"André Carvalho",       tel:"5531965432109", meta:"Score 45 · Follow-up não realizado"},
-    {nome:"Patrícia Mendes",      tel:"5541954321098", meta:"Score 31 · Encerrado por timeout"},
-    {nome:"Ricardo Sousa",        tel:"5551943210987", meta:"Score 18 · Sumiu após orçamento"},
-    {nome:"Fernanda Lima",        tel:"5561932109876", meta:"Score 27 · 4 tentativas sem retorno"},
-  ],
-  preco:[
-    {nome:"Bruno Almeida",        tel:"5511923456789", meta:"Score 62 · Orçamento R$ 3.000 abaixo"},
-    {nome:"Camila Rodrigues",     tel:"5521912345678", meta:"Score 55 · Pediu desconto não autorizado"},
-    {nome:"Diego Nascimento",     tel:"5531901234567", meta:"Score 48 · Comparou com concorrente"},
-    {nome:"Elaine Costa",         tel:"5541890123456", meta:"Score 39 · Achou entrada muito alta"},
-    {nome:"Fábio Martins",        tel:"5551889012345", meta:"Score 51 · Preço acima do esperado"},
-  ],
-  financiamento:[
-    {nome:"Gustavo Pereira",      tel:"5511878901234", meta:"Score 44 · CPF com restrição"},
-    {nome:"Helena Santos",        tel:"5521867890123", meta:"Score 38 · Renda insuficiente"},
-    {nome:"Igor Barbosa",         tel:"5531856789012", meta:"Score 29 · Financiamento negado 2x"},
-    {nome:"Jéssica Rocha",        tel:"5541845678901", meta:"Score 33 · Score de crédito baixo"},
-  ],
-  modelo:[
-    {nome:"Leonardo Teixeira",    tel:"5511834567890", meta:"Score 71 · Honda CB 500 indisponível"},
-    {nome:"Marina Azevedo",       tel:"5521823456789", meta:"Score 65 · Yamaha MT-07 sem estoque"},
-    {nome:"Nelson Cardoso",       tel:"5531812345678", meta:"Score 58 · Cor específica esgotada"},
-    {nome:"Olivia Fonseca",       tel:"5541801234567", meta:"Score 49 · Aguardando reposição"},
-  ],
-  concorrente:[
-    {nome:"Pedro Gomes",          tel:"5511790123456", meta:"Score 66 · Comprou em outra loja"},
-    {nome:"Renata Cavalcanti",    tel:"5521789012345", meta:"Score 72 · Preço menor encontrado"},
-    {nome:"Sérgio Moraes",        tel:"5531778901234", meta:"Score 61 · Levado por indicação"},
-  ],
-  urgencia:[
-    {nome:"Tatiana Pinto",        tel:"5511767890123", meta:"Score 41 · Quer comprar em 6 meses"},
-    {nome:"Ulisses Macedo",       tel:"5521756789012", meta:"Score 35 · Aguardando rescisão"},
-    {nome:"Vanessa Cunha",        tel:"5531745678901", meta:"Score 28 · Sem pressa declarada"},
-  ],
-  codecisor:[
-    {nome:"Wagner Correia",       tel:"5511734567890", meta:"Score 54 · Depende do cônjuge"},
-    {nome:"Xênia Freitas",        tel:"5521723456789", meta:"Score 47 · Aguardando aprovação familiar"},
-    {nome:"Yasmin Batista",       tel:"5531712345678", meta:"Score 43 · Parceiro não respondeu"},
-    {nome:"Zé Roberto Nunes",     tel:"5541701234567", meta:"Score 38 · Decisão em família"},
-  ],
-  transferencia:[
-    {nome:"Alexandre Leal",       tel:"5511690123456", meta:"Score 69 · Perdido na passagem pro vendedor"},
-    {nome:"Beatriz Melo",         tel:"5521689012345", meta:"Score 58 · Vendedor não atendeu a tempo"},
-    {nome:"Caio Araújo",          tel:"5531678901234", meta:"Score 61 · Lead sumiu durante handoff"},
-  ],
-  troca:[
-    {nome:"Débora Vasconcelos",   tel:"5511667890123", meta:"Score 52 · Moto atual sem valor de troca aceito"},
-  ],
-  qualificacao:[
-    {nome:"Eduardo Rezende",      tel:"5511656789012", meta:"Score 14 · Conversa encerrada sem qualificar"},
-  ],
-};
+// Categoriza o label de causa retornado pelo N8N nas 3 áreas de responsabilidade
+function categorizeCausa(label){
+  const l=(label||'').toLowerCase();
+  if(l.includes('resposta')||l.includes('follow')||l.includes('transferên')||
+     l.includes('qualificaç')||l.includes('perdido')||l.includes('handoff'))
+    return {area:'gestao', nome:'Gestão do Lead', cor:'#E11D48'};
+  if(l.includes('preço')||l.includes('preco')||l.includes('financiamento')||
+     l.includes('indispon')||l.includes('estoque')||l.includes('concorrente')||l.includes('orçamento'))
+    return {area:'produto', nome:'Produto / Estoque', cor:'#D4AF37'};
+  return {area:'processo', nome:'Processo Comercial', cor:'#6090FF'};
+}
+
+// Gera slug único para cada causa (usado como ID nas barras/modal)
+function slugCausa(label){
+  return (label||'').toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40);
+}
 
 const DIAG_AVATARCOLORS=['#E11D48','#D4AF37','#6090FF','#00A065','#F97316','#8B5CF6','#EC4899','#14B8A6'];
+let DIAG_LIVE=[]; // causas renderizadas — consultadas pelo modal
 
-async function buildDiagnostico(){
-  const container = document.getElementById('diagBars');
+function buildDiagnostico(){
+  const container=document.getElementById('diagBars');
   if(!container) return;
 
-  // Busca dados reais do Supabase (ou null se sem key)
-  let kpis=null, areas=null, submotivos=null;
-  if(SUPABASE_ANON_KEY){
-    [kpis, areas, submotivos] = await Promise.all([
-      supabaseGet('v_diagnostico_kpis','limit=1'),
-      supabaseGet('v_diagnostico_areas'),
-      supabaseGet('v_diagnostico_submotivos_agg','order=count.desc')
-    ]);
-  }
+  const kpiGrid=document.getElementById('diagKpiGrid');
+  const areaEl =document.getElementById('diagAreaCards');
+  const tl     =document.getElementById('diagTotalLabel');
 
-  // KPI cards
-  const kpiGrid = document.getElementById('diagKpiGrid');
-  if(kpiGrid && kpis && kpis[0]){
-    const k=kpis[0];
-    const tot=k.total_esfriados??k.total??'—';
-    const diag=k.com_diagnostico??'—';
-    const pctStr=k.pct_diagnostico?Math.round(k.pct_diagnostico)+'%':'—';
-    const mot=k.motivo_principal??'—';
-    const motLeads=k.leads_motivo_principal??'—';
-    const tempo=k.tempo_medio_s?parseFloat(k.tempo_medio_s).toFixed(1)+'s':'2.3s';
+  // Estado vazio padrão — sem dados fictícios
+  if(kpiGrid) kpiGrid.innerHTML=`
+    <div class="kpi gold"><div class="kpi-lbl">Total Esfriados</div>
+      <div class="kpi-val" style="color:var(--tx3)">—</div>
+      <div class="kpi-sub">aguardando dados do Rui</div></div>
+    <div class="kpi"><div class="kpi-lbl">Diagnóstico Concluído</div>
+      <div class="kpi-val" style="color:var(--tx3)">—</div><div class="kpi-sub">—</div></div>
+    <div class="kpi"><div class="kpi-lbl">Motivo Principal</div>
+      <div class="kpi-val" style="font-size:20px;font-family:'DM Sans',sans-serif;font-weight:700;color:var(--tx3);padding-top:6px">—</div>
+      <div class="kpi-sub">—</div></div>
+    <div class="kpi"><div class="kpi-lbl">Causas Identificadas</div>
+      <div class="kpi-val" style="color:var(--tx3)">—</div>
+      <div class="kpi-sub">motivos distintos registrados</div></div>`;
+  if(areaEl)  areaEl.innerHTML='';
+  if(tl)      tl.textContent='— leads analisados';
+  container.innerHTML=`<div style="text-align:center;padding:60px 0;color:var(--tx3);font-size:13px;line-height:2.2">
+    Aguardando diagnóstico do Agente Rui<br>
+    <span style="font-size:11px">Os dados aparecem automaticamente após o pipeline de diagnóstico executar (23h)</span></div>`;
+
+  // Sem dados do N8N → mantém estado vazio
+  const causas=ACTIVE_CAUSAS;
+  if(!causas||causas.length===0) return;
+
+  // KPIs
+  const stats   =ACTIVE_STATS;
+  const tot     =stats?.leadsEsfriados??causas.reduce((s,c)=>s+(c.count||0),0);
+  const diagQtd =causas.reduce((s,c)=>s+(c.count||0),0);
+  const pctDiag =tot>0?Math.round((diagQtd/tot)*100):100;
+  const topCausa=causas[0];
+  if(kpiGrid){
     kpiGrid.innerHTML=`
       <div class="kpi gold"><div class="kpi-lbl">Total Esfriados</div>
         <div class="kpi-val">${tot}</div>
         <div class="kpi-sub">leads sem conversão no período</div></div>
       <div class="kpi"><div class="kpi-lbl">Diagnóstico Concluído</div>
-        <div class="kpi-val" style="color:var(--grn-l)">${diag}</div>
-        <div class="kpi-sub"><span class="pill up">${pctStr}</span> com causa identificada</div></div>
+        <div class="kpi-val" style="color:var(--grn-l)">${diagQtd}</div>
+        <div class="kpi-sub"><span class="pill up">${pctDiag}%</span> com causa identificada</div></div>
       <div class="kpi"><div class="kpi-lbl">Motivo Principal</div>
-        <div class="kpi-val" style="font-size:20px;font-family:'DM Sans',sans-serif;font-weight:700;line-height:1.2;padding-top:4px">${mot}</div>
-        <div class="kpi-sub">após follow-up · <span style="color:var(--ac);font-weight:700">${motLeads} leads</span></div></div>
-      <div class="kpi"><div class="kpi-lbl">Tempo de Diagnóstico</div>
-        <div class="kpi-val" style="color:var(--ac)">${tempo}</div>
-        <div class="kpi-sub">por lead · análise via Claude</div></div>`;
-    const tl=document.getElementById('diagTotalLabel');
+        <div class="kpi-val" style="font-size:18px;font-family:'DM Sans',sans-serif;font-weight:700;line-height:1.3;padding-top:4px">${topCausa?.label||'—'}</div>
+        <div class="kpi-sub"><span style="color:var(--ac);font-weight:700">${topCausa?.count||0} leads</span></div></div>
+      <div class="kpi"><div class="kpi-lbl">Causas Identificadas</div>
+        <div class="kpi-val">${causas.length}</div>
+        <div class="kpi-sub">motivos distintos registrados</div></div>`;
     if(tl) tl.textContent=tot+' leads analisados';
   }
 
-  // Cards de Responsabilidade por Área
-  const areaEl=document.getElementById('diagAreaCards');
-  if(areaEl && areas && areas.length>0){
-    const C={gestao:'#E11D48',produto:'#D4AF37',processo:'#6090FF'};
+  // Cards de Responsabilidade por Área (calculados a partir das causas reais)
+  const areaMap={};
+  causas.forEach(c=>{
+    const cat=categorizeCausa(c.label);
+    if(!areaMap[cat.area]) areaMap[cat.area]={...cat,total:0,itens:[]};
+    areaMap[cat.area].total+=c.count||0;
+    areaMap[cat.area].itens.push({label:c.label,count:c.count||0});
+  });
+  const areas=Object.values(areaMap).sort((a,b)=>b.total-a.total);
+  if(areaEl&&areas.length>0){
+    const totalAll=areas.reduce((s,a)=>s+a.total,0)||1;
     areaEl.innerHTML=areas.map(a=>{
-      const cor=a.cor||C[a.area_id||a.area]||'#D4AF37';
-      const tot=a.total??0, pct=a.pct??0;
+      const pct=Math.round((a.total/totalAll)*100);
       const arc=((pct/100)*188.5).toFixed(1);
-      let items='';
-      try{
-        const arr=typeof a.itens==='string'?JSON.parse(a.itens):(a.itens||[]);
-        items=arr.map(i=>`<strong>${i.count??i.total??0}</strong> ${i.label??i.submotivo??''}`).join('<br>');
-      }catch(e){}
-      return `<div class="dr-cat-card" style="border-color:${cor}33">
+      const items=a.itens.map(i=>`<strong>${i.count}</strong> ${i.label}`).join('<br>');
+      return `<div class="dr-cat-card" style="border-color:${a.cor}33">
         <div class="dr-cat-ring"><svg width="80" height="80" viewBox="0 0 80 80">
           <circle cx="40" cy="40" r="30" fill="none" stroke="var(--s3)" stroke-width="7"/>
-          <circle cx="40" cy="40" r="30" fill="none" stroke="${cor}" stroke-width="7"
+          <circle cx="40" cy="40" r="30" fill="none" stroke="${a.cor}" stroke-width="7"
             stroke-dasharray="${arc} 188.5" stroke-dashoffset="47.1" stroke-linecap="round"
-            style="filter:drop-shadow(0 0 6px ${cor})"/>
+            style="filter:drop-shadow(0 0 6px ${a.cor})"/>
           <text x="40" y="45" text-anchor="middle" font-size="14" font-weight="700"
-            font-family="'Bebas Neue',cursive" fill="${cor}">${Math.round(pct)}%</text>
+            font-family="'Bebas Neue',cursive" fill="${a.cor}">${pct}%</text>
         </svg></div>
         <div class="dr-cat-info">
-          <div class="dr-cat-pct" style="color:${cor}">${tot} leads</div>
-          <div class="dr-cat-name">${a.area_nome??a.area??'—'}</div>
+          <div class="dr-cat-pct" style="color:${a.cor}">${a.total} leads</div>
+          <div class="dr-cat-name">${a.nome}</div>
           <div class="dr-cat-items">${items}</div>
         </div></div>`;
     }).join('');
   }
 
-  // Barras de submotivos (ou fallback demo)
-  const live=(submotivos&&submotivos.length>0)?submotivos.map(r=>({
-    id:    r.id||r.submotivo_id||r.submotivo||r.label,
-    label: r.label||r.submotivo_label||r.submotivo||'—',
-    count: r.count||r.total||0,
-    cat:   r.cat||r.categoria||'gestao',
-    color: r.color||r.cor||'#D4AF37'
-  })):DIAG_REASONS;
-  DIAG_REASONS_LIVE=live;
+  // Barras de submotivos (100% dados reais do N8N)
+  const live=causas.map(c=>({
+    id:    slugCausa(c.label),
+    label: c.label,
+    count: c.count||0,
+    pct:   c.percentual??Math.round(((c.count||0)/Math.max(diagQtd,1))*100),
+    ...categorizeCausa(c.label)
+  }));
+  DIAG_LIVE=live;
 
   const max=Math.max(...live.map(r=>r.count),1);
-  const total=live.reduce((s,r)=>s+r.count,0);
   container.innerHTML=live.map(r=>{
-    const pct=Math.round((r.count/total)*100);
     const barW=Math.round((r.count/max)*100);
-    return `<div class="dr-row" onclick="openDiagModal('${r.id}')" data-tip="Clique para ver os leads · ${r.count} leads (${pct}%)">
+    return `<div class="dr-row" onclick="openDiagModal('${r.id}')" data-tip="Clique para ver os leads · ${r.count} leads (${r.pct}%)">
       <div class="dr-lbl">${r.label}</div>
-      <div class="dr-track"><div class="dr-fill" style="background:${r.color};width:0" data-w="${barW}%">${barW>=30?r.count+' leads':''}</div></div>
+      <div class="dr-track"><div class="dr-fill" style="background:${r.cor};width:0" data-w="${barW}%">${barW>=30?r.count+' leads':''}</div></div>
       <div class="dr-num">${r.count}</div>
-      <div class="dr-pct">${pct}%</div>
-      <div class="dr-cat-dot" style="background:${r.color};color:${r.color}"></div>
+      <div class="dr-pct">${r.pct}%</div>
+      <div class="dr-cat-dot" style="background:${r.cor};color:${r.cor}"></div>
     </div>`;
   }).join('');
   requestAnimationFrame(()=>{
     container.querySelectorAll('.dr-fill').forEach((el,i)=>{
-      setTimeout(()=>{ el.style.width=el.dataset.w; }, i*60);
+      setTimeout(()=>{el.style.width=el.dataset.w;},i*60);
     });
   });
 }
 
-async function openDiagModal(id){
-  const reasons = DIAG_REASONS_LIVE || DIAG_REASONS;
-  const reason  = reasons.find(r=>r.id===id);
+function openDiagModal(id){
+  const reason=DIAG_LIVE.find(r=>r.id===id);
   if(!reason) return;
 
-  document.getElementById('diagModalTitle').textContent = reason.label;
-  document.getElementById('diagModalSub').innerHTML =
-    `<span style="color:${reason.color};font-weight:700">${reason.count} leads</span> com este diagnóstico`;
-  const body = document.getElementById('diagModalBody');
-  body.innerHTML = '<div style="text-align:center;padding:32px 0;color:var(--tx3);font-size:13px;">Carregando leads...</div>';
-  document.getElementById('diagModalBg').classList.add('show');
+  document.getElementById('diagModalTitle').textContent=reason.label;
 
-  // Busca leads reais filtrados por submotivo (coluna: submotivo = id do motivo)
-  let leads = null;
-  if(SUPABASE_ANON_KEY){
-    const rows = await supabaseGet('leads',
-      `submotivo=eq.${encodeURIComponent(id)}&select=nome,telefone,score_final,diagnostico_obs&limit=10&order=score_final.desc`);
-    if(rows && rows.length>0){
-      leads = rows.map(l=>({
-        nome: l.nome||'Lead',
-        tel:  (l.telefone||l.sender_id||'').replace(/\D/g,''),
-        meta: `Score ${l.score_final||0}${l.diagnostico_obs?' · '+l.diagnostico_obs:''}`
-      }));
-    }
+  // Filtra leads reais pelo campo causa (preenchido pelo N8N em cada lead)
+  const leadsComCausa=ACTIVE_LEADS.filter(l=>
+    (l.causa||'').toLowerCase().includes((reason.label||'').toLowerCase().slice(0,20))
+  ).slice(0,10);
+
+  document.getElementById('diagModalSub').innerHTML=
+    `<span style="color:${reason.cor};font-weight:700">${reason.count} leads</span> com este diagnóstico`+
+    (leadsComCausa.length>0?` · ${leadsComCausa.length} detalhados abaixo`:'');
+
+  const body=document.getElementById('diagModalBody');
+  const waIcon=`<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>`;
+
+  if(leadsComCausa.length===0){
+    body.innerHTML=`<div style="text-align:center;padding:32px 0;color:var(--tx3);font-size:13px;line-height:2">
+      Leads individuais disponíveis quando o N8N<br>retornar o campo <strong style="color:var(--tx2)">causa_esfriamento</strong> por lead</div>`;
+  } else {
+    body.innerHTML=leadsComCausa.map((l,i)=>{
+      const initials=(l.nome||'?').split(' ').slice(0,2).map(w=>w[0]).join('');
+      const col=DIAG_AVATARCOLORS[i%DIAG_AVATARCOLORS.length];
+      const tel=(l.telefone||'').replace(/\D/g,'');
+      const href=tel?`https://wa.me/${tel}`:'#';
+      return `<div class="diag-lead-row">
+        <div class="diag-lead-av" style="background:${col}">${initials}</div>
+        <div class="diag-lead-info">
+          <div class="diag-lead-name">${l.nome||'—'}</div>
+          <div class="diag-lead-meta">Score ${l.score||0} · ${l.temperatura||'—'} · ${l.modelo||'—'}</div>
+        </div>
+        <a class="diag-wa-btn" href="${href}" target="_blank" rel="noopener">${waIcon} WhatsApp</a>
+      </div>`;
+    }).join('');
   }
-  if(!leads) leads = DIAG_LEADS[id] || [];
-
-  document.getElementById('diagModalSub').innerHTML =
-    `<span style="color:${reason.color};font-weight:700">${reason.count} leads</span> com este diagnóstico · amostra de ${leads.length}`;
-
-  const waIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>`;
-  body.innerHTML = leads.map((l,i)=>{
-    const initials = l.nome.split(' ').slice(0,2).map(w=>w[0]).join('');
-    const col = DIAG_AVATARCOLORS[i % DIAG_AVATARCOLORS.length];
-    const href = l.tel ? `https://wa.me/${l.tel}` : '#';
-    return `<div class="diag-lead-row">
-      <div class="diag-lead-av" style="background:${col}">${initials}</div>
-      <div class="diag-lead-info">
-        <div class="diag-lead-name">${l.nome}</div>
-        <div class="diag-lead-meta">${l.meta}</div>
-      </div>
-      <a class="diag-wa-btn" href="${href}" target="_blank" rel="noopener">${waIcon} WhatsApp</a>
-    </div>`;
-  }).join('') + (reason.count > leads.length ? `<div class="diag-modal-more">mostrando ${leads.length} de ${reason.count} leads</div>` : '');
+  document.getElementById('diagModalBg').classList.add('show');
 }
 
 function closeDiagModal(){
   document.getElementById('diagModalBg').classList.remove('show');
 }</script>
-<div style="position:fixed;bottom:0;left:0;right:0;background:rgba(8,8,8,0.96);border-top:1px solid rgba(255,255,255,0.07);padding:5px 24px;font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:.07em;text-align:center;z-index:9999;pointer-events:none;">&#9888; Todos os dados apresentados s&#227;o fict&#237;cios e criados exclusivamente para fins de demonstra&#231;&#227;o</div>
 </body>
 </html>
 
