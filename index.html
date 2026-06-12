@@ -974,6 +974,19 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   <div style="margin-top:48px;">
     <div class="sec">Leads Presenciais · registrados via Check-in</div>
 
+    <!-- BUSCA POR TELEFONE OU CPF -->
+    <div style="margin-bottom:16px;display:flex;gap:10px;align-items:center;max-width:480px;">
+      <div style="position:relative;flex:1;">
+        <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none;opacity:.45;">🔍</span>
+        <input id="ci-search-input" type="text" class="ci-input" style="padding-left:36px;"
+          placeholder="Buscar lead por telefone ou CPF..."
+          oninput="ciSearchPresencial(this.value)"/>
+      </div>
+      <button onclick="document.getElementById('ci-search-input').value='';ciSearchPresencial('')"
+        style="background:none;border:1px solid var(--bdr);color:var(--tx3);padding:9px 13px;border-radius:var(--rsm);font-size:12px;cursor:pointer;font-family:inherit;" title="Limpar">✕</button>
+    </div>
+    <div id="ci-search-results" style="margin-bottom:16px;"></div>
+
     <!-- ESTADO 1: Orb Check-in -->
     <div id="ciPltClosed" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 0 40px;">
       <div style="font-size:12px;color:var(--tx3);margin-bottom:40px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;">Clique para ver os leads presenciais por modelo</div>
@@ -1256,6 +1269,13 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
             <input class="ci-input" id="ci-wa" type="tel" placeholder="(00) 00000-0000"/>
           </div>
         </div>
+        <div class="ci-row2">
+          <div class="ci-field">
+            <div class="ci-label">CPF (opcional)</div>
+            <input class="ci-input" id="ci-cpf" type="text" placeholder="000.000.000-00" maxlength="14"
+              oninput="this.value=this.value.replace(/\D/g,'').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3}\.\d{3})(\d)/,'$1.$2').replace(/(\d{3}\.\d{3}\.\d{3})(\d{1,2})/,'$1-$2')"/>
+          </div>
+        </div>
 
         <!-- ATENDIMENTO -->
         <div class="ci-sec-title" style="margin-top:6px">Dados do atendimento</div>
@@ -1534,7 +1554,7 @@ function ciInit(){
     dtEl.value = now.toISOString().slice(0,16);
   }
   ciRenderHistory();
-  document.getElementById('ciCount').textContent = ciLoad().length;
+  document.getElementById('ciCount').textContent = ciPresencialLeads().length;
 }
 
 function ciChip(el, groupId, selClass){
@@ -1563,7 +1583,7 @@ function ciGetYN(groupId){
 }
 
 function ciClear(){
-  ['ci-nome','ci-wa','ci-vendedor','ci-modelo','ci-obs'].forEach(id=>{
+  ['ci-nome','ci-wa','ci-cpf','ci-vendedor','ci-modelo','ci-obs'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.value='';
   });
   const dtEl=document.getElementById('ci-dt');
@@ -1603,15 +1623,31 @@ async function ciSave(){
   }
   err.style.display='none';
 
+  const INTENCAO_MAP = {
+    'Comprar agora':      'agora',
+    'Em breve (até 30d)': 'ate_30d',
+    'Pesquisando':        'pesquisando',
+    'Só curiosidade':     'curiosidade'
+  };
+  const DESFECHO_MAP = {
+    'Vai pensar':         'vai_pensar',
+    'Pediu retorno':      'pediu_retorno',
+    'Comprou':            'comprou',
+    'Desistiu':           'desistiu',
+    'Saiu sem definição': 'indefinido'
+  };
+
+  const cpf = document.getElementById('ci-cpf').value.trim();
+
   const reg = {
     id: Date.now(),
-    nome, wa, vend, dt, intencao: intenc, modelos: modelo,
-    troca:      ciGetYN('ci-troca'),
+    nome, wa, cpf, vend, dt, intencao: intenc, modelos: modelo,
+    troca:         ciGetYN('ci-troca'),
     financiamento: ciGetYN('ci-finan'),
-    test_drive: ciGetYN('ci-td'),
-    proposta:   ciGetYN('ci-prop'),
-    desfecho:   desfech,
-    observacoes: document.getElementById('ci-obs').value.trim()
+    test_drive:    ciGetYN('ci-td'),
+    proposta:      ciGetYN('ci-prop'),
+    desfecho:      desfech,
+    observacoes:   document.getElementById('ci-obs').value.trim()
   };
 
   const saveBtn = document.querySelector('.btn-ci-save');
@@ -1619,7 +1655,21 @@ async function ciSave(){
   saveBtn.textContent = 'Enviando...';
 
   const WH = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/checkin-presencial';
-  const payload = JSON.stringify(reg);
+  const payload = JSON.stringify({
+    nome:                nome,
+    whatsapp:            wa,
+    cpf:                 cpf.replace(/\D/g,''),
+    vendedor:            vend,
+    atendimento_em:      dt,
+    intencao_compra:     INTENCAO_MAP[intenc]   || intenc,
+    modelo_interesse:    modelo,
+    fez_test_drive:      ciGetYN('ci-td')    === 'S',
+    pediu_proposta:      ciGetYN('ci-prop')  === 'S',
+    tem_veiculo_troca:   ciGetYN('ci-troca') === 'S',
+    financiamento_aprov: ciGetYN('ci-finan') === 'S',
+    desfecho_visita:     DESFECHO_MAP[desfech]  || desfech,
+    observacoes:         document.getElementById('ci-obs').value.trim()
+  });
   let ok = false;
 
   // tentativa 1 — fetch padrão com JSON (funciona se n8n tem CORS configurado)
@@ -1645,7 +1695,7 @@ async function ciSave(){
   const arr = ciLoad();
   arr.unshift(reg);
   localStorage.setItem('ci_registros', JSON.stringify(arr));
-  document.getElementById('ciCount').textContent = arr.length;
+  document.getElementById('ciCount').textContent = ciPresencialLeads().length;
   saveBtn.disabled = false;
   saveBtn.textContent = '✔ Salvar Check-in';
   ciClear();
@@ -1655,6 +1705,64 @@ async function ciSave(){
 
 function ciLoad(){
   try{ return JSON.parse(localStorage.getItem('ci_registros')||'[]'); }catch(e){return [];}
+}
+
+function ciPresencialLeads(){
+  const fromSupabase = ACTIVE_LEADS
+    .filter(l => l.canal === 'presencial')
+    .map(l => ({
+      id:           l.telefone || l.nome,
+      nome:         l.nome,
+      wa:           l.telefone,
+      cpf:          l.cpf || '',
+      vend:         l.vendedor || '—',
+      dt:           l.atendimento_em || '',
+      intencao:     l.intencao || '',
+      modelos:      l.modelo || '',
+      desfecho:     l.desfecho || '',
+      troca:        'N', test_drive: 'N', proposta: 'N', financiamento: 'N',
+      observacoes:  ''
+    }));
+  const supaWas = new Set(fromSupabase.map(l => (l.wa||'').replace(/\D/g,'')));
+  const localOnly = ciLoad().filter(r => !supaWas.has((r.wa||'').replace(/\D/g,'')));
+  return [...fromSupabase, ...localOnly];
+}
+
+function ciSearchPresencial(q){
+  const el = document.getElementById('ci-search-results');
+  if(!el) return;
+  const digits = (q||'').replace(/\D/g,'');
+  if(digits.length < 6){ el.innerHTML=''; return; }
+  const results = ciPresencialLeads().filter(r => {
+    const phone = (r.wa||'').replace(/\D/g,'');
+    const cpf   = (r.cpf||'').replace(/\D/g,'');
+    return phone.includes(digits) || cpf.includes(digits);
+  });
+  if(!results.length){
+    el.innerHTML=`<div style="padding:16px;color:var(--tx3);font-size:13px;border:1px solid var(--bdr);border-radius:var(--r);background:var(--s2);">Nenhum lead encontrado para esse número.</div>`;
+    return;
+  }
+  el.innerHTML = results.map(r => {
+    const dtFmt = r.dt ? new Date(r.dt).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
+    const iCls = ciIntencaoBadgeClass(r.intencao);
+    const dCls = ciDesfechoBadgeClass(r.desfecho);
+    const av   = ciAvatarColor(r.nome||'?');
+    return `<div class="ci-hi" style="margin-bottom:8px;">
+      <div class="ci-hi-head">
+        <div style="width:34px;height:34px;border-radius:50%;background:${av};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;">${(r.nome||'?').charAt(0).toUpperCase()}</div>
+        <div style="flex:1;min-width:0;">
+          <div class="ci-hi-nome">${r.nome||'—'}</div>
+          <div class="ci-hi-sub">${r.vend||'—'} · ${dtFmt}</div>
+          <div style="font-size:11px;color:var(--tx3);margin-top:2px;">📞 ${r.wa||'—'}${r.cpf?' &nbsp;·&nbsp; CPF: '+r.cpf:''}</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex-shrink:0;">
+          <span class="${iCls}" style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;">${r.intencao||'—'}</span>
+          <span class="${dCls}" style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;">${r.desfecho||'—'}</span>
+          ${r.modelos?`<span style="padding:3px 10px;border-radius:20px;font-size:11px;background:var(--s2);color:var(--tx2);border:1px solid var(--bdr);">${r.modelos}</span>`:''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function ciDelete(id){
@@ -1686,7 +1794,7 @@ function ciBadgeStyle(cls){
 }
 
 function ciRenderHistory(){
-  const arr = ciLoad();
+  const arr = ciPresencialLeads();
   const el = document.getElementById('ci-history');
   if(!el) return;
   if(!arr.length){
@@ -1737,7 +1845,7 @@ function renderLeadsPresenciais(){
   if(cats)   cats.style.display='none';
   if(list)   list.style.display='none';
   // Atualiza contagem no orb
-  const arr = ciLoad();
+  const arr = ciPresencialLeads();
   const elCI = document.getElementById('orbLeadCountCI');
   if(elCI) elCI.textContent = `${arr.length} lead${arr.length!==1?'s':''}`;
 }
@@ -1803,7 +1911,7 @@ function closeCICategories(){
 function renderCIModelCards(){
   const container = document.getElementById('ciModelCardsGrid');
   if(!container) return;
-  const arr = ciLoad();
+  const arr = ciPresencialLeads();
   container.innerHTML = CI_GWM_MODELS.map(m=>{
     const leads = arr.filter(r=>(r.modelos||'').toLowerCase().includes(m.name.toLowerCase()));
     return `<div class="cat-card" onclick="openCIModel('${m.name}')" style="border-color:${m.bdr};background:${m.bg};">
@@ -1829,7 +1937,7 @@ function backToCICategories(){
 
 function renderCILeadList(model){
   const gwm    = CI_GWM_MODELS.find(m=>m.name===model);
-  const arr    = ciLoad();
+  const arr    = ciPresencialLeads();
   const leads  = arr.filter(r=>(r.modelos||'').toLowerCase().includes(model.toLowerCase()));
 
   const titleEl = document.getElementById('ciModelListTitle');
@@ -1933,8 +2041,8 @@ function phoneSearch(term, pageId){
       add(l.nome, l.telefone, l.modelo||'—', 'Fila de Espera');
   });
 
-  // Check-ins presenciais (localStorage)
-  ciLoad().forEach(r=>{
+  // Check-ins presenciais (Supabase + localStorage)
+  ciPresencialLeads().forEach(r=>{
     if((r.wa||'').replace(/[^0-9]/g,'').includes(digits))
       add(r.nome, r.wa, r.modelos||'—', 'Check-in');
   });
@@ -2725,6 +2833,10 @@ async function fetchAllData(){
         codDetalhe:  l.co_decisor || '',
         localizacao: '',
         causa:       l.submotivo||l.causa_esfriamento||'',
+        desfecho:    l.desfecho_visita||'',
+        vendedor:    l.checkin_vendedor||'',
+        atendimento_em: l.atendimento_em||l.atualizado_em||'',
+        cpf:         l.cpf||'',
         perguntas:   buildPerguntas(l)
       }));
     }
