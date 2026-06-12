@@ -1708,6 +1708,19 @@ function ciLoad(){
 }
 
 function ciPresencialLeads(){
+  const INTENCAO_LABEL = {
+    'agora':       'Comprar agora',
+    'ate_30d':     'Em breve (até 30d)',
+    'pesquisando': 'Pesquisando',
+    'curiosidade': 'Só curiosidade'
+  };
+  const DESFECHO_LABEL = {
+    'vai_pensar':    'Vai pensar',
+    'pediu_retorno': 'Pediu retorno',
+    'comprou':       'Comprou',
+    'desistiu':      'Desistiu',
+    'indefinido':    'Saiu sem definição'
+  };
   const fromSupabase = ACTIVE_LEADS
     .filter(l => l.canal === 'presencial')
     .map(l => ({
@@ -1717,9 +1730,9 @@ function ciPresencialLeads(){
       cpf:          l.cpf || '',
       vend:         l.vendedor || '—',
       dt:           l.atendimento_em || '',
-      intencao:     l.intencao || '',
+      intencao:     INTENCAO_LABEL[l.prazo] || l.prazo || '',
       modelos:      l.modelo || '',
-      desfecho:     l.desfecho || '',
+      desfecho:     DESFECHO_LABEL[l.desfecho] || l.desfecho || '',
       troca:        'N', test_drive: 'N', proposta: 'N', financiamento: 'N',
       observacoes:  ''
     }));
