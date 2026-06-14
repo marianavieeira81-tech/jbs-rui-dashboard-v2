@@ -2403,32 +2403,115 @@ function getPhoneForLead(nome){
 
 function buildFunil(){
   const wrap = document.getElementById('funnelWrap');
-  if(!wrap || wrap.children.length > 0) return;
-  const dropLabels = [
-    "Não responderam ao Rui",
-    "Abandonaram no meio da qualificação",
-    "Score < 60 · encaminhados para nutrição",
-    "Leads quentes aguardando fechamento"
+  if(!wrap) return;
+  wrap.innerHTML = '';
+
+  // Sem dados reais disponíveis
+  if(DATA_MODE !== 'production' || ACTIVE_LEADS.length === 0){
+    wrap.innerHTML = `<div style="text-align:center;padding:80px 0;color:var(--tx3)">
+      <div style="font-size:42px;margin-bottom:16px">📊</div>
+      <div style="font-size:15px;font-weight:600;color:var(--tx2);margin-bottom:8px">Aguardando dados do agente Rui</div>
+      <div style="font-size:13px;line-height:1.7;max-width:380px;margin:0 auto">O funil será preenchido automaticamente quando os leads chegarem pelo N8N.<br>Clique em <strong style="color:var(--ac)">↺ Atualizar</strong> para tentar novamente.</div>
+    </div>`;
+    return;
+  }
+
+  // Classificação por etapa com dados reais
+  const todos       = ACTIVE_LEADS;
+  const iniciaram   = ACTIVE_LEADS.filter(l => l.inicouFluxo || l.perguntas.length > 0);
+  const completos   = ACTIVE_LEADS.filter(l => l.qualificadoEm || l.perguntas.length >= 4);
+  const quentes     = ACTIVE_LEADS.filter(l => l.score >= 60);
+
+  const maxN = todos.length || 1;
+
+  const stages = [
+    {
+      lbl: 'Leads recebidos',
+      c: '#D4AF37',
+      tip: 'Todos os leads que entraram em contato com o Rui.',
+      leads: todos,
+      nextLeads: iniciaram,
+      dropLabel: 'Não responderam ao Rui',
+      isLast: false
+    },
+    {
+      lbl: 'Iniciaram o fluxo',
+      c: '#A88820',
+      tip: 'Responderam ao Rui e iniciaram as perguntas de qualificação.',
+      leads: iniciaram,
+      nextLeads: completos,
+      dropLabel: 'Pararam antes de concluir a qualificação',
+      isLast: false
+    },
+    {
+      lbl: 'Qualificação completa',
+      c: '#606060',
+      tip: 'Responderam todas as perguntas do Rui. Score calculado.',
+      leads: completos,
+      nextLeads: quentes,
+      dropLabel: 'Score < 60 · encaminhados para nutrição',
+      isLast: false
+    },
+    {
+      lbl: 'Score ≥ 60 · Leads quentes',
+      c: '#D4AF37',
+      tip: 'Leads com score igual ou maior que 60 — prontos para atendimento.',
+      leads: quentes,
+      nextLeads: [],
+      dropLabel: '',
+      isLast: true
+    }
   ];
-  FUNNEL.forEach((s,si)=>{
-    const isLast = si === FUNNEL.length-1;
-    const advancedCount = isLast ? s.n : FUNNEL[si+1].n;
-    const droppedCount  = isLast ? 0 : s.n - FUNNEL[si+1].n;
-    const waCount = Math.min(s.waCount||s.n, ALL_LEADS_NAMES.length);
-    const stageLeads = ALL_LEADS_NAMES.slice(0, waCount).map(n=>({n,pl:'WhatsApp'}));
-    const nextWaCount = isLast ? 0 : Math.min(FUNNEL[si+1].waCount||FUNNEL[si+1].n, ALL_LEADS_NAMES.length);
-    const nextStageLeads = isLast ? [] : ALL_LEADS_NAMES.slice(0, nextWaCount);
-    const advanced = isLast ? stageLeads : stageLeads.filter(l=>nextStageLeads.includes(l.n));
-    const dropped = isLast ? [] : stageLeads.filter(l=>!nextStageLeads.includes(l.n));
-    const isPending = si===3;
-    const dropClass = isPending?'pending':'dropped';
-    const dropLabelClass = isPending?'fn-section-pending':'fn-section-dropped';
-    const dropIcon = isPending?'⏳':'✗';
-    const advHtml = `<div class="fn-section-label fn-section-advanced"><span>✓</span>${isLast?'Leads quentes confirmados':'Avançaram'} · ${advancedCount}</div><div class="leads-grid">${advanced.map((l,li)=>{const ph=getPhoneForLead(l.n);return `<div class="lchip" data-tip="${l.n}"><div class="lav" style="background:${avc(li)}">${ini(l.n)}</div><div><div class="lname">${l.n}</div><span class="ptag wa">WhatsApp</span>${ph?`<div class="lchip-phone">${ph}</div>`:''}</div></div>`;}).join('')}</div>`;
-    const dropHtml = droppedCount>0?`<div class="fn-section-divider"></div><div class="fn-section-label ${dropLabelClass}"><span>${dropIcon}</span>Pararam · ${droppedCount} · ${dropLabels[si]}</div><div class="leads-grid">${dropped.map((l,li)=>{const ph=getPhoneForLead(l.n);return `<div class="lchip ${dropClass}"><div class="lav" style="background:${isPending?'#4A3800':'#4A2030'}">${ini(l.n)}</div><div><div class="lname">${l.n}</div><span class="ptag wa">WhatsApp</span>${ph?`<div class="lchip-phone">${ph}</div>`:''}</div></div>`;}).join('')}</div>`:'';
+
+  function chipHtml(lead, li, extraClass){
+    const ph = lead.telefone || null;
+    const scoreCol = lead.score>=80?'#EF4444':lead.score>=60?'#F97316':lead.score>=40?'#EAB308':'var(--tx3)';
+    return `<div class="lchip ${extraClass||''}" data-tip="${lead.nome}" onclick="openLeadCard(ACTIVE_LEADS.find(l=>l.nome==='${lead.nome.replace(/'/g,"\\'")}'))">
+      <div class="lav" style="background:${avc(li)};cursor:pointer">${ini(lead.nome)}</div>
+      <div>
+        <div class="lname">${lead.nome}</div>
+        <span class="ptag wa">WhatsApp</span>
+        ${ph?`<div class="lchip-phone">${ph}</div>`:''}
+        ${lead.score>0?`<div style="font-size:9px;font-weight:700;color:${scoreCol};margin-top:1px">Score ${lead.score}</div>`:''}
+      </div>
+    </div>`;
+  }
+
+  stages.forEach((s, si) => {
+    const n  = s.leads.length;
+    const p  = Math.round((n / maxN) * 100);
+    const nextIds = new Set((s.nextLeads||[]).map(l=>l.nome));
+    const advanced = s.isLast ? s.leads : s.leads.filter(l => nextIds.has(l.nome));
+    const dropped  = s.isLast ? [] : s.leads.filter(l => !nextIds.has(l.nome));
+
+    const advLbl = s.isLast ? 'Leads quentes confirmados' : 'Avançaram para próxima etapa';
+    const advHtml = advanced.length > 0
+      ? `<div class="fn-section-label fn-section-advanced"><span>✓</span>${advLbl} · ${advanced.length}</div>
+         <div class="leads-grid">${advanced.map((l,li)=>chipHtml(l,li,'')).join('')}</div>`
+      : `<div style="font-size:12px;color:var(--tx3);padding:10px 0;font-style:italic">Nenhum lead avançou ainda.</div>`;
+
+    const dropHtml = dropped.length > 0
+      ? `<div class="fn-section-divider"></div>
+         <div class="fn-section-label fn-section-dropped"><span>✗</span>Pararam · ${dropped.length} · ${s.dropLabel}</div>
+         <div class="leads-grid">${dropped.map((l,li)=>chipHtml(l,li,'dropped')).join('')}</div>`
+      : '';
+
+    const dropBadge = dropped.length > 0
+      ? `<span style="font-size:11px;font-weight:700;margin-left:auto;margin-right:12px;color:var(--red);background:var(--red-bg);padding:2px 9px;border-radius:12px">${dropped.length} pararam</span>`
+      : '';
+
     const el = document.createElement('div');
-    el.className='fn-stage';
-    el.innerHTML=`<div class="fn-hdr" onclick="toggleFn(${si})"><div class="fn-dot" style="background:${s.c}"></div><div class="fn-name">${s.lbl}</div><div><span class="fn-cnt">${s.n}</span><span class="fn-pct"> leads (${s.p}%)</span></div>${droppedCount>0?`<span style="font-size:11px;font-weight:700;margin-left:auto;margin-right:12px;color:${isPending?'var(--ac)':'var(--red)'};background:${isPending?'rgba(212,175,55,.1)':'var(--red-bg)'};padding:2px 9px;border-radius:12px">${droppedCount} pararam</span>`:''}<div class="fn-arrow" id="fa-${si}">▸</div></div><div class="fn-track"><div class="fn-bar" style="width:${s.p}%;background:${s.c}"></div></div><div class="fn-body" id="fb-${si}">${dropHtml}${advHtml}</div>`;
+    el.className = 'fn-stage';
+    el.innerHTML = `
+      <div class="fn-hdr" onclick="toggleFn(${si})">
+        <div class="fn-dot" style="background:${s.c}"></div>
+        <div class="fn-name">${s.lbl}</div>
+        <div><span class="fn-cnt">${n}</span><span class="fn-pct"> leads (${p}%)</span></div>
+        ${dropBadge}
+        <div class="fn-arrow" id="fa-${si}">▸</div>
+      </div>
+      <div class="fn-track"><div class="fn-bar" style="width:${p}%;background:${s.c}"></div></div>
+      <div class="fn-body" id="fb-${si}">${dropHtml}${advHtml}</div>`;
     wrap.appendChild(el);
   });
 }
@@ -2850,6 +2933,8 @@ async function fetchAllData(){
         vendedor:    l.checkin_vendedor||'',
         atendimento_em: l.atendimento_em||l.atualizado_em||'',
         cpf:         l.cpf||'',
+        qualificadoEm: l.qualificado_em||null,
+        inicouFluxo: !!(l.perfil_uso||l.urgencia||l.veiculo_interesse||l.forma_pagamento||l.tem_veiculo_troca!=null),
         perguntas:   buildPerguntas(l)
       }));
     }
@@ -2894,6 +2979,7 @@ async function atualizarDashboard(){
   buildTable();
   updateOrbCount();
   document.getElementById('tsVal').textContent=new Date().toLocaleString('pt-BR');
+  if(document.getElementById('p-funil')&&document.getElementById('p-funil').style.display!=='none') buildFunil();
 }
 
 // ============================================================
