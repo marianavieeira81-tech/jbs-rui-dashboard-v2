@@ -573,7 +573,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       <div class="sb-item active" onclick="go('dash')"><i class="sb-ico">◉</i>Dashboard</div>
       <div class="sb-item" onclick="go('filaespera')"><i class="sb-ico">⏳</i>Fila de Espera</div>
       <div class="sb-item" onclick="go('plataformas')"><i class="sb-ico">⊞</i>Central de Leads</div>
-      <div class="sb-item" onclick="go('cobertura')"><i class="sb-ico">🌙</i>Cobertura Noturna</div>
+      <div class="sb-item" onclick="go('cobertura')"><i class="sb-ico">🕐</i>Cobertura 24/7</div>
     </div>
     <div class="sb-group">
       <div class="sb-lbl">Leads</div>
@@ -614,23 +614,23 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   <div class="kpi-grid">
     <div class="kpi gold">
       <div class="kpi-tag">⚡ Rui atendeu</div><div class="kpi-lbl">Leads recebidos</div>
-      <div class="kpi-val" data-count="50" data-kpi="total">50</div>
-      <div class="kpi-sub"><span class="pill up">↑ 12%</span> vs semana anterior</div>
+      <div class="kpi-val" data-count="0" data-kpi="total">—</div>
+      <div class="kpi-sub"><span class="pill nu">aguardando dados</span></div>
     </div>
     <div class="kpi">
       <div class="kpi-tag">⚡ Rui qualificou</div><div class="kpi-lbl">Qualificação completa</div>
-      <div class="kpi-val" data-count="31">31</div>
-      <div class="kpi-sub"><span class="pill nu">62%</span> do total recebido</div>
+      <div class="kpi-val" data-count="0">—</div>
+      <div class="kpi-sub"><span class="pill nu">aguardando dados</span></div>
     </div>
     <div class="kpi">
       <div class="kpi-tag">⚡ Rui transferiu</div><div class="kpi-lbl">Leads qualificados entregues</div>
-      <div class="kpi-val" data-count="18" data-kpi="transferidos">18</div>
-      <div class="kpi-sub"><span class="pill up" style="background:var(--grn-bg);color:var(--grn-l)">R$ 6,3M</span> em carteira potencial</div>
+      <div class="kpi-val" data-count="0" data-kpi="transferidos">—</div>
+      <div class="kpi-sub"><span class="pill nu">aguardando dados</span></div>
     </div>
     <div class="kpi">
       <div class="kpi-tag">⚡ Score médio Rui</div><div class="kpi-lbl">Score médio</div>
-      <div class="kpi-val" data-count="64" data-kpi="scoreMedio">64</div>
-      <div class="kpi-sub"><span class="pill up">↑ 5 pts</span> vs semana anterior</div>
+      <div class="kpi-val" data-count="0" data-kpi="scoreMedio">—</div>
+      <div class="kpi-sub"><span class="pill nu">aguardando dados</span></div>
     </div>
   </div>
 
@@ -654,8 +654,8 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   <div class="topbar">
     <div><div class="eye">Pipeline do Agente</div><h1>Fila de Leads</h1></div>
     <div class="topbar-r">
-      <div class="ts"><span>2 de junho de 2026</span><strong>06:25</strong></div>
-      <button class="btn-ref" onclick="filterFila(document.querySelector('.ftab.active'),'todos')">&#8629; Atualizar</button>
+      <div class="ts"><span>Última atualização</span><strong id="filaTs">—</strong></div>
+      <button class="btn-ref" onclick="fetchFilaData()">&#8629; Atualizar</button>
     </div>
   </div>
 
@@ -672,13 +672,13 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       <div class="kpi-tag">FILA</div>
       <div class="kpi-lbl">Leads na Fila</div>
       <div class="kpi-val" id="filaKpiTotal">—</div>
-      <div class="kpi-sub"><span class="pill up">&#8593; 23 esta semana</span></div>
+      <div class="kpi-sub"><span class="pill nu">aguardando dados</span></div>
     </div>
     <div class="kpi">
       <div class="kpi-tag">HOJE</div>
       <div class="kpi-lbl">Contatos Hoje</div>
-      <div class="kpi-val">41</div>
-      <div class="kpi-sub"><span class="pill up">&#8593; 68% de resposta</span></div>
+      <div class="kpi-val" id="filaKpiHoje">—</div>
+      <div class="kpi-sub"><span class="pill nu">aguardando dados</span></div>
     </div>
     <div class="kpi">
       <div class="kpi-tag">ESPERA</div>
@@ -689,8 +689,8 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     <div class="kpi gold">
       <div class="kpi-tag">30D</div>
       <div class="kpi-lbl">Convertidos</div>
-      <div class="kpi-val">64</div>
-      <div class="kpi-sub"><span class="pill up">&#8593; 12 vs. m&ecirc;s ant.</span></div>
+      <div class="kpi-val" id="filaKpiConvertidos">—</div>
+      <div class="kpi-sub"><span class="pill nu">aguardando dados</span></div>
     </div>
   </div>
 
@@ -920,25 +920,25 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 
 <!-- ============ COBERTURA NOTURNA ============ -->
 <div id="p-cobertura" style="display:none">
-  <div class="topbar"><div><div class="eye">Principal</div><h1>Cobertura Fora do Horário</h1></div></div>
+  <div class="topbar"><div><div class="eye">Principal</div><h1>Cobertura 24/7</h1></div></div>
   <div style="font-size:13px;color:var(--tx2);margin-bottom:24px;line-height:1.7;max-width:640px">
     Horário humano: <strong style="color:var(--tx)">Seg–Sex 08h–19h</strong> · <strong style="color:var(--tx)">Sáb 08h–14h</strong> · <strong style="color:var(--red)">Dom fechado</strong>.
     Fora desses horários — incluindo madrugada, domingo e feriados — o Rui opera sozinho. Qualifica, responde e transfere leads que de outra forma perderiam o timing sem nenhuma resposta até o dia seguinte.
   </div>
   <div class="cob-grid">
     <div class="cob-card" data-tip="Leads atendidos quando nenhum vendedor estava disponível esta semana — a maioria na madrugada.">
-      <div class="cob-val" data-kpi="cobLeads">47</div>
+      <div class="cob-val" data-kpi="cobLeads">—</div>
       <div class="cob-lbl">Leads fora do horário</div>
       <div class="cob-sub">atendidos pelo Rui esta semana, incl. madrugada</div>
     </div>
     <div class="cob-card" data-tip="Percentual de todos os leads da semana que chegaram fora do horário humano — incluindo madrugada (00h–06h).">
-      <div class="cob-val" data-kpi="cobPct">62%</div>
+      <div class="cob-val" data-kpi="cobPct">—</div>
       <div class="cob-lbl">Do total semanal</div>
       <div class="cob-sub">mais da metade vem fora do horário comercial</div>
     </div>
     <div class="cob-card" data-tip="Valor potencial dos leads qualificados fora do horário humano esta semana — sem o Rui, todos perderiam o timing.">
-      <div class="cob-val" data-kpi="cobCarteira" style="font-size:28px">R$ 5,8M</div>
-      <div class="cob-lbl">Carteira potencial noturna</div>
+      <div class="cob-val" data-kpi="cobCarteira" style="font-size:28px">—</div>
+      <div class="cob-lbl">Carteira potencial 24/7</div>
       <div class="cob-sub">em leads qualificados pelo Rui fora do horário</div>
     </div>
   </div>
@@ -2255,13 +2255,7 @@ function buildTable(){
       <td><span class="stpill ${stM[l.status]||'st-i'}">${l.status}</span></td>
     </tr>`).join('');
   } else {
-    tb.innerHTML=LEADS.map(l=>`<tr>
-      <td><strong>${l.n}</strong></td>
-      <td><span class="ptag wa">WhatsApp</span></td>
-      <td><span class="sp ${scC(l.sc)}">${l.sc}/100</span></td>
-      <td>${l.md}</td><td>${l.py}</td>
-      <td><span class="stpill ${stM[l.ss]||'st-i'}">${l.ss}</span></td>
-    </tr>`).join('');
+    tb.innerHTML='<tr><td colspan="6" style="text-align:center;padding:40px 20px;color:var(--tx3);font-size:13px">Aguardando primeiros leads do agente Rui...</td></tr>';
   }
 }
 
