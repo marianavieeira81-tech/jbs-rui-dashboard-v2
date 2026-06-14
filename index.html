@@ -2969,7 +2969,7 @@ function toggleFilaPerfil(idx){
 }
 
 function buildFilaEspera(){
-  const source = (DATA_MODE==='production' && ACTIVE_FILA.length>0) ? ACTIVE_FILA : DEMO_FILA;
+  const source = (DATA_MODE==='production') ? ACTIVE_FILA : DEMO_FILA;
   const fila = source.slice().sort((a,b)=>new Date(a.entradaISO)-new Date(b.entradaISO));
 
   const wrap=document.getElementById('filaList');
