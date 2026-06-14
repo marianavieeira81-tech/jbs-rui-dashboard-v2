@@ -3041,6 +3041,7 @@ const DEMO_FILA = [
 let ACTIVE_FILA = [];
 
 function tempoEspera(isoStr){
+  if(!isoStr) return '—';
   const diff = Math.max(0, new Date() - new Date(isoStr));
   const diffD = Math.floor(diff/86400000), diffH = Math.floor(diff/3600000), diffMin = Math.floor(diff/60000);
   if(diffD>=1) return `há ${diffD} dia${diffD>1?'s':''}`;
@@ -3050,6 +3051,7 @@ function tempoEspera(isoStr){
 }
 
 function fmtDataHoraFila(isoStr){
+  if(!isoStr) return '—';
   const d=new Date(isoStr);
   return d.toLocaleDateString('pt-BR')+' · '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
 }
@@ -3149,7 +3151,7 @@ async function fetchFilaData(){
           notas:       f.observacao||f.especificacoes||'',
           score:       f.score_final||0,
           temperatura: calcTemperatura(f.score_final||0),
-          entradaISO:  f.registrado_em||new Date().toISOString(),
+          entradaISO:  f.registrado_em||f.qualificado_em||null,
           motivo_fila: 'Estoque esgotado · '+(f.modelo||'modelo solicitado'),
           perfil:{
             canal:     'WhatsApp',
