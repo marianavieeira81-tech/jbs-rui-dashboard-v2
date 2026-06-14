@@ -789,42 +789,8 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
         <span style="font-size:13px;opacity:.5;">&#128663;</span>
         <span class="ctitle" style="margin:0;">Estoque &times; Demanda Represada</span>
       </div>
-      <div style="padding:10px 22px;flex:1;">
-        <div class="fstock-item">
-          <div class="fstock-top">
-            <div><div class="fstock-model">HB20 Comfort</div><div class="fstock-leads">127 leads aguardando</div></div>
-            <span class="fstock-un" style="color:var(--red);">2 un.</span>
-          </div>
-          <div class="fstock-bar-bg"><div class="fstock-bar" style="width:2%;background:var(--red);"></div></div>
-        </div>
-        <div class="fstock-item">
-          <div class="fstock-top">
-            <div><div class="fstock-model">Creta Ultimate</div><div class="fstock-leads">98 leads aguardando</div></div>
-            <span class="fstock-un" style="color:var(--red);">0 un.</span>
-          </div>
-          <div class="fstock-bar-bg"><div class="fstock-bar" style="width:0%;background:var(--red);"></div></div>
-        </div>
-        <div class="fstock-item">
-          <div class="fstock-top">
-            <div><div class="fstock-model">HB20 Sport</div><div class="fstock-leads">63 leads aguardando</div></div>
-            <span class="fstock-un" style="color:#F59E0B;">5 un.</span>
-          </div>
-          <div class="fstock-bar-bg"><div class="fstock-bar" style="width:30%;background:#F59E0B;"></div></div>
-        </div>
-        <div class="fstock-item">
-          <div class="fstock-top">
-            <div><div class="fstock-model">Tucson Hybrid</div><div class="fstock-leads">41 leads aguardando</div></div>
-            <span class="fstock-un" style="color:#F59E0B;">4 un.</span>
-          </div>
-          <div class="fstock-bar-bg"><div class="fstock-bar" style="width:35%;background:#F59E0B;"></div></div>
-        </div>
-        <div class="fstock-item" style="border-bottom:none;">
-          <div class="fstock-top">
-            <div><div class="fstock-model">Santa Fe</div><div class="fstock-leads">18 leads aguardando</div></div>
-            <span class="fstock-un" style="color:var(--grn-l);">9 un.</span>
-          </div>
-          <div class="fstock-bar-bg"><div class="fstock-bar" style="width:75%;background:var(--grn-l);"></div></div>
-        </div>
+      <div style="padding:10px 22px;flex:1;" id="estoqueDemandasWrap">
+        <div style="color:var(--tx3);font-size:12px;padding:12px 0">Carregando dados de estoque...</div>
       </div>
       <div style="padding:14px 22px;border-top:1px solid var(--bdr);">
         <button class="btn-ref" style="width:100%;justify-content:center;background:transparent;border:1px solid var(--s4);color:var(--tx2);border-radius:var(--rsm);padding:11px;font-size:12px;display:flex;align-items:center;gap:7px;">
@@ -2856,7 +2822,8 @@ const ENDPOINTS = {
   // }
   production: {
     dashboard: 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/ml-dashboard-data',
-    fila:      'https://n8n-n8n.lrdyzi.easypanel.host/webhook/adtsa-fila-espera'
+    fila:      'https://n8n-n8n.lrdyzi.easypanel.host/webhook/adtsa-fila-espera',
+    estoque:   'https://n8n-n8n.lrdyzi.easypanel.host/webhook/adtsa-estoque'
   }
 };
 
@@ -3139,15 +3106,15 @@ function buildFilaEspera(){
 async function fetchFilaData(){
   if(DATA_MODE==='production'){
     try{
-      const res=await fetch(ENDPOINTS.production.fila,{
-        method:'GET',
-        headers:{'Content-Type':'application/json','x-adtsa-secret':'ADTSA-RUI-2026-wR4kN8v2X5j1'}
-      });
-      if(!res.ok) throw new Error('HTTP '+res.status);
-      const data=await res.json();
-      // N8N retorna {fila:[...], resumo_por_modelo:{...}, total:n}
-      const filaRaw=Array.isArray(data)?data:(data.fila||[]);
-      if(filaRaw.length>0){
+      const [resF, resE] = await Promise.all([
+        fetch(ENDPOINTS.production.fila,    {method:'GET',headers:{'Content-Type':'application/json','x-adtsa-secret':'ADTSA-RUI-2026-wR4kN8v2X5j1'}}),
+        fetch(ENDPOINTS.production.estoque, {method:'GET',headers:{'Content-Type':'application/json','x-adtsa-secret':'ADTSA-RUI-2026-wR4kN8v2X5j1'}})
+      ]);
+      if(resF.ok){
+        const data=await resF.json();
+        const filaRaw=(Array.isArray(data)?data:(data.fila||[]))
+          .filter(f=>!f.status||f.status==='aguardando'); // apenas leads ainda aguardando
+        const resumo=data.resumo_por_modelo||{};
         ACTIVE_FILA=filaRaw.map(f=>({
           nome:        f.nome||'',
           telefone:    f.telefone||f.lead_sender_id||'',
@@ -3166,6 +3133,10 @@ async function fetchFilaData(){
           },
           perguntas:   []
         }));
+        if(resE.ok){
+          const estoque=await resE.json();
+          buildEstoqueSection(Array.isArray(estoque)?estoque:[], resumo);
+        }
       }
     }catch(e){ /* silencioso — usa DEMO_FILA como fallback */ }
   }
@@ -3177,6 +3148,43 @@ async function fetchFilaData(){
 // ============================================================
 // INIT
 // ============================================================
+function buildEstoqueSection(estoque, resumo){
+  const el=document.getElementById('estoqueDemandasWrap');
+  if(!el) return;
+  // agrupa estoque por modelo (soma quantidade de variantes)
+  const stockMap={};
+  estoque.forEach(v=>{
+    const m=v.modelo||'Não identificado';
+    if(!stockMap[m]) stockMap[m]={quantidade:0};
+    stockMap[m].quantidade+=v.quantidade||0;
+  });
+  // modelos que têm leads aguardando, ordenados por demanda
+  const modelos=Object.entries(resumo)
+    .sort((a,b)=>b[1].total-a[1].total)
+    .map(([modelo,info])=>({
+      modelo,
+      leads:     info.total||0,
+      unidades:  stockMap[modelo]?.quantidade??null
+    }));
+  if(modelos.length===0){ el.innerHTML='<div style="padding:12px 0;color:var(--tx3);font-size:12px">Sem dados de demanda no momento.</div>'; return; }
+  const maxLeads=Math.max(...modelos.map(m=>m.leads),1);
+  el.innerHTML=modelos.map((m,i)=>{
+    const un=m.unidades;
+    const semDado=un===null;
+    const cor=semDado?'var(--tx3)':un===0?'var(--red)':un<=3?'#F59E0B':'var(--grn-l)';
+    const unLabel=semDado?'—':un+' un.';
+    const barW=semDado?0:Math.min(Math.round((un/(Math.max(...modelos.map(x=>x.unidades??0),1)))*100),100);
+    const alerta=un===0?'<span style="font-size:9px;font-weight:700;color:var(--red);background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);padding:1px 7px;border-radius:10px;margin-left:6px">SEM ESTOQUE</span>':'';
+    return `<div class="fstock-item"${i===modelos.length-1?' style="border-bottom:none;"':''}>
+      <div class="fstock-top">
+        <div><div class="fstock-model">${m.modelo}${alerta}</div><div class="fstock-leads">${m.leads} lead${m.leads!==1?'s':''} aguardando</div></div>
+        <span class="fstock-un" style="color:${cor}">${unLabel}</span>
+      </div>
+      <div class="fstock-bar-bg"><div class="fstock-bar" style="width:${barW}%;background:${cor}"></div></div>
+    </div>`;
+  }).join('');
+}
+
 document.addEventListener('DOMContentLoaded',()=>{
   setWeekLabel();
   document.getElementById('tsVal').textContent=new Date().toLocaleString('pt-BR');
