@@ -671,7 +671,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     <div class="kpi">
       <div class="kpi-tag">FILA</div>
       <div class="kpi-lbl">Leads na Fila</div>
-      <div class="kpi-val">347</div>
+      <div class="kpi-val" id="filaKpiTotal">—</div>
       <div class="kpi-sub"><span class="pill up">&#8593; 23 esta semana</span></div>
     </div>
     <div class="kpi">
@@ -778,7 +778,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       </div>
       <div style="padding:14px 24px;border-top:1px solid var(--bdr);">
         <button class="btn-ref" style="width:100%;justify-content:center;background:transparent;border:1px solid var(--s4);color:var(--tx2);border-radius:var(--rsm);padding:11px;font-size:13px;display:flex;align-items:center;gap:7px;">
-          Ver todos os 347 leads &#8599;
+          <span id="filaVerTodos">Ver todos os leads</span> &#8599;
         </button>
       </div>
     </div>
@@ -3072,6 +3072,10 @@ function buildFilaEspera(){
   if(!wrap) return;
   const badge=document.getElementById('filaBadge');
   if(badge) badge.textContent=`${fila.length} na fila`;
+  const kpiTot=document.getElementById('filaKpiTotal');
+  if(kpiTot) kpiTot.textContent=fila.length;
+  const verTodos=document.getElementById('filaVerTodos');
+  if(verTodos) verTodos.textContent=`Ver todos os ${fila.length} leads`;
 
   if(fila.length===0){
     wrap.innerHTML=`<div class="fila-empty"><div class="fila-empty-ico">⏳</div><div>Nenhum cliente na fila de espera no momento.</div><div style="margin-top:8px;font-size:12px;color:var(--tx3)">O Rui registra automaticamente quando um cliente aceita entrar na fila.</div></div>`;
@@ -3111,7 +3115,7 @@ function buildFilaEspera(){
         <div style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx3);font-weight:700;margin-bottom:8px">Perfilação pelo Rui · ${perfs.length} pergunta${perfs.length!==1?'s':''}</div>
         ${perfsHtml}
       </div>`:'';
-    return `<div class="fila-card ${i===0?'first-in-line':''}">
+    return `<div class="fila-card ${i===0?'first-in-line':''}" data-score="${c.score||0}" data-model="${(c.modelo||'').replace(/"/g,'')}" data-temp="${c.temperatura||''}" data-status="${(c.motivo_fila||'').replace(/"/g,'')}" data-causa="${(c.motivo_fila||'').toLowerCase()}">
       <div class="fila-pos ${i===0?'gold':''}">${i+1}</div>
       <div class="fila-av" style="background:${avc(i)}">${ini(c.nome)}</div>
       <div class="fila-info" style="flex:1;min-width:0">
@@ -3188,18 +3192,18 @@ document.addEventListener('DOMContentLoaded',()=>{
 function filterFila(btn, filter) {
   document.querySelectorAll('.ftab').forEach(function(b){ b.classList.remove('active'); });
   if(btn) btn.classList.add('active');
-  var rows = document.querySelectorAll('.flead-row');
-  var outOfStock = ['HB20 Comfort', 'Creta Ultimate'];
+  var rows = document.querySelectorAll('#filaList .fila-card');
   rows.forEach(function(row){
     var show = true;
     if (filter === 'alta') {
-      show = parseInt(row.dataset.score) >= 80;
+      show = parseInt(row.dataset.score) >= 60;
     } else if (filter === 'estoque') {
-      show = outOfStock.some(function(m){ return row.dataset.model === m; });
+      var causa = row.dataset.causa || '';
+      show = causa.includes('estoque') || causa.includes('falta') || causa.includes('aguardando');
     } else if (filter === 'frio') {
-      show = row.dataset.temp === 'cold';
+      show = parseInt(row.dataset.score) <= 25 || row.dataset.temp === 'Frio';
     }
-    row.style.display = show ? 'flex' : 'none';
+    row.style.display = show ? '' : 'none';
   });
 }
 
