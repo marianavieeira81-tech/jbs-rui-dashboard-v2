@@ -2416,11 +2416,15 @@ function buildFunil(){
     return;
   }
 
-  // Classificação por etapa com dados reais
-  const todos       = ACTIVE_LEADS;
-  const iniciaram   = ACTIVE_LEADS.filter(l => l.inicouFluxo || l.perguntas.length > 0);
-  const completos   = ACTIVE_LEADS.filter(l => l.qualificadoEm || ['origem','encerrado'].includes(l.blocoParou||''));
-  const quentes     = ACTIVE_LEADS.filter(l => l.score >= 60);
+  // IDs de teste conhecidos — excluídos de todas as etapas
+  const TEST_IDS = new Set(['5511999990002']);
+
+  // Classificação por etapa com dados reais (sem leads de teste)
+  const todos     = ACTIVE_LEADS.filter(l => !TEST_IDS.has(l.telefone));
+  const iniciaram = todos.filter(l => l.inicouFluxo);
+  const completos = todos.filter(l => l.qualificadoEm || ['origem','encerrado'].includes(l.blocoParou||''));
+  // quentes: subconjunto de completos (garante hierarquia do funil)
+  const quentes   = completos.filter(l => l.score >= 60);
 
   const maxN = todos.length || 1;
 
