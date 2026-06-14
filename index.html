@@ -599,7 +599,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   <div class="topbar">
     <div><div class="eye">Painel de Controle</div><h1>Performance do Agente Rui</h1></div>
     <div class="topbar-r">
-      <div class="ts"><span>Última atualização</span><strong id="tsVal">—</strong></div>
+      <div class="ts"><span>Última atualização · <span style="color:var(--grn-l);font-size:10px">auto a cada 30s</span></span><strong id="tsVal">—</strong></div>
       <button class="btn-ref" onclick="refresh()">↺ Atualizar</button>
     </div>
   </div>
@@ -1481,7 +1481,7 @@ function go(id){
   document.getElementById('p-'+id).style.display='block';
   document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
   document.querySelectorAll('.sb-item').forEach(i=>{if(i.getAttribute('onclick')?.includes("'"+id+"'"))i.classList.add('active');});
-  if(id==='plataformas'){updateOrbCount();renderLeadsPresenciais();}
+  if(id==='plataformas'){updateOrbCount();updateCICount();renderLeadsPresenciais();}
   if(id==='cobertura') buildCobertura();
   if(id==='funil') buildFunil();
   if(id==='filaespera') fetchFilaData();
@@ -2481,6 +2481,7 @@ function setPeriod(p, btn){
   document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   updateOrbCount();
+  updateCICount(); // Ponto 10: garante que contador CI também atualiza ao trocar período
   if(document.getElementById('pltCategories').style.display!=='none') updateCategoryCount();
   if(document.getElementById('pltLeadList').style.display!=='none') renderLeadList(currentCategory);
 }
@@ -2690,9 +2691,17 @@ function generateReport(){
   if(!from || !to){ alert('Selecione as duas datas.'); return; }
   closeReportModal();
 
-  const allLeads = NETWORK_LEADS_MES.concat(NETWORK_LEADS_SEMANA.filter(l=>!NETWORK_LEADS_MES.find(m=>m.nome===l.nome)));
-  const filtered = allLeads.filter(l=> l.data >= from && l.data <= to);
-  const reportLeads = filtered.length > 0 ? filtered : NETWORK_LEADS_SEMANA;
+  // Ponto 5: usa apenas leads WhatsApp do período selecionado — sem fallback nem mistura com check-in
+  const source = (DATA_MODE==='production'&&ACTIVE_LEADS.length>0)
+    ? ACTIVE_LEADS.filter(l=>(l.canal||'').toLowerCase()!=='presencial')
+    : NETWORK_LEADS_MES.concat(NETWORK_LEADS_SEMANA.filter(l=>!NETWORK_LEADS_MES.find(m=>m.nome===l.nome)));
+  const reportLeads = source.filter(l=> l.data >= from && l.data <= to);
+  if(reportLeads.length===0){
+    document.getElementById('reportViewTitle').textContent=`Nenhum lead WhatsApp encontrado entre ${from} e ${to}`;
+    document.getElementById('reportBody').innerHTML=`<tr><td colspan="17" style="text-align:center;padding:40px;color:var(--tx3);">Nenhum lead neste período.</td></tr>`;
+    document.getElementById('reportView').classList.add('show');
+    return;
+  }
 
   document.getElementById('reportViewTitle').textContent = `Leads · ${from} até ${to} · ${reportLeads.length} registros`;
 
@@ -2701,7 +2710,7 @@ function generateReport(){
 
   // Atualiza cabeçalho da tabela
   const thead=document.querySelector('#reportTable thead tr');
-  thead.innerHTML=`<th>Lead</th><th>Canal</th><th>Telefone</th><th>Data</th><th>Hora</th><th>Score</th><th>Temperatura</th><th>Status</th><th>Cobertura</th><th>P1 · Intenção</th><th>P2 · Prazo</th><th>P3 · Modelo</th><th>P4 · Pagamento</th><th>P5 · Veículo atual</th><th>P6 · Decisão</th><th>Co-decisor</th><th>P7 · Localização</th>`;
+  thead.innerHTML=`<th>Lead</th><th>Canal</th><th>Telefone</th><th>Data</th><th>Hora</th><th>Score</th><th>Temperatura</th><th>Status</th><th>Cobertura</th><th>P1 · Intenção</th><th>P2 · Prazo</th><th>P3 · Modelo</th><th>P4 · Veículo atual</th><th>P5 · Carteira potencial</th><th>P6 · Decisão</th><th>Co-decisor</th><th>P7 · Localização</th>`;
 
   const tbody=document.getElementById('reportBody');
   tbody.innerHTML=reportLeads.map(l=>{
@@ -2751,13 +2760,26 @@ function animateCounters(){
 // ============================================================
 // REFRESH
 // ============================================================
-function refresh(){
+// Ponto 7: refresh real — busca dados novos do N8N/Supabase
+async function refresh(){
   document.getElementById('ld').classList.add('show');
-  setTimeout(()=>{
-    document.getElementById('tsVal').textContent=new Date().toLocaleString('pt-BR');
-    document.getElementById('ld').classList.remove('show');
-    const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);
-  },900);
+  try {
+    await atualizarDashboard();
+    buildTable();
+    updateOrbCount();
+    updateCICount();
+    if(document.getElementById('p-funil').style.display!=='none') buildFunil();
+  } catch(e){ console.warn('[refresh]',e); }
+  document.getElementById('ld').classList.remove('show');
+  document.getElementById('tsVal').textContent=new Date().toLocaleString('pt-BR');
+  const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+// Ponto 10: atualiza contador de leads presenciais no orb Check-in
+function updateCICount(){
+  const arr=ciPresencialLeads();
+  const el=document.getElementById('orbLeadCountCI');
+  if(el) el.textContent=`${arr.length} lead${arr.length!==1?'s':''}`;
 }
 
 // ============================================================
@@ -2843,8 +2865,9 @@ function buildPerguntas(l){
   if(l.perfil_uso)        p.push({num:'P1',tema:'Intenção',      pergunta:'Qual o objetivo da compra?',        resposta:l.perfil_uso});
   if(l.urgencia)          p.push({num:'P2',tema:'Prazo',          pergunta:'Em quanto tempo pretende comprar?', resposta:l.urgencia});
   if(l.veiculo_interesse) p.push({num:'P3',tema:'Modelo',         pergunta:'Tem algum modelo em mente?',        resposta:l.veiculo_interesse});
-  if(l.forma_pagamento)   p.push({num:'P4',tema:'Veículo atual',  pergunta:'Possui veículo para troca?',        resposta:l.forma_pagamento});
-  if(l.tem_veiculo_troca!=null) p.push({num:'P5',tema:'Troca',   pergunta:'Deseja incluir na negociação?',     resposta:l.tem_veiculo_troca?'Sim, possui veículo para troca':'Não possui veículo para troca'});
+  // Ponto 8: campo real do Supabase — tem_veiculo_troca (forma_pagamento não existe na tabela)
+  if(l.tem_veiculo_troca!=null) p.push({num:'P4',tema:'Veículo atual', pergunta:'Possui veículo para troca?', resposta:l.tem_veiculo_troca?('Sim'+(l.carro_troca&&l.carro_troca!=='a confirmar'?' — '+l.carro_troca:'')):'Não'});
+  if(l.pagamento)         p.push({num:'P5',tema:'Carteira',       pergunta:'Carteira potencial estimada?',      resposta:l.pagamento});
   return p;
 }
 
@@ -2869,7 +2892,7 @@ async function fetchAllData(){
         hora:        l.atualizado_em?new Date(l.atualizado_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'',
         data:        l.atualizado_em?l.atualizado_em.split('T')[0]:'',
         modelo:      l.veiculo_interesse||'',
-        pagamento:   l.forma_pagamento||'',
+        pagamento:   l.carteira_potencial>0?'R$ '+(l.carteira_potencial>=1000?Math.round(l.carteira_potencial/1000)+'k':l.carteira_potencial):'',
         prazo:       l.urgencia||'',
         intencao:    l.perfil_uso||'',
         veicAtual:   l.tem_veiculo_troca
@@ -2917,9 +2940,11 @@ function getLeadsForPeriod(period){
   if(DATA_MODE==='production'&&ACTIVE_LEADS.length>0){
     const today=new Date().toISOString().split('T')[0];
     const weekAgo=new Date(Date.now()-7*86400000).toISOString().split('T')[0];
-    const wa=period==='dia'?ACTIVE_LEADS.filter(l=>l.data===today)
-            :period==='semana'?ACTIVE_LEADS.filter(l=>(l.data||'')>=weekAgo)
-            :ACTIVE_LEADS;
+    // Ponto 1: apenas leads com canal WhatsApp (exclui presenciais)
+    const waAll=ACTIVE_LEADS.filter(l=>(l.canal||'').toLowerCase()!=='presencial');
+    const wa=period==='dia'?waAll.filter(l=>l.data===today)
+            :period==='semana'?waAll.filter(l=>(l.data||'')>=weekAgo)
+            :waAll;
     return {wa};
   }
   // modo demo — arrays pré-divididos por período
@@ -2931,6 +2956,7 @@ async function atualizarDashboard(){
   await fetchAllData();
   buildTable();
   updateOrbCount();
+  updateCICount(); // Ponto 10: mantém contador CI sincronizado no ciclo automático
   document.getElementById('tsVal').textContent=new Date().toLocaleString('pt-BR');
   if(document.getElementById('p-funil')&&document.getElementById('p-funil').style.display!=='none') buildFunil();
 }
