@@ -711,71 +711,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
         <button class="ftab" onclick="filterFila(this,'frio')">Sem resposta</button>
       </div>
       <!-- LISTA -->
-      <div id="filaLeadsList" style="padding:8px 0;">
-        <div class="flead-row" data-temp="hot" data-score="94" data-model="HB20 Comfort">
-          <div class="flead-av" style="background:#7C3AED;">MS</div>
-          <div class="flead-info">
-            <div class="flead-name">Marcos Silva</div>
-            <div class="flead-meta">HB20 Comfort &middot; Aguardando 34d</div>
-          </div>
-          <span class="flead-temp ft-hot">&#128293; Quente</span>
-          <div class="flead-score">94</div>
-        </div>
-        <div class="flead-row" data-temp="hot" data-score="91" data-model="HB20 Comfort">
-          <div class="flead-av" style="background:#DB2777;">FS</div>
-          <div class="flead-info">
-            <div class="flead-name">Fernanda Santos</div>
-            <div class="flead-meta">HB20 Comfort &middot; Aguardando 28d</div>
-          </div>
-          <span class="flead-temp ft-hot">&#128293; Quente</span>
-          <div class="flead-score">91</div>
-        </div>
-        <div class="flead-row" data-temp="hot" data-score="87" data-model="Creta Ultimate">
-          <div class="flead-av" style="background:#2563EB;">AP</div>
-          <div class="flead-info">
-            <div class="flead-name">Ana Paula R.</div>
-            <div class="flead-meta">Creta Ultimate &middot; Aguardando 21d</div>
-          </div>
-          <span class="flead-temp ft-hot">&#128293; Quente</span>
-          <div class="flead-score">87</div>
-        </div>
-        <div class="flead-row" data-temp="warm" data-score="72" data-model="Tucson Hybrid">
-          <div class="flead-av" style="background:#D97706;">CF</div>
-          <div class="flead-info">
-            <div class="flead-name">Carlos Ferreira</div>
-            <div class="flead-meta">Tucson Hybrid &middot; Aguardando 15d</div>
-          </div>
-          <span class="flead-temp ft-warm">Morno</span>
-          <div class="flead-score">72</div>
-        </div>
-        <div class="flead-row" data-temp="warm" data-score="68" data-model="HB20 Sport">
-          <div class="flead-av" style="background:#059669;">JM</div>
-          <div class="flead-info">
-            <div class="flead-name">Juliana Melo</div>
-            <div class="flead-meta">HB20 Sport &middot; Aguardando 9d</div>
-          </div>
-          <span class="flead-temp ft-warm">Morno</span>
-          <div class="flead-score">68</div>
-        </div>
-        <div class="flead-row" data-temp="cold" data-score="51" data-model="Santa Fe">
-          <div class="flead-av" style="background:#4B5563;">RT</div>
-          <div class="flead-info">
-            <div class="flead-name">Roberto Teixeira</div>
-            <div class="flead-meta">Santa Fe &middot; Aguardando 42d</div>
-          </div>
-          <span class="flead-temp ft-cold">Frio</span>
-          <div class="flead-score">51</div>
-        </div>
-        <div class="flead-row" data-temp="cold" data-score="44" data-model="Creta Ultimate">
-          <div class="flead-av" style="background:#4B5563;">PO</div>
-          <div class="flead-info">
-            <div class="flead-name">Pedro Oliveira</div>
-            <div class="flead-meta">Creta Ultimate &middot; Aguardando 55d</div>
-          </div>
-          <span class="flead-temp ft-cold">Frio</span>
-          <div class="flead-score">44</div>
-        </div>
-      </div>
+      <div id="filaList" style="padding:8px 0;"></div>
       <div style="padding:14px 24px;border-top:1px solid var(--bdr);">
         <button class="btn-ref" onclick="document.getElementById('filaList').scrollIntoView({behavior:'smooth',block:'start'})" style="width:100%;justify-content:center;background:transparent;border:1px solid var(--s4);color:var(--tx2);border-radius:var(--rsm);padding:11px;font-size:13px;display:flex;align-items:center;gap:7px;">
           <span id="filaVerTodos">Ver todos os leads</span> ↓
@@ -3113,7 +3049,7 @@ function buildFilaEspera(){
         <div style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx3);font-weight:700;margin-bottom:8px">Perfilação pelo Rui · ${perfs.length} pergunta${perfs.length!==1?'s':''}</div>
         ${perfsHtml}
       </div>`:'';
-    return `<div class="fila-card ${i===0?'first-in-line':''}" data-score="${c.score||0}" data-model="${(c.modelo||'').replace(/"/g,'')}" data-temp="${c.temperatura||''}" data-status="${(c.motivo_fila||'').replace(/"/g,'')}" data-causa="${(c.motivo_fila||'').toLowerCase()}">
+    return `<div class="fila-card ${i===0?'first-in-line':''}" data-score="${c.score||0}" data-model="${(c.modelo||'').replace(/"/g,'')}" data-temp="${c.temperatura||''}" data-status="${(c.motivo_fila||'').replace(/"/g,'')}" data-causa="${(c.motivo_fila||'').toLowerCase()}" data-notificado="${c.notificado_em?'sim':'nao'}">
       <div class="fila-pos ${i===0?'gold':''}">${i+1}</div>
       <div class="fila-av" style="background:${avc(i)}">${ini(c.nome)}</div>
       <div class="fila-info" style="flex:1;min-width:0">
@@ -3154,7 +3090,8 @@ async function fetchFilaData(){
           score:       f.score_final||0,
           temperatura: calcTemperatura(f.score_final||0),
           entradaISO:  f.registrado_em||f.qualificado_em||null,
-          motivo_fila: f.causa_entrada||'Aguardando estoque',
+          motivo_fila: f.especificacoes||f.observacao||'',
+          notificado_em: f.notificado_em||null,
           perfil:{
             canal:     'WhatsApp',
             pagamento: f.forma_pagamento||f.condicao_pagamento||'',
@@ -3237,10 +3174,9 @@ function filterFila(btn, filter) {
     if (filter === 'alta') {
       show = parseInt(row.dataset.score) >= 60;
     } else if (filter === 'estoque') {
-      var causa = row.dataset.causa || '';
-      show = causa.includes('estoque') || causa.includes('falta') || causa.includes('aguardando');
+      show = row.dataset.notificado === 'nao'; // notificado_em null = ainda aguardando estoque
     } else if (filter === 'frio') {
-      show = parseInt(row.dataset.score) <= 25 || row.dataset.temp === 'Frio';
+      show = row.dataset.notificado === 'sim'; // notificado_em set = foi avisado mas sem resposta
     }
     row.style.display = show ? '' : 'none';
   });
