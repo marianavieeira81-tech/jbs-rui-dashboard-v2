@@ -2419,7 +2419,7 @@ function buildFunil(){
   // Classificação por etapa com dados reais
   const todos       = ACTIVE_LEADS;
   const iniciaram   = ACTIVE_LEADS.filter(l => l.inicouFluxo || l.perguntas.length > 0);
-  const completos   = ACTIVE_LEADS.filter(l => l.qualificadoEm || l.perguntas.length >= 4);
+  const completos   = ACTIVE_LEADS.filter(l => l.qualificadoEm || ['origem','encerrado'].includes(l.blocoParou||''));
   const quentes     = ACTIVE_LEADS.filter(l => l.score >= 60);
 
   const maxN = todos.length || 1;
@@ -2934,7 +2934,8 @@ async function fetchAllData(){
         atendimento_em: l.atendimento_em||l.atualizado_em||'',
         cpf:         l.cpf||'',
         qualificadoEm: l.qualificado_em||null,
-        inicouFluxo: !!(l.perfil_uso||l.urgencia||l.veiculo_interesse||l.forma_pagamento||l.tem_veiculo_troca!=null),
+        blocoParou:   l.bloco_parou||null,
+        inicouFluxo:  !!(l.bloco_parou && l.bloco_parou !== 'abertura'),
         perguntas:   buildPerguntas(l)
       }));
     }
