@@ -3208,13 +3208,22 @@ function filterFila(btn, filter) {
 // Categoriza o label de causa retornado pelo N8N nas 3 áreas de responsabilidade
 function categorizeCausa(label){
   const l=(label||'').toLowerCase();
-  if(l.includes('resposta')||l.includes('follow')||l.includes('transferên')||
-     l.includes('qualificaç')||l.includes('perdido')||l.includes('handoff'))
+  // Gestão: falha de follow-up, handoff, lead não respondeu, pendente da equipe
+  if(l.includes('nao_respond')||l.includes('não respond')||l.includes('sem resposta')||
+     l.includes('pendente')||l.includes('follow')||l.includes('handoff')||
+     l.includes('transferên')||l.includes('qualificaç')||l.includes('perdido'))
     return {area:'gestao', nome:'Gestão do Lead', cor:'#E11D48'};
-  if(l.includes('preço')||l.includes('preco')||l.includes('financiamento')||
-     l.includes('indispon')||l.includes('estoque')||l.includes('concorrente')||l.includes('orçamento'))
+  // Produto: ticket incompatível, preço, estoque, concorrência
+  if(l.includes('ticket')||l.includes('incompatív')||l.includes('preço')||l.includes('preco')||
+     l.includes('financiamento')||l.includes('indispon')||l.includes('estoque')||
+     l.includes('concorrente')||l.includes('orçamento'))
     return {area:'produto', nome:'Produto / Estoque', cor:'#D4AF37'};
-  return {area:'processo', nome:'Processo Comercial', cor:'#6090FF'};
+  // Processo: leads aguardando decisão, prazo em aberto
+  if(l.includes('aguardando')||l.includes('decisao')||l.includes('decisão')||
+     l.includes('prazo')||l.includes('atendimento')||l.includes('resposta'))
+    return {area:'processo', nome:'Processo Comercial', cor:'#6090FF'};
+  // Causa não identificada — isolada, não infla nenhum grupo
+  return {area:'sem_motivo', nome:'Sem motivo identificado', cor:'#6B7280'};
 }
 
 // Gera slug único para cada causa (usado como ID nas barras/modal)
@@ -3292,8 +3301,13 @@ function buildDiagnostico(){
   const areas=Object.values(areaMap).sort((a,b)=>b.total-a.total);
   if(areaEl&&areas.length>0){
     const totalAll=areas.reduce((s,a)=>s+a.total,0)||1;
-    areaEl.innerHTML=areas.map(a=>{
-      const pct=Math.round((a.total/totalAll)*100);
+    // Largest remainder — garante que a soma dos percentuais seja exatamente 100%
+    const _floats=areas.map(a=>(a.total/totalAll)*100);
+    const _floors=_floats.map(v=>Math.floor(v));
+    let _rem=100-_floors.reduce((s,v)=>s+v,0);
+    _floats.map((v,i)=>({i,frac:v-_floors[i]})).sort((a,b)=>b.frac-a.frac).forEach(f=>{if(_rem-->0)_floors[f.i]++;});
+    areaEl.innerHTML=areas.map((a,ai)=>{
+      const pct=_floors[ai];
       const arc=((pct/100)*188.5).toFixed(1);
       const items=a.itens.map(i=>`<strong>${i.count}</strong> ${i.label}`).join('<br>');
       return `<div class="dr-cat-card" style="border-color:${a.cor}33">
