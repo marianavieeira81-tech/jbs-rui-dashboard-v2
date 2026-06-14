@@ -3152,10 +3152,10 @@ async function fetchFilaData(){
           score:       f.score_final||0,
           temperatura: calcTemperatura(f.score_final||0),
           entradaISO:  f.registrado_em||f.qualificado_em||null,
-          motivo_fila: 'Estoque esgotado · '+(f.modelo||'modelo solicitado'),
+          motivo_fila: f.causa_entrada||'Aguardando estoque',
           perfil:{
             canal:     'WhatsApp',
-            pagamento: f.forma_pagamento||'',
+            pagamento: f.forma_pagamento||f.condicao_pagamento||'',
             prazo:     f.urgencia||'',
             intencao:  f.perfil_uso||'',
             veicAtual: f.tem_veiculo_troca?'Possui veículo para troca':'Sem troca'
