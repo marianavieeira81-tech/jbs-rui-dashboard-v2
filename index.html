@@ -683,8 +683,8 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     <div class="kpi">
       <div class="kpi-tag">ESPERA</div>
       <div class="kpi-lbl">Tempo M&eacute;dio</div>
-      <div class="kpi-val">18d</div>
-      <div class="kpi-sub"><span class="pill nu">&#9888; Alta demanda</span></div>
+      <div class="kpi-val" id="filaKpiTempo">—</div>
+      <div class="kpi-sub" id="filaKpiTempoSub"><span class="pill nu">aguardando dados</span></div>
     </div>
     <div class="kpi gold">
       <div class="kpi-tag">30D</div>
@@ -777,8 +777,8 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
         </div>
       </div>
       <div style="padding:14px 24px;border-top:1px solid var(--bdr);">
-        <button class="btn-ref" style="width:100%;justify-content:center;background:transparent;border:1px solid var(--s4);color:var(--tx2);border-radius:var(--rsm);padding:11px;font-size:13px;display:flex;align-items:center;gap:7px;">
-          <span id="filaVerTodos">Ver todos os leads</span> &#8599;
+        <button class="btn-ref" onclick="document.getElementById('filaList').scrollIntoView({behavior:'smooth',block:'start'})" style="width:100%;justify-content:center;background:transparent;border:1px solid var(--s4);color:var(--tx2);border-radius:var(--rsm);padding:11px;font-size:13px;display:flex;align-items:center;gap:7px;">
+          <span id="filaVerTodos">Ver todos os leads</span> ↓
         </button>
       </div>
     </div>
@@ -808,36 +808,17 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;">
       <div style="padding:18px 24px;border-right:1px solid var(--bdr);">
-        <div class="ctitle" style="margin-bottom:14px;">Notifica&ccedil;&otilde;es Enviadas</div>
-        <div class="fnotif-item">
-          <div class="fnotif-ico" style="background:var(--grn-bg);">&#128228;</div>
-          <div class="fnotif-body">
-            <div class="fnotif-name">Marcos Silva</div>
-            <div class="fnotif-text">&ldquo;Ol&aacute; Marcos! O HB20 Comfort que voc&ecirc; esperava...&rdquo;</div>
-          </div>
-          <div class="fnotif-time">14:32</div>
-        </div>
-        <div class="fnotif-item">
-          <div class="fnotif-ico" style="background:rgba(30,80,200,.15);">&#128172;</div>
-          <div class="fnotif-body">
-            <div class="fnotif-name">Ana Paula R. <span style="color:#6090FF;font-weight:600;">respondeu</span></div>
-            <div class="fnotif-text">&ldquo;Sim! Ainda tenho interesse, pode reservar...&rdquo;</div>
-          </div>
-          <div class="fnotif-time">13:58</div>
-        </div>
-        <div class="fnotif-item" style="border-bottom:none;">
-          <div class="fnotif-ico" style="background:rgba(212,175,55,.1);">&#9200;</div>
-          <div class="fnotif-body">
-            <div class="fnotif-name">Carlos Ferreira</div>
-            <div class="fnotif-text">Follow-up agendado &mdash; 3&ordm; contato</div>
-          </div>
-          <div class="fnotif-time">amanh&atilde;</div>
+        <div class="ctitle" style="margin-bottom:14px;">Notificações Enviadas</div>
+        <div style="text-align:center;padding:28px 0;color:var(--tx3);">
+          <div style="font-size:22px;margin-bottom:8px">🔌</div>
+          <div style="font-size:12px;font-weight:600;color:var(--tx2);margin-bottom:4px">Log de atividade não disponível</div>
+          <div style="font-size:11px;line-height:1.7">Requer endpoint de log no N8N.<br>Os registros de notificações e respostas<br>virão da tabela <code style="font-size:10px">mensagens</code> quando integrado.</div>
         </div>
       </div>
       <div style="padding:18px 24px;">
-        <div class="ctitle" style="margin-bottom:14px;">Exemplo de Mensagem do Rui</div>
-        <div style="background:rgba(212,175,55,.07);border:1px solid rgba(212,175,55,.18);border-radius:10px;padding:16px;font-size:13px;line-height:1.8;color:var(--tx2);">
-          <strong style="color:var(--ac);">Rui &rarr;</strong> &ldquo;Ol&aacute;, Marcos! Tudo bem? Sou o Rui, assistente da concession&aacute;ria. &#128522; Passando pra te avisar que o <strong style="color:var(--tx);">HB20 Comfort Prata</strong> que voc&ecirc; tanto esperava acabou de chegar ao nosso estoque. Temos apenas <strong style="color:var(--tx);">2 unidades</strong> dispon&iacute;veis. Posso reservar a sua? Fico &agrave; disposi&ccedil;&atilde;o para agendar uma visita quando preferir.&rdquo;
+        <div class="ctitle" style="margin-bottom:8px;">Prévia de Mensagem <span style="color:var(--tx3);font-weight:400;font-size:11px">· 1º lead real da fila</span></div>
+        <div id="filaMsgPrevia" style="background:rgba(212,175,55,.07);border:1px solid rgba(212,175,55,.18);border-radius:10px;padding:16px;font-size:13px;line-height:1.8;color:var(--tx2);">
+          <span style="color:var(--tx3);font-size:12px">Aguardando dados da fila...</span>
         </div>
       </div>
     </div>
@@ -3043,6 +3024,30 @@ function buildFilaEspera(){
   if(kpiTot) kpiTot.textContent=fila.length;
   const verTodos=document.getElementById('filaVerTodos');
   if(verTodos) verTodos.textContent=`Ver todos os ${fila.length} leads`;
+
+  // Tempo médio de espera — calculado a partir de registrado_em real do Supabase
+  const tempoEl=document.getElementById('filaKpiTempo');
+  const tempoSubEl=document.getElementById('filaKpiTempoSub');
+  if(tempoEl&&fila.length>0){
+    const agora=new Date();
+    const dias=fila.filter(f=>f.entradaISO).map(f=>Math.floor((agora-new Date(f.entradaISO))/86400000));
+    if(dias.length>0){
+      const media=Math.round(dias.reduce((s,d)=>s+d,0)/dias.length);
+      tempoEl.textContent=media+'d';
+      if(tempoSubEl) tempoSubEl.innerHTML=media>=14?'<span class="pill nu">⚠ Alta demanda</span>':'<span class="pill up">Dentro do prazo</span>';
+    }
+  }
+
+  // Prévia de mensagem — usa nome e modelo do 1º lead real da fila
+  const previaEl=document.getElementById('filaMsgPrevia');
+  if(previaEl&&fila.length>0){
+    const lead=fila[0];
+    const nome=(lead.nome||'Cliente').split(' ')[0];
+    const modelo=lead.modelo||'modelo solicitado';
+    previaEl.innerHTML=`<strong style="color:var(--ac)">Rui →</strong> "Olá, <strong style="color:var(--tx)">${nome}</strong>! Tudo bem? Sou o Rui, assistente da concessionária. Passando pra te avisar que o <strong style="color:var(--tx)">${modelo}</strong> que você estava aguardando acabou de chegar ao nosso estoque. Posso reservar a sua unidade? Fico à disposição para agendar uma visita quando preferir."`;
+  } else if(previaEl&&fila.length===0){
+    previaEl.innerHTML='<span style="color:var(--tx3);font-size:12px">Nenhum lead na fila no momento.</span>';
+  }
 
   if(fila.length===0){
     wrap.innerHTML=`<div class="fila-empty"><div class="fila-empty-ico">⏳</div><div>Nenhum cliente na fila de espera no momento.</div><div style="margin-top:8px;font-size:12px;color:var(--tx3)">O Rui registra automaticamente quando um cliente aceita entrar na fila.</div></div>`;
