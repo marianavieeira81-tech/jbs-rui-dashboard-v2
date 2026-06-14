@@ -2474,7 +2474,7 @@ function buildFunil(){
       <div class="lav" style="background:${avc(li)};cursor:pointer">${ini(lead.nome)}</div>
       <div>
         <div class="lname">${lead.nome}</div>
-        <span class="ptag wa">WhatsApp</span>
+        <span class="ptag ${ptc(lead.canal)}">${lead.canal||'WhatsApp'}</span>
         ${ph?`<div class="lchip-phone">${ph}</div>`:''}
         ${lead.score>0?`<div style="font-size:9px;font-weight:700;color:${scoreCol};margin-top:1px">Score ${lead.score}</div>`:''}
       </div>
@@ -2484,9 +2484,9 @@ function buildFunil(){
   stages.forEach((s, si) => {
     const n  = s.leads.length;
     const p  = Math.round((n / maxN) * 100);
-    const nextIds = new Set((s.nextLeads||[]).map(l=>l.nome));
-    const advanced = s.isLast ? s.leads : s.leads.filter(l => nextIds.has(l.nome));
-    const dropped  = s.isLast ? [] : s.leads.filter(l => !nextIds.has(l.nome));
+    const nextIds = new Set((s.nextLeads||[]).map(l=>l.telefone||l.nome));
+    const advanced = s.isLast ? s.leads : s.leads.filter(l => nextIds.has(l.telefone||l.nome));
+    const dropped  = s.isLast ? [] : s.leads.filter(l => !nextIds.has(l.telefone||l.nome));
 
     const advLbl = s.isLast ? 'Leads quentes confirmados' : 'Avançaram para próxima etapa';
     const advHtml = advanced.length > 0
