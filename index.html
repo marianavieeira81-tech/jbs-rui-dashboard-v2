@@ -642,11 +642,6 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     </table>
   </div>
 
-  <div class="sec">Conversão proporcional por canal</div>
-  <div class="card" data-tip="Para cada 100 leads que entram por canal, quantos fecham negócio.">
-    <div class="ctitle">Vendas fechadas · a cada 100 leads por canal</div>
-    <div id="convBars" style="margin-top:10px"></div>
-  </div>
 </div>
 
 <!-- ============ FILA DE ESPERA ============ -->
@@ -970,8 +965,6 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap">
       <span style="font-size:12px;color:var(--tx2)">Selecione o mês:</span>
       <select id="cobMonthPicker" style="background:var(--s2);border:1px solid var(--bdr);color:var(--tx);padding:5px 12px;border-radius:6px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer" onchange="cobBuildMes()">
-        <option value="2026-04">Abril 2026</option>
-        <option value="2026-05" selected>Maio 2026</option>
       </select>
     </div>
     <div class="ctitle" id="cobMesTitle">Total de leads por hora do dia</div>
@@ -2120,6 +2113,21 @@ function buildDiagnostico(){
 function buildCobertura(){
   const picker = document.getElementById('cobDayPicker');
   if(picker && !picker.value) picker.value = new Date().toISOString().split('T')[0];
+  // Popula dropdown de meses a partir dos leads reais carregados
+  const mp = document.getElementById('cobMonthPicker');
+  if(mp){
+    const months = [...new Set(ACTIVE_LEADS.map(l=>l.data?l.data.slice(0,7):null).filter(Boolean))].sort();
+    const curMonth = new Date().toISOString().slice(0,7);
+    if(months.length === 0) months.push(curMonth);
+    const ptBR = {1:'Janeiro',2:'Fevereiro',3:'Março',4:'Abril',5:'Maio',6:'Junho',7:'Julho',8:'Agosto',9:'Setembro',10:'Outubro',11:'Novembro',12:'Dezembro'};
+    mp.innerHTML = months.map(m=>{
+      const [y,mo] = m.split('-');
+      const lbl = ptBR[parseInt(mo)] + ' ' + y;
+      const sel = m === (mp.value||curMonth) ? ' selected' : '';
+      return `<option value="${m}"${sel}>${lbl}</option>`;
+    }).join('');
+    if(!mp.value || !months.includes(mp.value)) mp.value = months[months.length-1];
+  }
   cobBuildDia();
 }
 
@@ -2167,7 +2175,7 @@ function cobRenderHourChart(gridId, labelsId, hourCounts, dateStr){
 
 function cobBuildDia(){
   const picker=document.getElementById('cobDayPicker');
-  const selDate=picker?picker.value:'2026-05-09';
+  const selDate=picker?picker.value:new Date().toISOString().split('T')[0];
   const title=document.getElementById('cobDiaTitle');
   if(title&&selDate){
     const d=new Date(selDate+'T12:00:00');
@@ -2185,7 +2193,7 @@ function cobBuildDia(){
 
 function cobBuildMes(){
   const picker=document.getElementById('cobMonthPicker');
-  const selMonth=picker?picker.value:'2026-05';
+  const selMonth=picker?picker.value:new Date().toISOString().slice(0,7);
   const title=document.getElementById('cobMesTitle');
   if(title){
     const [y,m]=selMonth.split('-');
@@ -2277,7 +2285,7 @@ function buildConv(id){
 // FUNIL
 // ============================================================
 function getPhoneForLead(nome){
-  const src=(DATA_MODE==='production'&&ACTIVE_LEADS.length>0)?ACTIVE_LEADS:NETWORK_LEADS_MES;
+  const src=(DATA_MODE==='production'&&ACTIVE_LEADS.length>0)?ACTIVE_LEADS:[];
   const found=src.find(l=>(l.nome||l.n)===nome);
   return found?.telefone||null;
 }
@@ -2628,7 +2636,7 @@ function generateReport(){
   // Ponto 5: usa apenas leads WhatsApp do período selecionado — sem fallback nem mistura com check-in
   const source = (DATA_MODE==='production'&&ACTIVE_LEADS.length>0)
     ? ACTIVE_LEADS.filter(l=>(l.canal||'').toLowerCase()!=='presencial')
-    : NETWORK_LEADS_MES.concat(NETWORK_LEADS_SEMANA.filter(l=>!NETWORK_LEADS_MES.find(m=>m.nome===l.nome)));
+    : [];
   const reportLeads = source.filter(l=> l.data >= from && l.data <= to);
   if(reportLeads.length===0){
     document.getElementById('reportViewTitle').textContent=`Nenhum lead WhatsApp encontrado entre ${from} e ${to}`;
@@ -3219,7 +3227,6 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('tsVal').textContent=new Date().toLocaleString('pt-BR');
   buildDiagnostico();
   buildTable();
-  buildConv('convBars');
   animateCounters();
   atualizarDashboard();
   setInterval(atualizarDashboard, REFRESH_INTERVAL_MS);
