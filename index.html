@@ -2768,7 +2768,12 @@ const N8N_SEND_REPLY    = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/jbs-sen
 const N8N_CHAT_HISTORY  = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/jbs-chat-history';
 const REFRESH_INTERVAL_MS = 30000;
 
-// Dados ativos — populados pelo endpoint de produção (N8N)
+// Supabase — leitura direta como fallback quando N8N estiver indisponível
+// Obtenha a chave em: painel Supabase → Settings → API → "anon public"
+const SUPABASE_URL      = 'https://yyqgoytuudpvacawjqaw.supabase.co';
+const SUPABASE_ANON_KEY = ''; // ← cole aqui a chave anon public do projeto yyqgoytuudpvacawjqaw
+
+// Dados ativos — populados pelo endpoint de produção (N8N ou Supabase direto)
 let ACTIVE_LEADS  = [];
 let ACTIVE_CAUSAS = []; // stats.causasEsfriamento retornado pelo N8N
 let ACTIVE_STATS  = null;
@@ -2805,9 +2810,92 @@ function buildPerguntas(l){
   return p;
 }
 
+// Mapeia um registro bruto (Supabase ou N8N) para o formato interno de ACTIVE_LEADS
+function mapLead(l){
+  return {
+    nome:        l.nome||'',
+    telefone:    l.telefone||l.sender_id||'',
+    canal:       l.canal||'whatsapp',
+    score:       l.score_final||0,
+    temperatura: calcTemperatura(l.score_final||0),
+    status:      l.qualificado_em?'Transferido':(l.followup_status==='encerrado'?'Encerrado':'Em andamento'),
+    hora:        l.atualizado_em?new Date(l.atualizado_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'',
+    data:        l.atualizado_em?l.atualizado_em.split('T')[0]:'',
+    modelo:      l.veiculo_interesse||'',
+    pagamento:   l.carteira_potencial>0?'R$ '+(l.carteira_potencial>=1000?Math.round(l.carteira_potencial/1000)+'k':l.carteira_potencial):'',
+    carteiraRaw: l.carteira_potencial||0,
+    prazo:       l.urgencia||'',
+    intencao:    l.perfil_uso||'',
+    veicAtual:   l.tem_veiculo_troca
+                   ? ('Possui veículo para troca'+(l.carro_troca&&l.carro_troca!=='a confirmar'?': '+l.carro_troca:''))
+                   : 'Sem troca',
+    decisao:     l.decide_sozinho!=null?(l.decide_sozinho?'Decide sozinho':'Decide com outra pessoa'):'',
+    codDetalhe:  l.co_decisor||'',
+    localizacao: '',
+    causa:       l.submotivo||l.causa_esfriamento||'',
+    desfecho:    l.desfecho_visita||'',
+    vendedor:    l.checkin_vendedor||'',
+    atendimento_em: l.atendimento_em||l.atualizado_em||'',
+    cpf:         l.cpf||'',
+    qualificadoEm: l.qualificado_em||null,
+    blocoParou:   l.bloco_parou||null,
+    inicouFluxo:  !!(l.bloco_parou&&l.bloco_parou!=='abertura'),
+    perguntas:   buildPerguntas(l)
+  };
+}
+
+// Leitura direta do Supabase — usada como fallback quando N8N estiver indisponível
+async function fetchFromSupabase(){
+  if(!SUPABASE_ANON_KEY) return false;
+  try{
+    const h={'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Content-Type':'application/json'};
+    const since=new Date(Date.now()-30*86400000).toISOString();
+    const res=await fetch(
+      `${SUPABASE_URL}/rest/v1/leads?select=*&atualizado_em=gte.${encodeURIComponent(since)}&order=atualizado_em.desc&limit=500`,
+      {headers:h}
+    );
+    if(!res.ok) return false;
+    const rows=await res.json();
+    if(!Array.isArray(rows)||rows.length===0) return false;
+    ACTIVE_LEADS=rows.map(mapLead);
+    console.log('[RuiAI] Supabase direto: '+ACTIVE_LEADS.length+' leads carregados');
+    return true;
+  }catch(e){
+    console.warn('[RuiAI] Supabase direto falhou:',e);
+    return false;
+  }
+}
+
+// Calcula KPIs da Cobertura 24/7 a partir de ACTIVE_LEADS
+// Usado quando o N8N não retorna cobLeads/cobPct/carteiraNoturna
+function calcCoberturaFromLeads(){
+  if(!ACTIVE_LEADS.length) return;
+  function isForaHorario(dataStr,horaStr){
+    if(!dataStr||!horaStr) return false;
+    const d=new Date(dataStr+'T12:00:00');
+    const dow=d.getDay(); // 0=Dom, 6=Sáb
+    const h=parseInt((horaStr||'').split(':')[0]);
+    if(isNaN(h)) return false;
+    if(dow===0) return true;                      // Domingo: sempre fora
+    if(dow===6) return !(h>=8&&h<14);             // Sábado: 08h–14h
+    return !(h>=8&&h<19);                          // Seg–Sex: 08h–19h
+  }
+  const fora=ACTIVE_LEADS.filter(l=>isForaHorario(l.data,l.hora));
+  const cobLeads=fora.length;
+  const cobPct=Math.round((cobLeads/ACTIVE_LEADS.length)*100);
+  const soma=fora.reduce((s,l)=>s+(l.carteiraRaw||0),0);
+  const cobCarteira=soma>=1000000?'R$ '+(soma/1000000).toFixed(1)+'M':soma>=1000?'R$ '+Math.round(soma/1000)+'k':soma>0?'R$ '+soma:'—';
+  // Preenche apenas se o N8N não tiver fornecido (valor ainda em "—")
+  const trySet=(sel,v)=>{const el=document.querySelector(sel);if(el&&el.textContent==='—')el.textContent=v;};
+  trySet('[data-kpi="cobLeads"]', cobLeads);
+  trySet('[data-kpi="cobPct"]',   cobPct+'%');
+  trySet('[data-kpi="cobCarteira"]', cobCarteira);
+}
+
 async function fetchAllData(){
   applyModeUI();
   if(DATA_MODE==='demo') return;
+  let dadosOk=false;
   try{
     const res=await fetch(ENDPOINTS.production.dashboard,{
       method:'GET',
@@ -2816,37 +2904,8 @@ async function fetchAllData(){
     if(!res.ok) throw new Error('HTTP '+res.status);
     const data=await res.json();
     if(data.leads&&Array.isArray(data.leads)&&data.leads.length>0){
-      ACTIVE_LEADS=data.leads.map(l=>({
-        nome:        l.nome||'',
-        telefone:    l.telefone||l.sender_id||'',
-        canal:       l.canal||'WhatsApp',
-        score:       l.score_final||0,
-        temperatura: calcTemperatura(l.score_final||0),
-        status:      l.qualificado_em?'Transferido':(l.followup_status==='encerrado'?'Encerrado':'Em andamento'),
-        hora:        l.atualizado_em?new Date(l.atualizado_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'',
-        data:        l.atualizado_em?l.atualizado_em.split('T')[0]:'',
-        modelo:      l.veiculo_interesse||'',
-        pagamento:   l.carteira_potencial>0?'R$ '+(l.carteira_potencial>=1000?Math.round(l.carteira_potencial/1000)+'k':l.carteira_potencial):'',
-        prazo:       l.urgencia||'',
-        intencao:    l.perfil_uso||'',
-        veicAtual:   l.tem_veiculo_troca
-                       ? ('Possui veículo para troca' + (l.carro_troca && l.carro_troca !== 'a confirmar' ? ': ' + l.carro_troca : ''))
-                       : 'Sem troca',
-        decisao:     l.decide_sozinho != null
-                       ? (l.decide_sozinho ? 'Decide sozinho' : 'Decide com outra pessoa')
-                       : '',
-        codDetalhe:  l.co_decisor || '',
-        localizacao: '',
-        causa:       l.submotivo||l.causa_esfriamento||'',
-        desfecho:    l.desfecho_visita||'',
-        vendedor:    l.checkin_vendedor||'',
-        atendimento_em: l.atendimento_em||l.atualizado_em||'',
-        cpf:         l.cpf||'',
-        qualificadoEm: l.qualificado_em||null,
-        blocoParou:   l.bloco_parou||null,
-        inicouFluxo:  !!(l.bloco_parou && l.bloco_parou !== 'abertura'),
-        perguntas:   buildPerguntas(l)
-      }));
+      ACTIVE_LEADS=data.leads.map(mapLead);
+      dadosOk=true;
     }
     if(data.stats){
       const s=data.stats;
@@ -2858,16 +2917,18 @@ async function fetchAllData(){
       set('[data-kpi="scoreMedio"]',s.scoreMedio??'—');
       const dist=s.distribuicaoScore||{};
       ['frios','mornos','engajados','quentes','premium'].forEach(k=>set(`[data-score="${k}"]`,dist[k]??0));
-      if (s.cobLeads     != null) set('[data-kpi="cobLeads"]', s.cobLeads);
-      if (s.cobPct       != null) set('[data-kpi="cobPct"]',   s.cobPct + '%');
-      if (s.carteiraNoturna)      {
-        const el = document.querySelector('[data-kpi="cobCarteira"]');
-        if (el) el.textContent = s.carteiraNoturna;
-      }
+      if(s.cobLeads    !=null) set('[data-kpi="cobLeads"]', s.cobLeads);
+      if(s.cobPct      !=null) set('[data-kpi="cobPct"]',   s.cobPct+'%');
+      if(s.carteiraNoturna){ const el=document.querySelector('[data-kpi="cobCarteira"]');if(el)el.textContent=s.carteiraNoturna; }
+      dadosOk=true;
     }
   }catch(err){
-    console.warn('[RuiAI] Produção indisponível, usando dados fictícios.',err);
+    console.warn('[RuiAI] N8N indisponível:',err);
   }
+  // Fallback: tenta Supabase diretamente se N8N falhou
+  if(!dadosOk) await fetchFromSupabase();
+  // Calcula KPIs da Cobertura localmente (preenche apenas os que ainda estão em "—")
+  calcCoberturaFromLeads();
 }
 
 function getLeadsForPeriod(period){
