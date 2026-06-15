@@ -954,7 +954,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   <div id="cobViewDia" class="cob-timeline">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap">
       <span style="font-size:12px;color:var(--tx2)">Selecione o dia:</span>
-      <input type="date" id="cobDayPicker" value="2026-05-09" min="2026-04-01" max="2026-05-17" style="background:var(--s2);border:1px solid var(--bdr);color:var(--tx);padding:5px 10px;border-radius:6px;font-size:12px;font-family:'DM Mono',monospace;cursor:pointer" onchange="cobBuildDia()">
+      <input type="date" id="cobDayPicker" style="background:var(--s2);border:1px solid var(--bdr);color:var(--tx);padding:5px 10px;border-radius:6px;font-size:12px;font-family:'DM Mono',monospace;cursor:pointer" onchange="cobBuildDia()">
     </div>
     <div class="ctitle" id="cobDiaTitle">Volume de leads por hora</div>
     <div style="font-size:11px;color:var(--tx3);margin-bottom:4px">
@@ -1920,8 +1920,8 @@ function phoneSearch(term, pageId){
     results.push({nome,tel,extra,src});
   };
 
-  // Leads WA (demo ou produção)
-  const waLeads = (DATA_MODE==='production'&&ACTIVE_LEADS.length>0)
+  // Leads WA (produção usa ACTIVE_LEADS; demo usa fictícios)
+  const waLeads = DATA_MODE==='production'
     ? ACTIVE_LEADS
     : NETWORK_LEADS_MES;
   waLeads.forEach(l=>{
@@ -2119,7 +2119,7 @@ function buildDiagnostico(){
 // ============================================================
 function buildCobertura(){
   const picker = document.getElementById('cobDayPicker');
-  if(picker && !picker.value) picker.value = '2026-05-09';
+  if(picker && !picker.value) picker.value = new Date().toISOString().split('T')[0];
   cobBuildDia();
 }
 
@@ -2176,7 +2176,8 @@ function cobBuildDia(){
     title.textContent=`Volume de leads por hora · ${dias[d.getDay()]}, ${d.getDate()} ${meses[d.getMonth()]} ${d.getFullYear()}`;
   }
   const hourCounts=Array(24).fill(0);
-  NETWORK_LEADS_MES.forEach(l=>{
+  const cobSrcDia=(DATA_MODE==='production'&&ACTIVE_LEADS.length>0)?ACTIVE_LEADS:(DATA_MODE==='production'?[]:NETWORK_LEADS_MES);
+  cobSrcDia.forEach(l=>{
     if(l.data===selDate){const h=parseInt((l.hora||'').split(':')[0]);if(!isNaN(h)&&h>=0&&h<24)hourCounts[h]++;}
   });
   cobRenderHourChart('cobHourGridDia','cobHourLabelsDia',hourCounts,selDate);
@@ -2192,7 +2193,8 @@ function cobBuildMes(){
     title.textContent=`Total de leads por hora do dia · ${meses[parseInt(m)-1]} ${y}`;
   }
   const hourCounts=Array(24).fill(0);
-  NETWORK_LEADS_MES.forEach(l=>{
+  const cobSrcMes=(DATA_MODE==='production'&&ACTIVE_LEADS.length>0)?ACTIVE_LEADS:(DATA_MODE==='production'?[]:NETWORK_LEADS_MES);
+  cobSrcMes.forEach(l=>{
     if(l.data&&l.data.startsWith(selMonth)){const h=parseInt((l.hora||'').split(':')[0]);if(!isNaN(h)&&h>=0&&h<24)hourCounts[h]++;}
   });
   cobRenderHourChart('cobHourGridMes','cobHourLabelsMes',hourCounts,null);
@@ -2202,11 +2204,14 @@ function cobBuildRelatorio(){
   const el=document.getElementById('cobRelatorioContent');
   if(!el) return;
   const byMonth={};
-  NETWORK_LEADS_MES.forEach(l=>{ if(l.data){const ym=l.data.slice(0,7);byMonth[ym]=(byMonth[ym]||0)+1;} });
-  // Adiciona histórico simulado para contexto
-  const historico={'2026-02':31,'2026-03':44};
-  const todos={...historico,...byMonth};
+  const cobSrcRel=(DATA_MODE==='production'&&ACTIVE_LEADS.length>0)?ACTIVE_LEADS:(DATA_MODE==='production'?[]:NETWORK_LEADS_MES);
+  cobSrcRel.forEach(l=>{ if(l.data){const ym=l.data.slice(0,7);byMonth[ym]=(byMonth[ym]||0)+1;} });
+  const todos={...byMonth};
   const months=Object.keys(todos).sort();
+  if(!months.length){
+    el.innerHTML=`<div style="text-align:center;padding:60px 0;color:var(--tx3)"><div style="font-size:38px;margin-bottom:12px">📅</div><div style="font-size:14px;font-weight:600;color:var(--tx2);margin-bottom:6px">Nenhum dado disponível</div><div style="font-size:12px">O relatório será gerado conforme os leads chegarem pelo N8N.</div></div>`;
+    return;
+  }
   const total=Object.values(todos).reduce((a,b)=>a+b,0);
   const maxM=Math.max(...Object.values(todos));
   const meses=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
@@ -2221,19 +2226,18 @@ function cobBuildRelatorio(){
       ${months.map(ym=>{
         const cnt=todos[ym];
         const pct=Math.round((cnt/maxM)*100);
-        const isReal=!!byMonth[ym];
         return`<div>
           <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px">
             <span style="color:var(--tx2);font-weight:600">${fmtM(ym)}</span>
-            <span style="color:${isReal?'var(--ac-l)':'var(--tx2)'};font-family:'DM Mono',monospace;font-weight:700">${cnt} leads</span>
+            <span style="color:var(--ac-l);font-family:'DM Mono',monospace;font-weight:700">${cnt} leads</span>
           </div>
           <div style="height:8px;background:var(--s3);border-radius:4px">
-            <div style="width:${pct}%;height:100%;background:${isReal?'linear-gradient(90deg,var(--ac-d),var(--ac-l))':'rgba(255,255,255,.15)'};border-radius:4px;transition:width .5s ease"></div>
+            <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,var(--ac-d),var(--ac-l));border-radius:4px;transition:width .5s ease"></div>
           </div>
         </div>`;
       }).join('')}
     </div>
-    <div style="margin-top:18px;font-size:11px;color:var(--tx3)">* Dados de Fevereiro e Março são estimados com base na curva de crescimento do agente.</div>
+    <div style="margin-top:18px;font-size:11px;color:var(--tx3)">Histórico real gerado a partir dos leads processados pelo agente Rui.</div>
   `;
 }
 
@@ -2877,6 +2881,8 @@ function getLeadsForPeriod(period){
             :waAll;
     return {wa};
   }
+  // Em produção sem dados ainda — retorna lista vazia (sem fallback fictício)
+  if(DATA_MODE==='production') return {wa:[]};
   // modo demo — arrays pré-divididos por período
   const wa=period==='dia'?NETWORK_LEADS_DIA:period==='semana'?NETWORK_LEADS_SEMANA:NETWORK_LEADS_MES;
   return {wa};
