@@ -45,6 +45,9 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 .sb-foot{padding:18px 22px;border-top:1px solid var(--bdr);}
 .sb-foot .wk{font-size:11px;color:var(--tx3);}
 .sb-foot .wk strong{color:var(--tx2);display:block;font-size:12px;margin-bottom:2px;}
+.sb-btn-ref{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:linear-gradient(135deg,var(--ac),var(--ac-d));color:#000;border:none;padding:10px 0;border-radius:var(--rsm);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;box-shadow:0 4px 14px rgba(212,175,55,.2);margin-bottom:14px;}
+.sb-btn-ref:hover{background:linear-gradient(135deg,var(--ac-l),var(--ac));box-shadow:0 6px 22px rgba(212,175,55,.4);}
+.sb-btn-ref.loading{opacity:.6;pointer-events:none;}
 
 /* MAIN */
 .main{margin-left:var(--sb);flex:1;padding:calc(var(--stripe) + 36px) 40px 70px;position:relative;z-index:1;}
@@ -589,7 +592,10 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     </div>
   </div>
   <div class="sb-chess"></div>
-  <div class="sb-foot"><div class="wk"><strong id="sbWeek">Semana atual</strong><span id="sbWeekRange">—</span></div></div>
+  <div class="sb-foot">
+    <button class="sb-btn-ref" id="sbBtnRef" onclick="refresh()">↺ Atualizar dados</button>
+    <div class="wk"><strong id="sbWeek">Semana atual</strong><span id="sbWeekRange">—</span></div>
+  </div>
 </aside>
 
 <main class="main">
@@ -2704,16 +2710,28 @@ function animateCounters(){
 // ============================================================
 // Ponto 7: refresh real — busca dados novos do N8N/Supabase
 async function refresh(){
+  const sbBtn = document.getElementById('sbBtnRef');
+  if(sbBtn){ sbBtn.classList.add('loading'); sbBtn.textContent='↻ Atualizando…'; }
   document.getElementById('ld').classList.add('show');
   try {
     await atualizarDashboard();
-    buildTable();
-    updateOrbCount();
-    updateCICount();
-    if(document.getElementById('p-funil').style.display!=='none') buildFunil();
+    // Reconstrói a aba atualmente aberta
+    const pages = ['plataformas','cobertura','funil','diagnostico','checkin'];
+    for(const id of pages){
+      const el = document.getElementById('p-'+id);
+      if(el && el.style.display !== 'none'){
+        if(id==='plataformas'){ updateOrbCount(); updateCICount(); renderLeadsPresenciais(); }
+        if(id==='cobertura') buildCobertura();
+        if(id==='funil') buildFunil();
+        if(id==='diagnostico') buildDiagnostico();
+        if(id==='checkin') ciInit();
+        break;
+      }
+    }
   } catch(e){ console.warn('[refresh]',e); }
   document.getElementById('ld').classList.remove('show');
   document.getElementById('tsVal').textContent=new Date().toLocaleString('pt-BR');
+  if(sbBtn){ sbBtn.classList.remove('loading'); sbBtn.textContent='↺ Atualizar dados'; }
   const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);
 }
 
