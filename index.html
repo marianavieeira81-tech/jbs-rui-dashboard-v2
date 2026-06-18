@@ -2067,7 +2067,7 @@ function renderLeadList(cat){
   if(titleEl){
     titleEl.innerHTML=`<span style="color:${catColors[cat]}">${labels[cat]}</span>`;
   }
-  const leads=getLeadsForPeriod(networkPeriod).wa;
+  const leads=(getLeadsForPeriod(networkPeriod).wa)||[];
   const filtered=leads.filter(l=>{
     if(cat==='premium')  return l.score>85;
     if(cat==='quentes')  return l.score>=71&&l.score<=85;
@@ -2652,24 +2652,22 @@ function closeReportModal(){
 }
 
 function generateReport(){
-  const from = document.getElementById('rdFrom').value;
-  const to = document.getElementById('rdTo').value;
-  if(!from || !to){ alert('Selecione as duas datas.'); return; }
   closeReportModal();
-
-  // Ponto 5: usa apenas leads WhatsApp do período selecionado — sem fallback nem mistura com check-in
-  const source = (DATA_MODE==='production'&&ACTIVE_LEADS.length>0)
-    ? ACTIVE_LEADS.filter(l=>(l.canal||'').toLowerCase()!=='presencial')
-    : [];
-  const reportLeads = source.filter(l=> l.data >= from && l.data <= to);
+  const periodLabels={dia:'Diário (24h)',semana:'Semanal (7 dias)',mes:'Mensal (30 dias)'};
+  const pLabel=periodLabels[networkPeriod]||networkPeriod;
+  const reportLeads=(DATA_MODE==='production'&&ACTIVE_LEADS.length>0)
+    ?getLeadsForPeriod(networkPeriod).wa.filter(l=>{
+        const c=(l.canal||'').toLowerCase(),o=(l.origem||'').toLowerCase();
+        return c!=='checkin'&&o!=='checkin';
+      })
+    :[];
   if(reportLeads.length===0){
-    document.getElementById('reportViewTitle').textContent=`Nenhum lead WhatsApp encontrado entre ${from} e ${to}`;
+    document.getElementById('reportViewTitle').textContent=`Nenhum lead encontrado · ${pLabel}`;
     document.getElementById('reportBody').innerHTML=`<tr><td colspan="17" style="text-align:center;padding:40px;color:var(--tx3);">Nenhum lead neste período.</td></tr>`;
     document.getElementById('reportView').classList.add('show');
     return;
   }
-
-  document.getElementById('reportViewTitle').textContent = `Leads · ${from} até ${to} · ${reportLeads.length} registros`;
+  document.getElementById('reportViewTitle').textContent=`Leads · ${pLabel} · ${reportLeads.length} registros`;
 
   const isHT=(hora,dateStr)=>{const h=parseInt((hora||'').split(':')[0]);if(isNaN(h))return false;const _d=new Date((dateStr||'')+'T12:00:00');const _w=_d.getDay();if(_w===0)return false;if(_w===6)return h>=8&&h<14;return h>=8&&h<19;};
   const nd=(v)=>v?v:'—';
@@ -2906,7 +2904,7 @@ async function fetchFromSupabase(){
     );
     if(!res.ok) return false;
     const rows=await res.json();
-    if(!Array.isArray(rows)||rows.length===0) return false;
+    if(!Array.isArray(rows)) return false;
     ACTIVE_LEADS=rows.map(mapLead);
     console.log('[RuiAI] Supabase direto: '+ACTIVE_LEADS.length+' leads carregados');
     return true;
@@ -2973,7 +2971,7 @@ async function fetchAllData(){
       dadosOk=true;
     }
   }catch(err){
-    console.warn('[RuiAI] N8N indisponível:',err);
+    console.warn('[RuiAI] N8N indisponível');
   }
   // Fallback: tenta Supabase diretamente se N8N falhou
   if(!dadosOk) await fetchFromSupabase();
