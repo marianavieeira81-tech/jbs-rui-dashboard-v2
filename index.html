@@ -1318,7 +1318,7 @@ function buildLeadData(nome,score,i){
   const _dc=["Independente","Envolve minha esposa","Independente","Independente","Envolve meu sócio","Independente","Envolve familiar","Independente","Independente","Envolve minha esposa"];
   const _cc=[null,"financeiro",null,null,"financeiro",null,"escolha",null,null,"ambos"];
   const _sn=["Positivo","Positivo","Neutro","Neutro","Frustrado","Positivo","Neutro","Positivo","Neutro","Positivo","Positivo","Neutro","Positivo","Neutro","Frustrado","Positivo","Neutro","Positivo","Positivo","Positivo"];
-  const _st=["Transferido","Transferido","Em qualificação","Em qualificação","Encerrado","Transferido","Em qualificação","Transferido","Em qualificação","Transferido","Transferido","Em qualificação","Transferido","Em qualificação","Encerrado","Transferido","Em qualificação","Transferido","Transferido","Transferido"];
+  const _st=["Transferido","Transferido","Em andamento","Em andamento","Encerrado","Transferido","Em andamento","Transferido","Em andamento","Transferido","Transferido","Em andamento","Transferido","Em andamento","Encerrado","Transferido","Em andamento","Transferido","Transferido","Transferido"];
   const _hr=["23:15","01:30","02:45","14:22","00:38","22:10","03:20","09:30","01:55","21:03","04:12","10:15","02:08","23:50","20:47","03:22","01:25","12:04","03:47","06:30","00:15","03:11","22:40","04:50","02:05","04:45","01:20","23:44","05:10","19:32","05:18","21:30","03:55","00:28","22:20","04:08","00:48","13:30","02:30","21:15","04:05","23:10","02:55","01:42","20:35","04:30","03:10","22:00","05:45","02:20"];
   const _dt=["2026-05-09","2026-05-09","2026-05-09","2026-05-09","2026-05-08","2026-05-08","2026-05-08","2026-05-07","2026-05-07","2026-05-06","2026-05-06","2026-05-05","2026-05-05","2026-05-04","2026-05-04","2026-05-03","2026-05-03","2026-05-02","2026-05-02","2026-05-01","2026-04-30","2026-04-29","2026-04-28","2026-04-27","2026-04-26","2026-04-25","2026-04-24","2026-04-23","2026-04-22","2026-04-21","2026-04-20","2026-04-19","2026-04-18","2026-04-17","2026-04-16","2026-04-15","2026-04-14","2026-04-13","2026-04-12","2026-04-11","2026-04-10","2026-04-09","2026-04-08","2026-04-07","2026-04-06","2026-04-05","2026-04-04","2026-04-03","2026-04-02","2026-04-01"];
   const _fn=["(81) 99100-1234","(81) 98200-5678",null,"(81) 99300-9012","(81) 98400-3456",null,"(81) 99500-7890","(81) 98600-1234","(81) 99700-5678",null,"(81) 99800-9012","(81) 98900-3456","(81) 99000-7890",null,"(81) 99100-1111","(81) 98200-2222","(81) 99300-3333",null,"(81) 99400-4444","(81) 98500-5555",null,"(81) 99600-6666","(81) 98700-7777","(81) 99800-8888",null,"(81) 99900-9999","(81) 98000-0000","(81) 99100-1010",null,"(81) 99200-2020"];
@@ -2854,6 +2854,12 @@ function buildPerguntas(l){
   return p;
 }
 
+function getStatus(l){
+  if(l.qualificado_em) return 'Transferido';
+  if(l.followup_status==='encerrado') return 'Encerrado';
+  return 'Em andamento';
+}
+
 // Mapeia um registro bruto (Supabase ou N8N) para o formato interno de ACTIVE_LEADS
 function mapLead(l){
   return {
@@ -2862,7 +2868,7 @@ function mapLead(l){
     canal:       l.canal||'whatsapp',
     score:       l.score_final||0,
     temperatura: calcTemperatura(l.score_final||0),
-    status:      l.qualificado_em?'Transferido':(l.followup_status==='encerrado'?'Encerrado':'Em andamento'),
+    status:      getStatus(l),
     hora:        l.atualizado_em?new Date(l.atualizado_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'',
     data:        l.atualizado_em?l.atualizado_em.split('T')[0]:'',
     modelo:      l.veiculo_interesse||'',
