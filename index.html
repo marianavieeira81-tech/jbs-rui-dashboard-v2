@@ -824,23 +824,35 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       </div>
     </div>
     <div class="cat-grid">
-      <div class="cat-card" onclick="openLeadCategory('quentes')" style="border-color:rgba(239,68,68,.2);">
-        <div class="cat-card-ico">🔥</div>
-        <div class="cat-card-lbl" style="color:#EF4444;">Leads Quentes</div>
-        <div class="cat-card-cnt" style="color:#EF4444;" id="cntQuentes">—</div>
-        <div class="cat-card-sub">Score ≥ 61 · Prioridade alta</div>
+      <div class="cat-card" onclick="openLeadCategory('premium')" style="border-color:rgba(239,68,68,.2);">
+        <div class="cat-card-ico">💎</div>
+        <div class="cat-card-lbl" style="color:#EF4444;">Leads Premium</div>
+        <div class="cat-card-cnt" style="color:#EF4444;" id="cntPremium">—</div>
+        <div class="cat-card-sub">Score &gt; 85 · Fechar agora</div>
       </div>
-      <div class="cat-card" onclick="openLeadCategory('mornos')" style="border-color:rgba(234,179,8,.2);">
+      <div class="cat-card" onclick="openLeadCategory('quentes')" style="border-color:rgba(249,115,22,.2);">
+        <div class="cat-card-ico">🔥</div>
+        <div class="cat-card-lbl" style="color:#F97316;">Leads Quentes</div>
+        <div class="cat-card-cnt" style="color:#F97316;" id="cntQuentes">—</div>
+        <div class="cat-card-sub">Score 71–85 · Prioridade alta</div>
+      </div>
+      <div class="cat-card" onclick="openLeadCategory('engajados')" style="border-color:rgba(234,179,8,.2);">
+        <div class="cat-card-ico">📊</div>
+        <div class="cat-card-lbl" style="color:#EAB308;">Leads Engajados</div>
+        <div class="cat-card-cnt" style="color:#EAB308;" id="cntEngajados">—</div>
+        <div class="cat-card-sub">Score 51–70 · Em qualificação</div>
+      </div>
+      <div class="cat-card" onclick="openLeadCategory('mornos')" style="border-color:rgba(34,197,94,.2);">
         <div class="cat-card-ico">🌡️</div>
-        <div class="cat-card-lbl" style="color:#EAB308;">Leads Mornos</div>
-        <div class="cat-card-cnt" style="color:#EAB308;" id="cntMornos">—</div>
-        <div class="cat-card-sub">Score 21–60 · Em nutrição</div>
+        <div class="cat-card-lbl" style="color:#22c55e;">Leads Mornos</div>
+        <div class="cat-card-cnt" style="color:#22c55e;" id="cntMornos">—</div>
+        <div class="cat-card-sub">Score 26–50 · Em nutrição</div>
       </div>
       <div class="cat-card" onclick="openLeadCategory('frios')" style="border-color:rgba(56,189,248,.2);">
         <div class="cat-card-ico">❄️</div>
         <div class="cat-card-lbl" style="color:#38BDF8;">Leads Frios</div>
         <div class="cat-card-cnt" style="color:#38BDF8;" id="cntFrios">—</div>
-        <div class="cat-card-sub">Score ≤ 20 · Aguardar</div>
+        <div class="cat-card-sub">Score ≤ 25 · Aguardar</div>
       </div>
     </div>
   </div>
@@ -1321,7 +1333,7 @@ function buildLeadData(nome,score,i){
   const envolveOutro=decisao!=="Independente";
   const codTipo=envolveOutro?(_cc[i%_cc.length]||"financeiro"):null;
   const codDetalhe=codTipo===null?null:codTipo==="financeiro"?"Focado principalmente no lado financeiro":codTipo==="escolha"?"Focado na escolha do veículo":"Envolvido em ambos os aspectos";
-  const temperatura=sc>=81?"Premium":sc>=61?"Quente":sc>=41?"Engajado":sc>=21?"Morno":"Frio";
+  const temperatura=sc>85?"Premium":sc>=71?"Quente":sc>=51?"Engajado":sc>=26?"Morno":"Frio";
   const sentimento=_sn[i%_sn.length];
   const status=_st[i%_st.length];
   const hora=_hr[i%_hr.length];
@@ -1383,7 +1395,7 @@ const FUNNEL = [
   {lbl:"Leads recebidos",c:"#D4AF37",n:1000,p:100,tip:"Total de leads atendidos pelo Rui no mês via WhatsApp.",waCount:1000},
   {lbl:"Iniciaram fluxo",c:"#A88820",n:680,p:68,tip:"Responderam ao Rui e começaram a qualificação. 68% de engajamento inicial.",waCount:680},
   {lbl:"Qualificação completa",c:"#606060",n:460,p:46,tip:"Responderam as 7 perguntas do Rui. Score calculado e classificado.",waCount:460},
-  {lbl:"Score ≥ 60 · Leads quentes",c:"#D4AF37",n:260,p:26,tip:"Transferidos ao vendedor com prioridade alta. Score acima de 60.",waCount:260}
+  {lbl:"Score > 85 · Leads premium",c:"#D4AF37",n:260,p:26,tip:"Transferidos ao vendedor com prioridade máxima. Score acima de 85.",waCount:260}
 ];
 
 const CONV_DATA = [
@@ -1405,7 +1417,7 @@ function ptc(p){const lc=(p||'').toLowerCase();return lc==='whatsapp'?'wa':lc===
 function avc(i){const c=["#D4AF37","#004225","#E11D48","#6090FF","#E060C0","#B87333","#A88820","#00845A","#606060","#4A9EFF"];return c[i%c.length];}
 function ini(n){return(n||'?').split(' ').map(w=>w[0]).slice(0,2).join('');}
 function posC(i){return i===0?'g':i===1?'s':i===2?'b':'';}
-function scoreColor(sc){return sc>=81?'#EF4444':sc>=61?'#F97316':sc>=41?'#EAB308':sc>=21?'#22c55e':'#38BDF8';}
+function scoreColor(sc){return sc>85?'#EF4444':sc>=71?'#F97316':sc>=51?'#EAB308':sc>=26?'#22c55e':'#38BDF8';}
 function tempColor(t){const m={'Premium':'#EF4444','Quente':'#F97316','Engajado':'#EAB308','Morno':'#22c55e','Frio':'#38BDF8'};return m[t]||'var(--tx3)';}
 
 // ============================================================
@@ -2005,13 +2017,17 @@ function closeWACategories(){
 
 function updateCategoryCount(){
   const leads = getLeadsForPeriod(networkPeriod).wa;
-  const q = leads.filter(l=>l.score>=61).length;
-  const m = leads.filter(l=>l.score>=21&&l.score<=60).length;
-  const f = leads.filter(l=>l.score<=20).length;
-  const eq=document.getElementById('cntQuentes'),em=document.getElementById('cntMornos'),ef=document.getElementById('cntFrios');
-  if(eq) eq.textContent=q;
-  if(em) em.textContent=m;
-  if(ef) ef.textContent=f;
+  const pr = leads.filter(l=>l.score>85).length;
+  const q  = leads.filter(l=>l.score>=71&&l.score<=85).length;
+  const en = leads.filter(l=>l.score>=51&&l.score<=70).length;
+  const m  = leads.filter(l=>l.score>=26&&l.score<=50).length;
+  const f  = leads.filter(l=>l.score<=25).length;
+  const epr=document.getElementById('cntPremium'),eq=document.getElementById('cntQuentes'),een=document.getElementById('cntEngajados'),em=document.getElementById('cntMornos'),ef=document.getElementById('cntFrios');
+  if(epr) epr.textContent=pr;
+  if(eq)  eq.textContent=q;
+  if(een) een.textContent=en;
+  if(em)  em.textContent=m;
+  if(ef)  ef.textContent=f;
 }
 
 function openLeadCategory(cat){
@@ -2045,17 +2061,19 @@ function leadOutcome(nome,outcome){
 }
 
 function renderLeadList(cat){
-  const labels={quentes:'🔥 Leads Quentes',mornos:'🌡️ Leads Mornos',frios:'❄️ Leads Frios'};
-  const catColors={quentes:'#EF4444',mornos:'#EAB308',frios:'#38BDF8'};
+  const labels={premium:'💎 Leads Premium',quentes:'🔥 Leads Quentes',engajados:'📊 Leads Engajados',mornos:'🌡️ Leads Mornos',frios:'❄️ Leads Frios'};
+  const catColors={premium:'#EF4444',quentes:'#F97316',engajados:'#EAB308',mornos:'#22c55e',frios:'#38BDF8'};
   const titleEl=document.getElementById('pltLeadListTitle');
   if(titleEl){
     titleEl.innerHTML=`<span style="color:${catColors[cat]}">${labels[cat]}</span>`;
   }
   const leads=getLeadsForPeriod(networkPeriod).wa;
   const filtered=leads.filter(l=>{
-    if(cat==='quentes') return l.score>=61;
-    if(cat==='mornos')  return l.score>=21&&l.score<=60;
-    return l.score<=20;
+    if(cat==='premium')  return l.score>85;
+    if(cat==='quentes')  return l.score>=71&&l.score<=85;
+    if(cat==='engajados')return l.score>=51&&l.score<=70;
+    if(cat==='mornos')   return l.score>=26&&l.score<=50;
+    return l.score<=25;
   }).sort((a,b)=>b.score-a.score);
 
   const content=document.getElementById('pltLeadListContent');
@@ -2319,7 +2337,7 @@ function buildFunil(){
   const iniciaram = todos.filter(l => l.inicouFluxo);
   const completos = todos.filter(l => l.qualificadoEm || ['origem','encerrado'].includes(l.blocoParou||''));
   // quentes: subconjunto de completos (garante hierarquia do funil)
-  const quentes   = completos.filter(l => l.score >= 60);
+  const quentes   = completos.filter(l => l.score > 85);
 
   const maxN = todos.length || 1;
 
