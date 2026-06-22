@@ -2334,10 +2334,12 @@ function buildFunil(){
 
   // Classificação por etapa com dados reais (sem leads de teste)
   const todos     = ACTIVE_LEADS.filter(l => !TEST_IDS.has(l.telefone));
-  const iniciaram = todos.filter(l => l.inicouFluxo);
-  const completos = todos.filter(l => l.qualificadoEm || ['origem','encerrado'].includes(l.blocoParou||''));
-  // quentes: subconjunto de completos (garante hierarquia do funil)
-  const quentes   = completos.filter(l => l.score > 85);
+  // Iniciaram: leads com score > 0 (bot atribuiu pontuação, houve interação real)
+  const iniciaram = todos.filter(l => l.score > 0);
+  // Qualificação completa: bot marcou explicitamente como qualificado (qualificado_em preenchido)
+  const completos = todos.filter(l => l.qualificadoEm);
+  // Quentes: todos os leads com score >= 60, independente de terem concluído a qualificação
+  const quentes   = todos.filter(l => l.score >= 60);
 
   const maxN = todos.length || 1;
 
