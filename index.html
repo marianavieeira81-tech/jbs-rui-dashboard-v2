@@ -3240,8 +3240,8 @@ async function fetchFilaData(){
           perguntas:   []
         }));
         if(resE.ok){
-          const estoque=await resE.json();
-          buildEstoqueSection(Array.isArray(estoque)?estoque:[], resumo);
+          const estoqueData=await resE.json();
+          buildEstoqueSection(estoqueData.estoque||[], resumo);
         }
       }
     }catch(e){ /* silencioso — usa DEMO_FILA como fallback */ }
@@ -3260,7 +3260,7 @@ function buildEstoqueSection(estoque, resumo){
   // agrupa estoque por modelo (soma quantidade de variantes)
   const stockMap={};
   estoque.forEach(v=>{
-    const m=v.modelo||'Não identificado';
+    const m=(v.modelo||'').trim().toLowerCase()||'não identificado';
     if(!stockMap[m]) stockMap[m]={quantidade:0};
     stockMap[m].quantidade+=v.quantidade||0;
   });
@@ -3270,7 +3270,7 @@ function buildEstoqueSection(estoque, resumo){
     .map(([modelo,info])=>({
       modelo,
       leads:     info.total||0,
-      unidades:  stockMap[modelo]?.quantidade??null
+      unidades:  stockMap[modelo.trim().toLowerCase()]?.quantidade??null
     }));
   if(modelos.length===0){ el.innerHTML='<div style="padding:12px 0;color:var(--tx3);font-size:12px">Sem dados de demanda no momento.</div>'; return; }
   const maxLeads=Math.max(...modelos.map(m=>m.leads),1);
