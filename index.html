@@ -2914,6 +2914,33 @@ async function fetchFromSupabase(){
   }
 }
 
+// Calcula KPIs principais (total, transferidos, scoreMedio, distribuição) a partir de ACTIVE_LEADS
+// Usado quando o N8N não retorna stats — preenche apenas os valores que ainda estão em "—"
+function calcMainKPIsFromLeads(){
+  if(!ACTIVE_LEADS.length) return;
+  const trySet=(sel,v)=>{const el=document.querySelector(sel);if(el&&el.textContent==='—')el.textContent=v;};
+  const total=ACTIVE_LEADS.length;
+  const transferidos=ACTIVE_LEADS.filter(l=>l.status==='Transferido').length;
+  const scores=ACTIVE_LEADS.map(l=>l.score||0);
+  const scoreMedio=Math.round(scores.reduce((a,b)=>a+b,0)/scores.length);
+  const dist={frios:0,mornos:0,engajados:0,quentes:0,premium:0};
+  ACTIVE_LEADS.forEach(l=>{
+    const t=(l.temperatura||'').toLowerCase();
+    if(t==='frio') dist.frios++;
+    else if(t==='morno') dist.mornos++;
+    else if(t==='engajado') dist.engajados++;
+    else if(t==='quente') dist.quentes++;
+    else if(t==='premium') dist.premium++;
+  });
+  trySet('[data-kpi="total"]', total);
+  trySet('[data-kpi="transferidos"]', transferidos);
+  trySet('[data-kpi="scoreMedio"]', scoreMedio);
+  ['frios','mornos','engajados','quentes','premium'].forEach(k=>{
+    const el=document.querySelector(`[data-score="${k}"]`);
+    if(el&&(el.textContent==='—'||el.textContent==='0')) el.textContent=dist[k];
+  });
+}
+
 // Calcula KPIs da Cobertura 24/7 a partir de ACTIVE_LEADS
 // Usado quando o N8N não retorna cobLeads/cobPct/carteiraNoturna
 function calcCoberturaFromLeads(){
@@ -2973,8 +3000,10 @@ async function fetchAllData(){
   }catch(err){
     console.warn('[RuiAI] N8N indisponível');
   }
-  // Fallback: tenta Supabase diretamente se N8N falhou
-  if(!dadosOk) await fetchFromSupabase();
+  // Fallback: tenta Supabase diretamente se N8N falhou OU se não retornou leads
+  if(!dadosOk || ACTIVE_LEADS.length===0) await fetchFromSupabase();
+  // Deriva KPIs principais de ACTIVE_LEADS quando N8N não forneceu stats
+  calcMainKPIsFromLeads();
   // Calcula KPIs da Cobertura localmente (preenche apenas os que ainda estão em "—")
   calcCoberturaFromLeads();
 }
