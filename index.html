@@ -760,6 +760,14 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       </div>
     </div>
   </div>
+
+  <!-- FILA DE ESPERA — leitura direta Supabase -->
+  <div class="sec">Leads aguardando · fila_espera · Supabase</div>
+  <div class="card" style="padding:0;overflow:hidden;">
+    <div id="filaEsperaSupaWrap" style="padding:24px 0;">
+      <div style="padding:40px 24px;text-align:center;color:var(--tx3);font-size:13px;">Carregando fila de espera...</div>
+    </div>
+  </div>
 </div>
 <div id="p-plataformas" style="display:none">
   <div class="topbar">
@@ -3210,6 +3218,59 @@ function buildFilaEspera(){
   }).join('');
 }
 
+function canalFilaPill(canal){
+  if(!canal) return '<span class="ptag ot">—</span>';
+  const c=(canal||'').toLowerCase();
+  if(c.includes('whatsapp')) return '<span class="ptag wa">WhatsApp</span>';
+  if(c.includes('instagram')) return '<span class="ptag ig">Instagram</span>';
+  if(c.includes('facebook')) return '<span class="ptag fb">Facebook</span>';
+  return `<span class="ptag ot">${canal}</span>`;
+}
+
+async function fetchFilaEsperaSupabase(){
+  const wrap=document.getElementById('filaEsperaSupaWrap');
+  if(!wrap) return;
+  if(!SUPABASE_ANON_KEY){
+    wrap.innerHTML='<div style="padding:40px 24px;text-align:center;color:var(--tx3);font-size:13px">Erro ao carregar fila de espera.</div>';
+    return;
+  }
+  try{
+    const h={'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Content-Type':'application/json'};
+    const res=await fetch(
+      `${SUPABASE_URL}/rest/v1/fila_espera?status=eq.aguardando&order=criado_em.desc`,
+      {headers:h}
+    );
+    if(!res.ok){
+      wrap.innerHTML='<div style="padding:40px 24px;text-align:center;color:var(--tx3);font-size:13px">Erro ao carregar fila de espera.</div>';
+      return;
+    }
+    const rows=await res.json();
+    if(!Array.isArray(rows)||rows.length===0){
+      wrap.innerHTML='<div style="padding:40px 24px;text-align:center;color:var(--tx3);font-size:13px">Nenhum lead aguardando no momento.</div>';
+      return;
+    }
+    wrap.innerHTML=`<table class="ltbl" style="display:table;width:calc(100% - 48px);margin:16px 24px;">
+      <thead><tr>
+        <th>Nome</th>
+        <th>Modelo de Interesse</th>
+        <th>Especificações</th>
+        <th>Canal</th>
+        <th>Entrada</th>
+      </tr></thead>
+      <tbody>${rows.map(r=>`<tr>
+        <td style="font-weight:600;color:var(--tx)">${r.nome||'—'}</td>
+        <td>${r.modelo_interesse||'—'}</td>
+        <td style="color:var(--tx3);font-size:12px">${r.especificacoes||'—'}</td>
+        <td>${canalFilaPill(r.canal)}</td>
+        <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--tx3)">${fmtDataHoraFila(r.criado_em)}</td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+  }catch(e){
+    wrap.innerHTML='<div style="padding:40px 24px;text-align:center;color:var(--tx3);font-size:13px">Erro ao carregar fila de espera.</div>';
+    console.warn('[RuiAI] fila_espera Supabase falhou:',e);
+  }
+}
+
 async function fetchFilaData(){
   if(DATA_MODE==='production'){
     try{
@@ -3249,6 +3310,7 @@ async function fetchFilaData(){
     }catch(e){ /* silencioso — usa DEMO_FILA como fallback */ }
   }
   buildFilaEspera();
+  await fetchFilaEsperaSupabase();
   const el=document.getElementById('filaTs');
   if(el) el.textContent=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
 }
