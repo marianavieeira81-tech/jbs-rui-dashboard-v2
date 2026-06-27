@@ -499,7 +499,22 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 .btn-del-ci{background:none;border:none;color:var(--tx3);font-size:15px;cursor:pointer;padding:4px 8px;border-radius:5px;transition:color .15s;margin-left:auto;flex-shrink:0;}
 .btn-del-ci:hover{color:var(--red);}
 .ci-empty{text-align:center;padding:60px 0;color:var(--tx3);font-size:13px;}
-.ci-empty-ico{font-size:42px;margin-bottom:14px;}</style>
+.ci-empty-ico{font-size:42px;margin-bottom:14px;}
+
+/* ============================================================
+   BARRA DE FILTRO DE PERÍODO (DATE RANGE BAR)
+   ============================================================ */
+.drb-wrap{display:flex;align-items:center;gap:8px;margin-bottom:24px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--bdr);border-radius:var(--rsm);padding:10px 16px;}
+.drb-preset{background:var(--s2);border:1px solid var(--bdr);color:var(--tx2);padding:7px 16px;border-radius:var(--rsm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .18s;}
+.drb-preset:hover{background:var(--s3);color:var(--tx);}
+.drb-preset.active{background:var(--ac-faint);color:var(--ac);border-color:rgba(212,175,55,.25);}
+.drb-sep{width:1px;height:24px;background:var(--bdr);flex-shrink:0;}
+.drb-input{background:var(--s2);border:1px solid var(--bdr);color:var(--tx);padding:7px 11px;border-radius:var(--rsm);font-size:12px;font-family:'DM Mono',monospace;cursor:pointer;transition:border .2s;width:130px;}
+.drb-input:focus{outline:none;border-color:rgba(212,175,55,.4);}
+.drb-apply{background:linear-gradient(135deg,var(--ac),var(--ac-d));color:#000;border:none;padding:7px 18px;border-radius:var(--rsm);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;}
+.drb-apply:hover{background:linear-gradient(135deg,var(--ac-l),var(--ac));}
+.drb-lbl{font-size:11px;color:var(--tx3);font-weight:600;flex-shrink:0;}
+.drb-count{font-size:11px;color:var(--tx3);margin-left:auto;font-family:'DM Mono',monospace;}</style>
 </head>
 <body>
 
@@ -609,6 +624,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       <button class="btn-ref" onclick="refresh()">↺ Atualizar</button>
     </div>
   </div>
+  <div id="drb-dash"></div>
 
   <!-- DIAGNÓSTICO AUTOMÁTICO -->
   <div class="diag-box" id="diagBox">
@@ -659,6 +675,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       <button class="btn-ref" onclick="fetchFilaData()">&#8629; Atualizar</button>
     </div>
   </div>
+  <div id="drb-filaespera"></div>
 
   <!-- BUSCA POR TELEFONE -->
   <div style="margin-bottom:22px;display:flex;gap:10px;align-items:center;">
@@ -781,6 +798,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   </div>
   <div id="psr-plataformas" style="margin-bottom:4px;"></div>
 
+  <div id="drb-plataformas"></div>
   <!-- controles de período + relatório -->
   <div class="plt-controls">
     <button class="period-btn active" onclick="setPeriod('dia',this)">Diário</button>
@@ -1011,6 +1029,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 <!-- ============ FUNIL ============ -->
 <div id="p-funil" style="display:none">
   <div class="topbar"><div><div class="eye">Leads</div><h1>Funil de Qualificação</h1></div></div>
+  <div id="drb-funil"></div>
   <!-- BUSCA POR TELEFONE -->
   <div style="margin-bottom:22px;display:flex;gap:10px;align-items:center;">
     <div style="position:relative;max-width:360px;flex:1;"><span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none;opacity:.45;">📞</span><input id="ps-funil" type="tel" class="ci-input" style="padding-left:36px;" placeholder="Buscar lead por número..." oninput="phoneSearch(this.value,'funil')"/></div>
@@ -1046,6 +1065,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       <div class="ts"><strong>Últimos 30 dias</strong><span id="diagTotalLabel">100 leads analisados</span></div>
     </div>
   </div>
+  <div id="drb-diagnostico"></div>
 
   <!-- BUSCA POR TELEFONE -->
   <div style="margin-bottom:22px;display:flex;gap:10px;align-items:center;">
@@ -1152,6 +1172,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       <div class="ts"><span>Registros salvos</span><strong id="ciCount">0</strong></div>
     </div>
   </div>
+  <div id="drb-checkin"></div>
 
   <div class="g2" style="align-items:flex-start;gap:28px;">
 
@@ -1442,6 +1463,7 @@ function go(id){
   if(id==='filaespera') fetchFilaData();
   if(id==='diagnostico') buildDiagnostico();
   if(id==='checkin') ciInit();
+  if(DR_TABS.includes(id)) drBuild(id);
 }
 
 // ============================================================
@@ -3355,12 +3377,150 @@ function buildEstoqueSection(estoque, resumo){
   }).join('');
 }
 
+// ============================================================
+// FILTRO DE PERÍODO — barra de datas compartilhada entre abas
+// ============================================================
+let GLOBAL_RANGE={from:null,to:null,preset:'mes'};
+const DR_TABS=['dash','filaespera','funil','diagnostico','checkin','plataformas'];
+
+function _drISO(d){return d.toISOString().slice(0,10);}
+function _drStartDay(d=new Date()){const r=new Date(d);r.setHours(0,0,0,0);return r;}
+function _drEndDay(d=new Date()){const r=new Date(d);r.setHours(23,59,59,999);return r;}
+function _drStartWeek(){const d=new Date();const day=d.getDay();const diff=d.getDate()-day+(day===0?-6:1);const r=new Date(d);r.setDate(diff);r.setHours(0,0,0,0);return r;}
+function _drStartMonth(){const d=new Date();return new Date(d.getFullYear(),d.getMonth(),1,0,0,0,0);}
+
+function drBuild(tabId){
+  const el=document.getElementById('drb-'+tabId);
+  if(!el) return;
+  if(!GLOBAL_RANGE.from) GLOBAL_RANGE={from:_drStartMonth(),to:_drEndDay(),preset:'mes'};
+  const f=_drISO(GLOBAL_RANGE.from),t=_drISO(GLOBAL_RANGE.to),p=GLOBAL_RANGE.preset;
+  el.innerHTML=`<div class="drb-wrap">
+    <span class="drb-lbl">Período:</span>
+    <button id="drb-btn-hoje-${tabId}" class="drb-preset${p==='hoje'?' active':''}" onclick="drSetPreset('hoje','${tabId}')">Hoje</button>
+    <button id="drb-btn-semana-${tabId}" class="drb-preset${p==='semana'?' active':''}" onclick="drSetPreset('semana','${tabId}')">Esta Semana</button>
+    <button id="drb-btn-mes-${tabId}" class="drb-preset${p==='mes'?' active':''}" onclick="drSetPreset('mes','${tabId}')">Este Mês</button>
+    <div class="drb-sep"></div>
+    <input id="drb-from-${tabId}" class="drb-input" type="date" value="${f}">
+    <span style="color:var(--tx3);font-size:12px;flex-shrink:0">→</span>
+    <input id="drb-to-${tabId}" class="drb-input" type="date" value="${t}">
+    <button class="drb-apply" onclick="drApplyCustom('${tabId}')">Filtrar</button>
+    <span class="drb-count" id="drb-count-${tabId}"></span>
+  </div>`;
+}
+
+function drSetPreset(preset,tabId){
+  const now=new Date();
+  let from,to=_drEndDay(now);
+  if(preset==='hoje')   from=_drStartDay(now);
+  if(preset==='semana') from=_drStartWeek();
+  if(preset==='mes')    from=_drStartMonth();
+  GLOBAL_RANGE={from,to,preset};
+  DR_TABS.forEach(tid=>{
+    const fe=document.getElementById('drb-from-'+tid);
+    const te=document.getElementById('drb-to-'+tid);
+    if(fe) fe.value=_drISO(from);
+    if(te) te.value=_drISO(to);
+    ['hoje','semana','mes'].forEach(p=>{
+      const b=document.getElementById('drb-btn-'+p+'-'+tid);
+      if(b) b.classList.toggle('active',p===preset);
+    });
+  });
+  drApplyToTab(tabId);
+}
+
+function drApplyCustom(tabId){
+  const fe=document.getElementById('drb-from-'+tabId);
+  const te=document.getElementById('drb-to-'+tabId);
+  if(!fe||!te) return;
+  const from=fe.value?_drStartDay(new Date(fe.value+'T00:00:00')):_drStartMonth();
+  const to=te.value?_drEndDay(new Date(te.value+'T00:00:00')):_drEndDay();
+  GLOBAL_RANGE={from,to,preset:'custom'};
+  ['hoje','semana','mes'].forEach(p=>{
+    const b=document.getElementById('drb-btn-'+p+'-'+tabId);
+    if(b) b.classList.remove('active');
+  });
+  drApplyToTab(tabId);
+}
+
+function drSetCount(tabId,n){
+  const el=document.getElementById('drb-count-'+tabId);
+  if(el) el.textContent=n!==null?n+' registro'+(n!==1?'s':''):'';
+}
+
+async function drApplyToTab(tabId){
+  const from=GLOBAL_RANGE.from.toISOString();
+  const to=GLOBAL_RANGE.to.toISOString();
+  if(tabId==='filaespera'){
+    await drFetchFilaEspera(from,to);
+  } else {
+    await drFetchLeads(tabId,from,to);
+  }
+}
+
+async function drFetchLeads(tabId,from,to){
+  if(!SUPABASE_ANON_KEY) return;
+  try{
+    const h={'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Content-Type':'application/json'};
+    const res=await fetch(
+      `${SUPABASE_URL}/rest/v1/leads?select=*&atualizado_em=gte.${encodeURIComponent(from)}&atualizado_em=lte.${encodeURIComponent(to)}&order=atualizado_em.desc&limit=1000`,
+      {headers:h}
+    );
+    if(!res.ok) return;
+    const rows=await res.json();
+    if(!Array.isArray(rows)) return;
+    ACTIVE_LEADS=rows.map(mapLead);
+    drSetCount(tabId,ACTIVE_LEADS.length);
+    if(tabId==='dash'){buildTable();buildDiagnostico();animateCounters();}
+    else if(tabId==='funil') buildFunil();
+    else if(tabId==='diagnostico') buildDiagnostico();
+    else if(tabId==='plataformas'){buildTable();updateOrbCount();}
+    else if(tabId==='checkin') ciRenderHistory();
+  }catch(e){console.warn('[RuiAI] drFetchLeads:',e);}
+}
+
+async function drFetchFilaEspera(from,to){
+  const wrap=document.getElementById('filaEsperaSupaWrap');
+  if(!wrap||!SUPABASE_ANON_KEY) return;
+  wrap.innerHTML='<div style="padding:40px 24px;text-align:center;color:var(--tx3);font-size:13px">Carregando...</div>';
+  try{
+    const h={'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Content-Type':'application/json'};
+    const res=await fetch(
+      `${SUPABASE_URL}/rest/v1/fila_espera?status=eq.aguardando&criado_em=gte.${encodeURIComponent(from)}&criado_em=lte.${encodeURIComponent(to)}&order=criado_em.desc`,
+      {headers:h}
+    );
+    if(!res.ok){
+      wrap.innerHTML='<div style="padding:40px 24px;text-align:center;color:var(--tx3);font-size:13px">Erro ao carregar fila de espera.</div>';
+      return;
+    }
+    const rows=await res.json();
+    drSetCount('filaespera',rows.length);
+    if(!Array.isArray(rows)||rows.length===0){
+      wrap.innerHTML='<div style="padding:40px 24px;text-align:center;color:var(--tx3);font-size:13px">Nenhum lead aguardando no momento.</div>';
+      return;
+    }
+    wrap.innerHTML=`<table class="ltbl" style="display:table;width:calc(100% - 48px);margin:16px 24px;">
+      <thead><tr><th>Nome</th><th>Modelo de Interesse</th><th>Especificações</th><th>Canal</th><th>Entrada</th></tr></thead>
+      <tbody>${rows.map(r=>`<tr>
+        <td style="font-weight:600;color:var(--tx)">${r.nome||'—'}</td>
+        <td>${r.modelo_interesse||'—'}</td>
+        <td style="color:var(--tx3);font-size:12px">${r.especificacoes||'—'}</td>
+        <td>${canalFilaPill(r.canal)}</td>
+        <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--tx3)">${fmtDataHoraFila(r.criado_em)}</td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+  }catch(e){
+    if(wrap) wrap.innerHTML='<div style="padding:40px 24px;text-align:center;color:var(--tx3);font-size:13px">Erro ao carregar fila de espera.</div>';
+    console.warn('[RuiAI] drFetchFilaEspera:',e);
+  }
+}
+
 document.addEventListener('DOMContentLoaded',()=>{
   setWeekLabel();
   document.getElementById('tsVal').textContent=new Date().toLocaleString('pt-BR');
   buildDiagnostico();
   buildTable();
   animateCounters();
+  drBuild('dash');
   atualizarDashboard();
   setInterval(atualizarDashboard, REFRESH_INTERVAL_MS);
   setInterval(()=>{ if(document.getElementById('p-filaespera').style.display!=='none') fetchFilaData(); }, REFRESH_INTERVAL_MS);
