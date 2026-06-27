@@ -2074,10 +2074,10 @@ function backToCategories(){
 }
 
 function getLeadState(nome){
-  return localStorage.getItem('jbs_lead_'+nome)||'aguardando';
+  return localStorage.getItem('adtsa_lead_'+nome)||'aguardando';
 }
 function setLeadState(nome,state){
-  localStorage.setItem('jbs_lead_'+nome,state);
+  localStorage.setItem('adtsa_lead_'+nome,state);
 }
 
 function leadAttend(nome){
@@ -2817,8 +2817,8 @@ const DATA_MODE = 'production'; // ✅ PRODUÇÃO ATIVA — dados reais do agent
 const ENDPOINTS = {
   // Endpoint DEMO — N8N retorna sempre dados fictícios pré-configurados (para testes de interface)
   demo: {
-    dashboard: 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/jbs-rui-demo',
-    fila:      'https://n8n-n8n.lrdyzi.easypanel.host/webhook/jbs-fila-espera-demo'
+    dashboard: 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/adtsa-rui-demo',
+    fila:      'https://n8n-n8n.lrdyzi.easypanel.host/webhook/adtsa-fila-espera-demo'
   },
   // Endpoint PRODUÇÃO — conectado aos fluxos reais do agente Rui
   // Formato esperado do JSON retornado:
@@ -2832,14 +2832,14 @@ const ENDPOINTS = {
   //            distribuicaoScore: {frios, mornos, engajados, quentes, premium} }
   // }
   production: {
-    dashboard: 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/ml-dashboard-data',
+    dashboard: 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/adtsa-dashboard-data',
     fila:      'https://n8n-n8n.lrdyzi.easypanel.host/webhook/adtsa-fila-espera',
     estoque:   'https://n8n-n8n.lrdyzi.easypanel.host/webhook/adtsa-estoque'
   }
 };
 
-const N8N_SEND_REPLY    = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/jbs-send-reply';
-const N8N_CHAT_HISTORY  = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/jbs-chat-history';
+const N8N_SEND_REPLY    = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/adtsa-send-reply';
+const N8N_CHAT_HISTORY  = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/adtsa-chat-history';
 const REFRESH_INTERVAL_MS = 30000;
 
 // Supabase — leitura direta como fallback quando N8N estiver indisponível
@@ -3006,7 +3006,7 @@ async function fetchAllData(){
   try{
     const res=await fetch(ENDPOINTS.production.dashboard,{
       method:'GET',
-      headers:{'Content-Type':'application/json','x-ml-secret':'ADTSA-RUI-2026-wR4kN8v2X5j1'}
+      headers:{'Content-Type':'application/json','x-adtsa-secret':'ADTSA-RUI-2026-wR4kN8v2X5j1'}
     });
     if(!res.ok) throw new Error('HTTP '+res.status);
     const data=await res.json();
@@ -3301,7 +3301,8 @@ async function fetchFilaData(){
         fetch(ENDPOINTS.production.estoque, {method:'GET',headers:{'Content-Type':'application/json','x-adtsa-secret':'ADTSA-RUI-2026-wR4kN8v2X5j1'}})
       ]);
       if(resF.ok){
-        const data=await resF.json();
+        const rawText=await resF.text();
+        const data=(rawText&&rawText.trim())?JSON.parse(rawText):{};
         const filaRaw=(Array.isArray(data)?data:(data.fila||[]))
           .filter(f=>!f.status||f.status==='aguardando'); // apenas leads ainda aguardando
         const resumo=data.resumo_por_modelo||{};
