@@ -514,7 +514,82 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 .drb-apply{background:linear-gradient(135deg,var(--ac),var(--ac-d));color:#000;border:none;padding:7px 18px;border-radius:var(--rsm);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;}
 .drb-apply:hover{background:linear-gradient(135deg,var(--ac-l),var(--ac));}
 .drb-lbl{font-size:11px;color:var(--tx3);font-weight:600;flex-shrink:0;}
-.drb-count{font-size:11px;color:var(--tx3);margin-left:auto;font-family:'DM Mono',monospace;}</style>
+.drb-count{font-size:11px;color:var(--tx3);margin-left:auto;font-family:'DM Mono',monospace;}
+
+/* ============================================================
+   AGENDA — VISITAS & TEST DRIVES
+   ============================================================ */
+.ag-header-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;}
+.btn-ag-new{background:linear-gradient(135deg,var(--ac),var(--ac-d));color:#000;border:none;padding:10px 22px;border-radius:var(--rsm);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;box-shadow:0 4px 16px rgba(212,175,55,.25);display:flex;align-items:center;gap:8px;}
+.btn-ag-new:hover{background:linear-gradient(135deg,var(--ac-l),var(--ac));transform:translateY(-2px);box-shadow:0 6px 24px rgba(212,175,55,.4);}
+.ag-tabs{display:flex;gap:8px;margin-bottom:24px;}
+.ag-tab{background:var(--s2);border:1px solid var(--bdr);color:var(--tx2);padding:8px 20px;border-radius:var(--rsm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;}
+.ag-tab:hover{background:var(--s3);color:var(--tx);}
+.ag-tab.active{background:var(--ac-faint);color:var(--ac);border-color:rgba(212,175,55,.25);}
+.ag-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px;}
+.ag-kpi{background:var(--surface);border-radius:var(--r);border:1px solid var(--bdr);padding:18px 20px;text-align:center;transition:all .2s;}
+.ag-kpi:hover{border-color:rgba(212,175,55,.2);transform:translateY(-2px);}
+.ag-kpi-val{font-size:34px;font-weight:700;font-family:'Bebas Neue',cursive;color:var(--ac);line-height:1;margin-bottom:4px;}
+.ag-kpi-lbl{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);font-weight:600;}
+.ag-list{display:flex;flex-direction:column;gap:10px;}
+.ag-card{background:var(--surface);border-radius:var(--r);border:1px solid var(--bdr);padding:18px 22px;display:flex;align-items:center;gap:18px;transition:all .22s;animation:fadeUp .3s ease both;}
+.ag-card:hover{border-color:rgba(212,175,55,.18);transform:translateX(3px);}
+.ag-card.today{border-color:rgba(212,175,55,.3);background:linear-gradient(135deg,rgba(212,175,55,.05),rgba(212,175,55,.01));}
+.ag-card.overdue{border-color:rgba(225,29,72,.25);background:rgba(225,29,72,.03);}
+.ag-card.done{opacity:.55;}
+.ag-type-badge{width:46px;height:46px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.ag-type-visita{background:rgba(30,80,200,.12);}
+.ag-type-testdrive{background:rgba(0,160,101,.12);}
+.ag-info{flex:1;min-width:0;}
+.ag-lead-name{font-size:15px;font-weight:700;color:var(--tx);margin-bottom:3px;}
+.ag-type-label{font-size:11px;font-weight:700;padding:2px 9px;border-radius:4px;display:inline-block;margin-right:6px;text-transform:uppercase;letter-spacing:.05em;}
+.ag-label-visita{background:rgba(30,80,200,.12);color:#6090FF;}
+.ag-label-testdrive{background:rgba(0,160,101,.12);color:var(--grn-l);}
+.ag-modelo{font-size:12px;color:var(--tx3);margin-top:3px;}
+.ag-notes{font-size:11px;color:var(--tx3);font-style:italic;margin-top:4px;}
+.ag-meta{text-align:right;flex-shrink:0;min-width:150px;}
+.ag-date-badge{font-size:13px;font-weight:700;color:var(--ac);font-family:'DM Mono',monospace;margin-bottom:3px;}
+.ag-time{font-size:12px;color:var(--tx3);font-family:'DM Mono',monospace;margin-bottom:3px;}
+.ag-phone-link{font-size:12px;color:#25D366;font-family:'DM Mono',monospace;text-decoration:none;display:flex;align-items:center;justify-content:flex-end;gap:4px;margin-bottom:6px;}
+.ag-phone-link:hover{text-decoration:underline;}
+.ag-actions{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap;}
+.btn-ag-done{background:var(--grn-bg);border:1px solid rgba(0,160,101,.25);color:var(--grn-l);padding:5px 12px;border-radius:var(--rsm);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .18s;}
+.btn-ag-done:hover{background:rgba(0,160,101,.22);}
+.btn-ag-del{background:none;border:1px solid rgba(225,29,72,.2);color:var(--red);padding:5px 11px;border-radius:var(--rsm);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .18s;}
+.btn-ag-del:hover{background:var(--red-bg);}
+.ag-empty{text-align:center;padding:80px 0;color:var(--tx3);font-size:13px;}
+.ag-empty-ico{font-size:48px;margin-bottom:16px;}
+.ag-day-label{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--tx3);font-weight:700;margin:22px 0 10px;display:flex;align-items:center;gap:12px;}
+.ag-day-label::before{content:'';width:16px;height:2px;background:linear-gradient(90deg,var(--ac),transparent);}
+.ag-day-label::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--bdr),transparent);}
+/* modal agenda */
+.ag-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:800;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.ag-modal-bg.show{display:flex;}
+.ag-modal-box{background:var(--surface);border:1px solid rgba(212,175,55,.2);border-radius:var(--r);width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.9);scrollbar-width:thin;scrollbar-color:var(--s3) transparent;}
+.ag-modal-head{padding:22px 24px 16px;border-bottom:1px solid var(--bdr);position:relative;}
+.ag-modal-title{font-size:16px;font-weight:700;color:var(--tx);}
+.ag-modal-sub{font-size:11px;color:var(--tx3);margin-top:4px;}
+.ag-modal-close{position:absolute;top:14px;right:16px;background:none;border:none;color:var(--tx3);font-size:18px;cursor:pointer;padding:4px;transition:color .15s;}
+.ag-modal-close:hover{color:var(--tx);}
+.ag-modal-body{padding:20px 24px 24px;}
+.ag-field{margin-bottom:16px;}
+.ag-field-label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--tx3);margin-bottom:7px;font-weight:600;}
+.ag-input{background:var(--s2);border:1px solid var(--bdr);color:var(--tx);padding:10px 14px;border-radius:var(--rsm);font-size:13px;font-family:inherit;width:100%;transition:border .2s;}
+.ag-input:focus{outline:none;border-color:rgba(212,175,55,.4);background:var(--s3);}
+.ag-input::placeholder{color:var(--tx3);}
+.ag-row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.ag-type-opts{display:flex;gap:10px;}
+.ag-type-opt{flex:1;padding:10px;border-radius:var(--rsm);font-size:13px;font-weight:700;cursor:pointer;border:1px solid var(--bdr);background:var(--s2);color:var(--tx3);transition:all .18s;text-align:center;font-family:inherit;}
+.ag-type-opt:hover{background:var(--s3);}
+.ag-type-opt.sel-visita{background:rgba(30,80,200,.12);color:#6090FF;border-color:rgba(30,80,200,.25);}
+.ag-type-opt.sel-testdrive{background:rgba(0,160,101,.12);color:var(--grn-l);border-color:rgba(0,160,101,.25);}
+.ag-modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;}
+.btn-ag-cancel{background:none;border:1px solid var(--bdr);color:var(--tx2);padding:10px 20px;border-radius:var(--rsm);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;}
+.btn-ag-cancel:hover{border-color:var(--s4);color:var(--tx);}
+.btn-ag-save{background:linear-gradient(135deg,var(--ac),var(--ac-d));color:#000;border:none;padding:10px 24px;border-radius:var(--rsm);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;}
+.btn-ag-save:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(212,175,55,.3);}
+.ag-done-badge{font-size:10px;font-weight:700;background:var(--grn-bg);color:var(--grn-l);border:1px solid rgba(0,160,101,.2);padding:3px 10px;border-radius:20px;display:inline-block;margin-left:6px;}
+</style>
 </head>
 <body>
 
@@ -604,6 +679,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     <div class="sb-group">
       <div class="sb-lbl">Vendedor</div>
       <div class="sb-item" onclick="go('checkin')"><i class="sb-ico">📋</i>Check-in</div>
+      <div class="sb-item" onclick="go('agenda')"><i class="sb-ico">📅</i>Agenda</div>
     </div>
   </div>
   <div class="sb-chess"></div>
@@ -1302,6 +1378,87 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   </div>
 </div>
 
+<!-- ============ AGENDA ============ -->
+<div id="p-agenda" style="display:none">
+  <div class="topbar">
+    <div><div class="eye">Agendamentos</div><h1>Agenda de Visitas & Test Drives</h1></div>
+    <div class="topbar-r">
+      <button class="btn-ag-new" onclick="agOpenModal()">＋ Novo Agendamento</button>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="ag-kpis">
+    <div class="ag-kpi"><div class="ag-kpi-val" id="ag-k-total">0</div><div class="ag-kpi-lbl">Total agendados</div></div>
+    <div class="ag-kpi"><div class="ag-kpi-val" id="ag-k-hoje">0</div><div class="ag-kpi-lbl">Hoje</div></div>
+    <div class="ag-kpi"><div class="ag-kpi-val" id="ag-k-semana">0</div><div class="ag-kpi-lbl">Esta semana</div></div>
+    <div class="ag-kpi"><div class="ag-kpi-val" id="ag-k-done">0</div><div class="ag-kpi-lbl">Concluídos</div></div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="ag-tabs">
+    <button class="ag-tab active" onclick="agFilter('todos',this)">Todos</button>
+    <button class="ag-tab" onclick="agFilter('visita',this)">🏪 Visitas</button>
+    <button class="ag-tab" onclick="agFilter('testdrive',this)">🏍️ Test Drives</button>
+    <button class="ag-tab" onclick="agFilter('pendentes',this)">⏳ Pendentes</button>
+    <button class="ag-tab" onclick="agFilter('concluidos',this)">✅ Concluídos</button>
+  </div>
+
+  <!-- Lista -->
+  <div class="ag-list" id="ag-list"></div>
+</div>
+
+<!-- Modal novo agendamento -->
+<div class="ag-modal-bg" id="agModalBg">
+  <div class="ag-modal-box">
+    <div class="ag-modal-head">
+      <div class="ag-modal-title">Novo Agendamento</div>
+      <div class="ag-modal-sub">Registre visita ou test drive de um lead do WhatsApp</div>
+      <button class="ag-modal-close" onclick="agCloseModal()">✕</button>
+    </div>
+    <div class="ag-modal-body">
+      <div class="ag-field">
+        <div class="ag-field-label">Tipo de agendamento</div>
+        <div class="ag-type-opts">
+          <button class="ag-type-opt sel-visita" id="ag-opt-visita" onclick="agSelectType('visita')">🏪 Visita</button>
+          <button class="ag-type-opt" id="ag-opt-testdrive" onclick="agSelectType('testdrive')">🏍️ Test Drive</button>
+        </div>
+      </div>
+      <div class="ag-field">
+        <div class="ag-field-label">Nome do lead</div>
+        <input class="ag-input" id="ag-nome" list="ag-leads-list" placeholder="Ex: Carlos Menezes" autocomplete="off"/>
+        <datalist id="ag-leads-list"></datalist>
+      </div>
+      <div class="ag-row2">
+        <div class="ag-field">
+          <div class="ag-field-label">Data</div>
+          <input class="ag-input" id="ag-data" type="date"/>
+        </div>
+        <div class="ag-field">
+          <div class="ag-field-label">Horário</div>
+          <input class="ag-input" id="ag-hora" type="time" value="10:00"/>
+        </div>
+      </div>
+      <div class="ag-field">
+        <div class="ag-field-label">Modelo de interesse</div>
+        <input class="ag-input" id="ag-modelo" placeholder="Ex: BMW X5 2023" autocomplete="off"/>
+      </div>
+      <div class="ag-field">
+        <div class="ag-field-label">WhatsApp do lead</div>
+        <input class="ag-input" id="ag-phone" type="tel" placeholder="(81) 99999-9999"/>
+      </div>
+      <div class="ag-field">
+        <div class="ag-field-label">Observações <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--tx3)">(opcional)</span></div>
+        <input class="ag-input" id="ag-notes" placeholder="Ex: cliente prefere tarde, já fez orçamento…"/>
+      </div>
+      <div class="ag-modal-actions">
+        <button class="btn-ag-cancel" onclick="agCloseModal()">Cancelar</button>
+        <button class="btn-ag-save" onclick="agSave()">Agendar →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </main>
 
 <script>
@@ -1463,6 +1620,7 @@ function go(id){
   if(id==='filaespera') fetchFilaData();
   if(id==='diagnostico') buildDiagnostico();
   if(id==='checkin') ciInit();
+  if(id==='agenda') agInit();
   if(DR_TABS.includes(id)) drBuild(id);
 }
 
@@ -3259,7 +3417,7 @@ async function fetchFilaEsperaSupabase(){
   try{
     const h={'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Content-Type':'application/json'};
     const res=await fetch(
-      `${SUPABASE_URL}/rest/v1/fila_espera?status=eq.aguardando&order=criado_em.desc`,
+      `${SUPABASE_URL}/rest/v1/fila_espera?status=eq.aguardando&order=registrado_em.desc`,
       {headers:h}
     );
     if(!res.ok){
@@ -3284,7 +3442,7 @@ async function fetchFilaEsperaSupabase(){
         <td>${r.modelo_interesse||'—'}</td>
         <td style="color:var(--tx3);font-size:12px">${r.especificacoes||'—'}</td>
         <td>${canalFilaPill(r.canal)}</td>
-        <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--tx3)">${fmtDataHoraFila(r.criado_em)}</td>
+        <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--tx3)">${fmtDataHoraFila(r.registrado_em)}</td>
       </tr>`).join('')}</tbody>
     </table>`;
   }catch(e){
@@ -3486,7 +3644,7 @@ async function drFetchFilaEspera(from,to){
   try{
     const h={'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Content-Type':'application/json'};
     const res=await fetch(
-      `${SUPABASE_URL}/rest/v1/fila_espera?status=eq.aguardando&criado_em=gte.${encodeURIComponent(from)}&criado_em=lte.${encodeURIComponent(to)}&order=criado_em.desc`,
+      `${SUPABASE_URL}/rest/v1/fila_espera?status=eq.aguardando&registrado_em=gte.${encodeURIComponent(from)}&registrado_em=lte.${encodeURIComponent(to)}&order=registrado_em.desc`,
       {headers:h}
     );
     if(!res.ok){
@@ -3506,7 +3664,7 @@ async function drFetchFilaEspera(from,to){
         <td>${r.modelo_interesse||'—'}</td>
         <td style="color:var(--tx3);font-size:12px">${r.especificacoes||'—'}</td>
         <td>${canalFilaPill(r.canal)}</td>
-        <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--tx3)">${fmtDataHoraFila(r.criado_em)}</td>
+        <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--tx3)">${fmtDataHoraFila(r.registrado_em)}</td>
       </tr>`).join('')}</tbody>
     </table>`;
   }catch(e){
@@ -3740,7 +3898,202 @@ function openDiagModal(id){
 
 function closeDiagModal(){
   document.getElementById('diagModalBg').classList.remove('show');
-}</script>
+}
+
+// ============================================================
+// AGENDA — VISITAS & TEST DRIVES
+// ============================================================
+const AG_KEY = 'rui_agenda_v1';
+let agFilter_current = 'todos';
+let agSelectedType = 'visita';
+
+function agLoad(){ try{ return JSON.parse(localStorage.getItem(AG_KEY)||'[]'); }catch(e){ return []; } }
+function agSaveAll(arr){ localStorage.setItem(AG_KEY, JSON.stringify(arr)); }
+
+function agInit(){
+  agPopulateLeadsList();
+  // data default = hoje
+  const today = new Date();
+  today.setMinutes(today.getMinutes()-today.getTimezoneOffset());
+  const el = document.getElementById('ag-data');
+  if(el && !el.value) el.value = today.toISOString().slice(0,10);
+  agRender();
+}
+
+function agPopulateLeadsList(){
+  const dl = document.getElementById('ag-leads-list');
+  if(!dl) return;
+  const names = ALL_LEADS_NAMES || [];
+  dl.innerHTML = names.map(n=>`<option value="${n}">`).join('');
+}
+
+function agOpenModal(){
+  agSelectedType = 'visita';
+  document.getElementById('ag-opt-visita').className='ag-type-opt sel-visita';
+  document.getElementById('ag-opt-testdrive').className='ag-type-opt';
+  document.getElementById('ag-nome').value='';
+  document.getElementById('ag-modelo').value='';
+  document.getElementById('ag-phone').value='';
+  document.getElementById('ag-notes').value='';
+  document.getElementById('ag-hora').value='10:00';
+  const today = new Date();
+  today.setMinutes(today.getMinutes()-today.getTimezoneOffset());
+  document.getElementById('ag-data').value = today.toISOString().slice(0,10);
+  // tenta preencher modelo se nome bater com um lead
+  document.getElementById('ag-nome').addEventListener('input', agAutoFillModelo, {once:false});
+  document.getElementById('agModalBg').classList.add('show');
+}
+
+function agAutoFillModelo(){
+  const nome = document.getElementById('ag-nome').value.trim();
+  const modeloEl = document.getElementById('ag-modelo');
+  if(!modeloEl.value){
+    const all = agGetAllLeadData();
+    const found = all.find(l=>l.nome===nome);
+    if(found) modeloEl.value = found.modelo||'';
+  }
+}
+
+function agGetAllLeadData(){
+  if(typeof ALL_LEADS_NAMES==='undefined') return [];
+  return ALL_LEADS_NAMES.map((nome,i)=>({nome, modelo:(typeof buildLeadData==='function'?buildLeadData(nome,LEAD_SCORES[i]||50,i).modelo:'')}));
+}
+
+function agCloseModal(){
+  document.getElementById('agModalBg').classList.remove('show');
+}
+
+function agSelectType(t){
+  agSelectedType = t;
+  document.getElementById('ag-opt-visita').className = 'ag-type-opt'+(t==='visita'?' sel-visita':'');
+  document.getElementById('ag-opt-testdrive').className = 'ag-type-opt'+(t==='testdrive'?' sel-testdrive':'');
+}
+
+function agSave(){
+  const nome = document.getElementById('ag-nome').value.trim();
+  const data = document.getElementById('ag-data').value;
+  const hora = document.getElementById('ag-hora').value;
+  if(!nome){ showToast('Informe o nome do lead'); return; }
+  if(!data){ showToast('Informe a data'); return; }
+  const arr = agLoad();
+  arr.push({
+    id: Date.now(),
+    tipo: agSelectedType,
+    nome,
+    data,
+    hora,
+    modelo: document.getElementById('ag-modelo').value.trim(),
+    phone: document.getElementById('ag-phone').value.trim(),
+    notes: document.getElementById('ag-notes').value.trim(),
+    done: false,
+    criado: new Date().toISOString()
+  });
+  agSaveAll(arr);
+  agCloseModal();
+  agRender();
+  showToast('Agendamento registrado');
+}
+
+function agMarkDone(id){
+  const arr = agLoad().map(a=>a.id===id?{...a,done:true}:a);
+  agSaveAll(arr);
+  agRender();
+  showToast('Agendamento concluído');
+}
+
+function agDelete(id){
+  if(!confirm('Remover este agendamento?')) return;
+  agSaveAll(agLoad().filter(a=>a.id!==id));
+  agRender();
+  showToast('Agendamento removido');
+}
+
+function agFilter(f, btn){
+  agFilter_current = f;
+  document.querySelectorAll('.ag-tab').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  agRender();
+}
+
+function agRender(){
+  const all = agLoad();
+  const today = new Date().toISOString().slice(0,10);
+  const weekEnd = new Date(); weekEnd.setDate(weekEnd.getDate()+7);
+  const weekEndStr = weekEnd.toISOString().slice(0,10);
+
+  // KPIs
+  document.getElementById('ag-k-total').textContent = all.length;
+  document.getElementById('ag-k-hoje').textContent = all.filter(a=>a.data===today&&!a.done).length;
+  document.getElementById('ag-k-semana').textContent = all.filter(a=>a.data>=today&&a.data<=weekEndStr&&!a.done).length;
+  document.getElementById('ag-k-done').textContent = all.filter(a=>a.done).length;
+
+  // Filtrar
+  let list = [...all];
+  if(agFilter_current==='visita') list=list.filter(a=>a.tipo==='visita');
+  else if(agFilter_current==='testdrive') list=list.filter(a=>a.tipo==='testdrive');
+  else if(agFilter_current==='pendentes') list=list.filter(a=>!a.done);
+  else if(agFilter_current==='concluidos') list=list.filter(a=>a.done);
+
+  // Ordenar: pendentes primeiro por data, depois concluídos
+  list.sort((a,b)=>{
+    if(a.done!==b.done) return a.done?1:-1;
+    return (a.data+a.hora).localeCompare(b.data+b.hora);
+  });
+
+  const container = document.getElementById('ag-list');
+  if(!list.length){
+    container.innerHTML = `<div class="ag-empty"><div class="ag-empty-ico">📅</div>Nenhum agendamento aqui ainda.<br><span style="color:var(--ac);cursor:pointer;font-weight:700" onclick="agOpenModal()">+ Criar primeiro agendamento</span></div>`;
+    return;
+  }
+
+  // Agrupar por data
+  const groups = {};
+  list.forEach(a=>{ if(!groups[a.data]) groups[a.data]=[]; groups[a.data].push(a); });
+
+  const waIcon = `<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.555 4.116 1.528 5.845L0 24l6.335-1.507A11.933 11.933 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.793 9.793 0 01-5.012-1.374l-.36-.214-3.732.888.923-3.618-.235-.373A9.77 9.77 0 012.182 12C2.182 6.573 6.573 2.182 12 2.182c5.426 0 9.818 4.391 9.818 9.818 0 5.426-4.392 9.818-9.818 9.818z"/></svg>`;
+
+  let html = '';
+  let lastDate = null;
+  list.forEach(a=>{
+    const isToday = a.data===today;
+    const isOverdue = !a.done && a.data<today;
+    if(a.data!==lastDate){
+      lastDate = a.data;
+      const [y,m,d]=a.data.split('-');
+      const dateLabel = isToday?'Hoje — '+new Date(a.data+'T12:00').toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'}):
+        new Date(a.data+'T12:00').toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+      html+=`<div class="ag-day-label">${dateLabel}</div>`;
+    }
+    const initials=(a.nome||'?').split(' ').slice(0,2).map(w=>w[0]).join('');
+    const typeClass=a.tipo==='visita'?'ag-type-visita':'ag-type-testdrive';
+    const typeIcon=a.tipo==='visita'?'🏪':'🏍️';
+    const labelClass=a.tipo==='visita'?'ag-label-visita':'ag-label-testdrive';
+    const labelTxt=a.tipo==='visita'?'Visita':'Test Drive';
+    const tel=(a.phone||'').replace(/\D/g,'');
+    const waHref=tel?`https://wa.me/55${tel}`:'#';
+    const cardClass='ag-card'+(isToday&&!a.done?' today':isOverdue?' overdue':a.done?' done':'');
+    const doneBadge=a.done?`<span class="ag-done-badge">✓ Concluído</span>`:'';
+    html+=`<div class="${cardClass}">
+      <div class="ag-type-badge ${typeClass}">${typeIcon}</div>
+      <div class="ag-info">
+        <div class="ag-lead-name">${a.nome}${doneBadge}</div>
+        <div><span class="ag-type-label ${labelClass}">${labelTxt}</span>${a.modelo?`<span style="font-size:12px;color:var(--tx3)">${a.modelo}</span>`:''}</div>
+        ${a.notes?`<div class="ag-notes">"${a.notes}"</div>`:''}
+      </div>
+      <div class="ag-meta">
+        <div class="ag-date-badge">${new Date(a.data+'T12:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}</div>
+        <div class="ag-time">⏰ ${a.hora}</div>
+        ${tel?`<a class="ag-phone-link" href="${waHref}" target="_blank" rel="noopener">${waIcon} ${a.phone}</a>`:''}
+        <div class="ag-actions">
+          ${!a.done?`<button class="btn-ag-done" onclick="agMarkDone(${a.id})">✓ Concluído</button>`:''}
+          <button class="btn-ag-del" onclick="agDelete(${a.id})">✕</button>
+        </div>
+      </div>
+    </div>`;
+  });
+  container.innerHTML=html;
+}
+</script>
 </body>
 </html>
 
