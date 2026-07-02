@@ -589,6 +589,41 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 .btn-ag-save{background:linear-gradient(135deg,var(--ac),var(--ac-d));color:#000;border:none;padding:10px 24px;border-radius:var(--rsm);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;}
 .btn-ag-save:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(212,175,55,.3);}
 .ag-done-badge{font-size:10px;font-weight:700;background:var(--grn-bg);color:var(--grn-l);border:1px solid rgba(0,160,101,.2);padding:3px 10px;border-radius:20px;display:inline-block;margin-left:6px;}
+
+/* ============================================================
+   RESPONSIVO — TABLET / MOBILE
+   ============================================================ */
+.mobile-menu-btn{display:none;}
+.sb-backdrop{display:none;}
+
+@media (max-width:1024px){
+  .sb{transform:translateX(-100%);transition:transform .28s ease;box-shadow:0 0 60px rgba(0,0,0,.7);}
+  .sb.open{transform:translateX(0);}
+  .main{margin-left:0;min-width:0;padding-top:calc(var(--stripe) + 66px);}
+  .mobile-menu-btn{display:flex;align-items:center;justify-content:center;position:fixed;top:calc(var(--stripe) + 14px);left:16px;z-index:60;width:40px;height:40px;background:var(--surface);border:1px solid var(--bdr);border-radius:var(--rsm);color:var(--tx);font-size:18px;cursor:pointer;box-shadow:var(--sh);}
+  .sb-backdrop.show{display:block;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:49;backdrop-filter:blur(2px);}
+}
+
+@media (max-width:860px){
+  .main{padding-left:16px;padding-right:16px;padding-bottom:50px;}
+  .topbar{flex-direction:column;align-items:flex-start;gap:14px;}
+  .topbar-r{width:100%;justify-content:space-between;}
+  .topbar h1{font-size:21px;}
+  .kpi-grid,.g2,.g3,.sc-grid,.cat-grid,.dr-method-grid,.ag-kpis,.cob-grid{grid-template-columns:1fr;}
+  .card,.kpi{padding:18px;}
+  table.ltbl,table.rtbl{display:block;overflow-x:auto;white-space:nowrap;}
+  .cob-hour-grid{grid-template-columns:repeat(24,32px);overflow-x:auto;}
+  #ciModelCardsGrid{grid-template-columns:repeat(2,1fr) !important;}
+  .modal-box,.diag-modal-box,.ag-modal-box{width:92vw;max-width:480px;padding:22px;}
+  .lead-popup,.lead-card-full{width:92vw;max-width:480px;}
+}
+
+@media (max-width:480px){
+  .topbar h1{font-size:18px;}
+  .kpi-val{font-size:28px;}
+  .sb{width:82vw;max-width:300px;}
+  #ciModelCardsGrid{grid-template-columns:1fr !important;}
+}
 </style>
 </head>
 <body>
@@ -651,6 +686,10 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     </table>
   </div>
 </div>
+
+<!-- MOBILE NAV -->
+<button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleMobileMenu()">☰</button>
+<div class="sb-backdrop" id="sbBackdrop" onclick="toggleMobileMenu(false)"></div>
 
 <!-- SIDEBAR -->
 <aside class="sb">
@@ -1609,7 +1648,17 @@ function tempColor(t){const m={'Premium':'#EF4444','Quente':'#F97316','Engajado'
 // ============================================================
 // NAV
 // ============================================================
+function toggleMobileMenu(force){
+  const sb=document.querySelector('.sb');
+  const bd=document.getElementById('sbBackdrop');
+  if(!sb) return;
+  const open = typeof force==='boolean' ? force : !sb.classList.contains('open');
+  sb.classList.toggle('open', open);
+  if(bd) bd.classList.toggle('show', open);
+}
+
 function go(id){
+  toggleMobileMenu(false);
   document.querySelectorAll('[id^="p-"]').forEach(p=>p.style.display='none');
   document.getElementById('p-'+id).style.display='block';
   document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
