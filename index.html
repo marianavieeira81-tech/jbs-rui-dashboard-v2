@@ -3185,7 +3185,7 @@ async function fetchDiagnosticoFromSupabase(){
 // Usado quando o N8N não retorna stats — preenche apenas os valores que ainda estão em "—"
 function calcMainKPIsFromLeads(){
   if(!ACTIVE_LEADS.length) return;
-  const trySet=(sel,v)=>{const el=document.querySelector(sel);if(el&&el.textContent==='—')el.textContent=v;};
+  const trySet=(sel,v)=>{const el=document.querySelector(sel);if(el&&(el.textContent==='—'||el.textContent==='0'))el.textContent=v;};
   const total=ACTIVE_LEADS.length;
   const transferidos=ACTIVE_LEADS.filter(l=>l.status==='Transferido').length;
   const scores=ACTIVE_LEADS.map(l=>l.score||0);
@@ -3228,7 +3228,7 @@ function calcCoberturaFromLeads(){
   const soma=fora.reduce((s,l)=>s+(l.carteiraRaw||0),0);
   const cobCarteira=soma>=1000000?'R$ '+(soma/1000000).toFixed(1)+'M':soma>=1000?'R$ '+Math.round(soma/1000)+'k':soma>0?'R$ '+soma:'—';
   // Preenche apenas se o N8N não tiver fornecido (valor ainda em "—")
-  const trySet=(sel,v)=>{const el=document.querySelector(sel);if(el&&el.textContent==='—')el.textContent=v;};
+  const trySet=(sel,v)=>{const el=document.querySelector(sel);if(el&&(el.textContent==='—'||el.textContent==='0'))el.textContent=v;};
   trySet('[data-kpi="cobLeads"]', cobLeads);
   trySet('[data-kpi="cobPct"]',   cobPct+'%');
   trySet('[data-kpi="cobCarteira"]', cobCarteira);
