@@ -1618,7 +1618,7 @@ function go(id){
   if(id==='cobertura') buildCobertura();
   if(id==='funil') buildFunil();
   if(id==='filaespera') fetchFilaData();
-  if(id==='diagnostico') buildDiagnostico();
+  if(id==='diagnostico'){ buildDiagnostico(); fetchDiagnosticoFromSupabase().then(buildDiagnostico); }
   if(id==='checkin') ciInit();
   if(id==='agenda') agInit();
   if(DR_TABS.includes(id)) drBuild(id);
@@ -2929,7 +2929,7 @@ async function refresh(){
         if(id==='plataformas'){ updateOrbCount(); updateCICount(); renderLeadsPresenciais(); }
         if(id==='cobertura') buildCobertura();
         if(id==='funil') buildFunil();
-        if(id==='diagnostico') buildDiagnostico();
+        if(id==='diagnostico'){ await fetchDiagnosticoFromSupabase(); buildDiagnostico(); }
         if(id==='checkin') ciInit();
         break;
       }
@@ -3009,6 +3009,8 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 let ACTIVE_LEADS  = [];
 let ACTIVE_CAUSAS = []; // stats.causasEsfriamento retornado pelo N8N
 let ACTIVE_STATS  = null;
+// Dados exclusivos da aba Diagnóstico — filtrados por diagnosticado_em, nunca por ACTIVE_LEADS/atualizado_em
+let DIAGNOSTICO_LEADS = [];
 
 function applyModeUI(){
   const badge=document.getElementById('modeBadge');
@@ -3071,6 +3073,9 @@ function mapLead(l){
     codDetalhe:  l.co_decisor||'',
     localizacao: '',
     causa:       l.submotivo||l.causa_esfriamento||'',
+    submotivo:        l.submotivo||'',
+    area_responsavel: l.area_responsavel||'',
+    data_esfriamento: l.data_esfriamento||'',
     desfecho:    l.desfecho_visita||'',
     vendedor:    l.checkin_vendedor||'',
     atendimento_em: l.atendimento_em||l.atualizado_em||'',
@@ -3100,6 +3105,29 @@ async function fetchFromSupabase(){
     return true;
   }catch(e){
     console.warn('[RuiAI] Supabase direto falhou:',e);
+    return false;
+  }
+}
+
+// Leitura dedicada à aba Diagnóstico — filtra por diagnosticado_em (data real do diagnóstico),
+// nunca por atualizado_em. Popula DIAGNOSTICO_LEADS, nunca ACTIVE_LEADS.
+async function fetchDiagnosticoFromSupabase(){
+  if(!SUPABASE_ANON_KEY) return false;
+  try{
+    const h={'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Content-Type':'application/json'};
+    const since=new Date(Date.now()-30*86400000).toISOString();
+    const res=await fetch(
+      `${SUPABASE_URL}/rest/v1/leads?select=*&diagnosticado_em=gte.${encodeURIComponent(since)}&order=diagnosticado_em.desc&limit=500`,
+      {headers:h}
+    );
+    if(!res.ok) return false;
+    const rows=await res.json();
+    if(!Array.isArray(rows)) return false;
+    DIAGNOSTICO_LEADS=rows.map(mapLead);
+    console.log('[RuiAI] Supabase direto (diagnóstico): '+DIAGNOSTICO_LEADS.length+' leads carregados');
+    return true;
+  }catch(e){
+    console.warn('[RuiAI] Supabase direto (diagnóstico) falhou:',e);
     return false;
   }
 }
@@ -3620,6 +3648,21 @@ async function drFetchLeads(tabId,from,to){
   if(!SUPABASE_ANON_KEY) return;
   try{
     const h={'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Content-Type':'application/json'};
+    // Aba Diagnóstico filtra por diagnosticado_em e grava em DIAGNOSTICO_LEADS — nunca em ACTIVE_LEADS.
+    // Todas as outras abas mantêm atualizado_em/ACTIVE_LEADS exatamente como antes.
+    if(tabId==='diagnostico'){
+      const res=await fetch(
+        `${SUPABASE_URL}/rest/v1/leads?select=*&diagnosticado_em=gte.${encodeURIComponent(from)}&diagnosticado_em=lte.${encodeURIComponent(to)}&order=diagnosticado_em.desc&limit=1000`,
+        {headers:h}
+      );
+      if(!res.ok) return;
+      const rows=await res.json();
+      if(!Array.isArray(rows)) return;
+      DIAGNOSTICO_LEADS=rows.map(mapLead);
+      drSetCount(tabId,DIAGNOSTICO_LEADS.length);
+      buildDiagnostico();
+      return;
+    }
     const res=await fetch(
       `${SUPABASE_URL}/rest/v1/leads?select=*&atualizado_em=gte.${encodeURIComponent(from)}&atualizado_em=lte.${encodeURIComponent(to)}&order=atualizado_em.desc&limit=1000`,
       {headers:h}
@@ -3631,7 +3674,6 @@ async function drFetchLeads(tabId,from,to){
     drSetCount(tabId,ACTIVE_LEADS.length);
     if(tabId==='dash'){buildTable();buildDiagnostico();animateCounters();}
     else if(tabId==='funil') buildFunil();
-    else if(tabId==='diagnostico') buildDiagnostico();
     else if(tabId==='plataformas'){buildTable();updateOrbCount();}
     else if(tabId==='checkin') ciRenderHistory();
   }catch(e){console.warn('[RuiAI] drFetchLeads:',e);}
@@ -3706,28 +3748,14 @@ function filterFila(btn, filter) {
 // DIAGNÓSTICO DE LEADS ESFRIADOS — dados reais via N8N
 // ============================================================
 
-// Categoriza o label de causa retornado pelo N8N nas 3 áreas de responsabilidade
-function categorizeCausa(label){
-  const l=(label||'').toLowerCase();
-  // Gestão: falha de follow-up, handoff, lead não respondeu, pendente da equipe
-  if(l.includes('nao_respond')||l.includes('não respond')||l.includes('sem resposta')||
-     l.includes('pendente')||l.includes('follow')||l.includes('handoff')||
-     l.includes('transferên')||l.includes('qualificaç')||l.includes('perdido'))
-    return {area:'gestao', nome:'Gestão do Lead', cor:'#E11D48'};
-  // Produto: ticket incompatível, preço, estoque, concorrência
-  if(l.includes('ticket')||l.includes('incompatív')||l.includes('preço')||l.includes('preco')||
-     l.includes('financiamento')||l.includes('indispon')||l.includes('estoque')||
-     l.includes('concorrente')||l.includes('orçamento'))
-    return {area:'produto', nome:'Produto / Estoque', cor:'#D4AF37'};
-  // Processo: leads aguardando decisão, prazo em aberto
-  if(l.includes('aguardando')||l.includes('decisao')||l.includes('decisão')||
-     l.includes('prazo')||l.includes('atendimento')||l.includes('resposta'))
-    return {area:'processo', nome:'Processo Comercial', cor:'#6090FF'};
-  // Causa não identificada — isolada, não infla nenhum grupo
-  return {area:'sem_motivo', nome:'Sem motivo identificado', cor:'#6B7280'};
-}
+// Dicionário fixo de tradução dos valores técnicos de area_responsavel (tabela leads no Supabase)
+const AREA_LABELS = {
+  gestao_lead:        {nome:'Gestão do Lead',     cor:'#E11D48'},
+  produto_estoque:    {nome:'Produto/Estoque',    cor:'#D4AF37'},
+  processo_comercial: {nome:'Processo Comercial', cor:'#6090FF'}
+};
 
-// Gera slug único para cada causa (usado como ID nas barras/modal)
+// Gera slug único para cada causa/área (usado como ID nas barras/cards/modal)
 function slugCausa(label){
   return (label||'').toLowerCase()
     .normalize('NFD').replace(/[̀-ͯ]/g,'')
@@ -3735,7 +3763,8 @@ function slugCausa(label){
 }
 
 const DIAG_AVATARCOLORS=['#E11D48','#D4AF37','#6090FF','#00A065','#F97316','#8B5CF6','#EC4899','#14B8A6'];
-let DIAG_LIVE=[]; // causas renderizadas — consultadas pelo modal
+let DIAG_LIVE=[];  // barras de submotivo renderizadas — consultadas pelo modal
+let DIAG_AREAS=[]; // cards de área renderizados — consultados pelo modal
 
 function buildDiagnostico(){
   const container=document.getElementById('diagBars');
@@ -3764,14 +3793,27 @@ function buildDiagnostico(){
     Aguardando diagnóstico do Agente Rui<br>
     <span style="font-size:11px">Os dados aparecem automaticamente após o pipeline de diagnóstico executar (23h)</span></div>`;
 
-  // Sem dados do N8N → mantém estado vazio
-  const causas=ACTIVE_CAUSAS;
-  if(!causas||causas.length===0) return;
+  // Sem leads carregados para a aba Diagnóstico (DIAGNOSTICO_LEADS) → mantém estado vazio
+  if(!DIAGNOSTICO_LEADS||DIAGNOSTICO_LEADS.length===0) return;
+
+  const leadsComSubmotivo=DIAGNOSTICO_LEADS.filter(l=>l.submotivo);
+  const leadsComArea     =DIAGNOSTICO_LEADS.filter(l=>l.area_responsavel);
+  if(leadsComSubmotivo.length===0&&leadsComArea.length===0) return;
+
+  // Agrupa por submotivo — contagem real, direto de cada lead (l.submotivo), não mais o agregado do N8N
+  const causaMap={};
+  leadsComSubmotivo.forEach(l=>{
+    if(!causaMap[l.submotivo]) causaMap[l.submotivo]={label:l.submotivo,count:0,areaCounts:{}};
+    causaMap[l.submotivo].count++;
+    const ar=l.area_responsavel||'';
+    causaMap[l.submotivo].areaCounts[ar]=(causaMap[l.submotivo].areaCounts[ar]||0)+1;
+  });
+  const causas=Object.values(causaMap).sort((a,b)=>b.count-a.count);
 
   // KPIs
   const stats   =ACTIVE_STATS;
-  const tot     =stats?.leadsEsfriados??causas.reduce((s,c)=>s+(c.count||0),0);
-  const diagQtd =causas.reduce((s,c)=>s+(c.count||0),0);
+  const tot     =stats?.leadsEsfriados??DIAGNOSTICO_LEADS.length;
+  const diagQtd =leadsComSubmotivo.length;
   const pctDiag =tot>0?Math.round((diagQtd/tot)*100):100;
   const topCausa=causas[0];
   if(kpiGrid){
@@ -3791,15 +3833,19 @@ function buildDiagnostico(){
     if(tl) tl.textContent=tot+' leads analisados';
   }
 
-  // Cards de Responsabilidade por Área (calculados a partir das causas reais)
+  // Cards de Responsabilidade por Área — direto de l.area_responsavel, sem adivinhação por texto
   const areaMap={};
-  causas.forEach(c=>{
-    const cat=categorizeCausa(c.label);
-    if(!areaMap[cat.area]) areaMap[cat.area]={...cat,total:0,itens:[]};
-    areaMap[cat.area].total+=c.count||0;
-    areaMap[cat.area].itens.push({label:c.label,count:c.count||0});
+  leadsComArea.forEach(l=>{
+    const key=l.area_responsavel;
+    const meta=AREA_LABELS[key];
+    if(!areaMap[key]) areaMap[key]={valor:key,nome:meta?meta.nome:key,cor:meta?meta.cor:'#6B7280',total:0,itens:{}};
+    areaMap[key].total++;
+    const subl=l.submotivo||'Motivo não especificado';
+    areaMap[key].itens[subl]=(areaMap[key].itens[subl]||0)+1;
   });
   const areas=Object.values(areaMap).sort((a,b)=>b.total-a.total);
+  DIAG_AREAS=areas.map(a=>({id:'area-'+slugCausa(a.valor),valor:a.valor,label:a.nome,count:a.total,cor:a.cor}));
+
   if(areaEl&&areas.length>0){
     const totalAll=areas.reduce((s,a)=>s+a.total,0)||1;
     // Largest remainder — garante que a soma dos percentuais seja exatamente 100%
@@ -3810,8 +3856,9 @@ function buildDiagnostico(){
     areaEl.innerHTML=areas.map((a,ai)=>{
       const pct=_floors[ai];
       const arc=((pct/100)*188.5).toFixed(1);
-      const items=a.itens.map(i=>`<strong>${i.count}</strong> ${i.label}`).join('<br>');
-      return `<div class="dr-cat-card" style="border-color:${a.cor}33">
+      const items=Object.entries(a.itens).map(([label,count])=>`<strong>${count}</strong> ${label}`).join('<br>');
+      const areaId='area-'+slugCausa(a.valor);
+      return `<div class="dr-cat-card" style="border-color:${a.cor}33;cursor:pointer" onclick="openDiagModal('${areaId}','area')" data-tip="Clique para ver os leads · ${a.total} leads">
         <div class="dr-cat-ring"><svg width="80" height="80" viewBox="0 0 80 80">
           <circle cx="40" cy="40" r="30" fill="none" stroke="var(--s3)" stroke-width="7"/>
           <circle cx="40" cy="40" r="30" fill="none" stroke="${a.cor}" stroke-width="7"
@@ -3828,14 +3875,19 @@ function buildDiagnostico(){
     }).join('');
   }
 
-  // Barras de submotivos (100% dados reais do N8N)
-  const live=causas.map(c=>({
-    id:    slugCausa(c.label),
-    label: c.label,
-    count: c.count||0,
-    pct:   c.percentual??Math.round(((c.count||0)/Math.max(diagQtd,1))*100),
-    ...categorizeCausa(c.label)
-  }));
+  // Barras de submotivo — 100% contadas a partir dos leads reais (DIAGNOSTICO_LEADS)
+  const live=causas.map(c=>{
+    const topArea=Object.entries(c.areaCounts).sort((a,b)=>b[1]-a[1])[0]?.[0]||'';
+    const meta=AREA_LABELS[topArea];
+    return {
+      id:    slugCausa(c.label),
+      label: c.label,
+      valor: c.label,
+      count: c.count,
+      pct:   diagQtd>0?Math.round((c.count/diagQtd)*100):0,
+      cor:   meta?meta.cor:'#6B7280'
+    };
+  });
   DIAG_LIVE=live;
 
   const max=Math.max(...live.map(r=>r.count),1);
@@ -3856,15 +3908,18 @@ function buildDiagnostico(){
   });
 }
 
-function openDiagModal(id){
-  const reason=DIAG_LIVE.find(r=>r.id===id);
+function openDiagModal(id, tipo){
+  tipo = tipo || 'submotivo';
+  const source = tipo==='area' ? DIAG_AREAS : DIAG_LIVE;
+  const reason = source.find(r=>r.id===id);
   if(!reason) return;
 
   document.getElementById('diagModalTitle').textContent=reason.label;
 
-  // Filtra leads reais pelo campo causa (preenchido pelo N8N em cada lead)
-  const leadsComCausa=ACTIVE_LEADS.filter(l=>
-    (l.causa||'').toLowerCase().includes((reason.label||'').toLowerCase().slice(0,20))
+  // Filtra leads reais por comparação EXATA no campo correspondente (nunca por texto aproximado)
+  const leadsComCausa=(tipo==='area'
+    ? DIAGNOSTICO_LEADS.filter(l=>l.area_responsavel===reason.valor)
+    : DIAGNOSTICO_LEADS.filter(l=>l.submotivo===reason.valor)
   ).slice(0,10);
 
   document.getElementById('diagModalSub').innerHTML=
@@ -3876,18 +3931,19 @@ function openDiagModal(id){
 
   if(leadsComCausa.length===0){
     body.innerHTML=`<div style="text-align:center;padding:32px 0;color:var(--tx3);font-size:13px;line-height:2">
-      Leads individuais disponíveis quando o N8N<br>retornar o campo <strong style="color:var(--tx2)">causa_esfriamento</strong> por lead</div>`;
+      Nenhum lead encontrado com esse diagnóstico no período selecionado</div>`;
   } else {
     body.innerHTML=leadsComCausa.map((l,i)=>{
       const initials=(l.nome||'?').split(' ').slice(0,2).map(w=>w[0]).join('');
       const col=DIAG_AVATARCOLORS[i%DIAG_AVATARCOLORS.length];
       const tel=(l.telefone||'').replace(/\D/g,'');
       const href=tel?`https://wa.me/${tel}`:'#';
+      const dataEsf=l.data_esfriamento?new Date(l.data_esfriamento).toLocaleDateString('pt-BR'):'—';
       return `<div class="diag-lead-row">
         <div class="diag-lead-av" style="background:${col}">${initials}</div>
         <div class="diag-lead-info">
           <div class="diag-lead-name">${l.nome||'—'}</div>
-          <div class="diag-lead-meta">Score ${l.score||0} · ${l.temperatura||'—'} · ${l.modelo||'—'}</div>
+          <div class="diag-lead-meta">Score ${l.score||0} · ${l.temperatura||'—'} · ${l.modelo||'—'} · ${l.canal||'—'} · Esfriou em ${dataEsf}</div>
         </div>
         <a class="diag-wa-btn" href="${href}" target="_blank" rel="noopener">${waIcon} WhatsApp</a>
       </div>`;
