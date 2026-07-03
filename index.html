@@ -3241,7 +3241,7 @@ async function fetchAllData(){
   try{
     const res=await fetch(ENDPOINTS.production.dashboard,{
       method:'GET',
-      headers:{'Content-Type':'application/json','x-adtsa-secret':'ADTSA-RUI-2026-wR4kN8v2X5j1'}
+      headers:{'Content-Type':'application/json','x-adtsa-secret':'ADTSA-RUI-WoXt1nvxmkcKyeO1ZdcB8j9o30X1egns'}
     });
     if(!res.ok) throw new Error('HTTP '+res.status);
     const data=await res.json();
@@ -3532,8 +3532,8 @@ async function fetchFilaData(){
   if(DATA_MODE==='production'){
     try{
       const [resF, resE] = await Promise.all([
-        fetch(ENDPOINTS.production.fila,    {method:'GET',headers:{'Content-Type':'application/json','x-adtsa-secret':'ADTSA-RUI-2026-wR4kN8v2X5j1'}}),
-        fetch(ENDPOINTS.production.estoque, {method:'GET',headers:{'Content-Type':'application/json','x-adtsa-secret':'ADTSA-RUI-2026-wR4kN8v2X5j1'}})
+        fetch(ENDPOINTS.production.fila,    {method:'GET',headers:{'Content-Type':'application/json','x-adtsa-secret':'ADTSA-RUI-WoXt1nvxmkcKyeO1ZdcB8j9o30X1egns'}}),
+        fetch(ENDPOINTS.production.estoque, {method:'GET',headers:{'Content-Type':'application/json','x-adtsa-secret':'ADTSA-RUI-WoXt1nvxmkcKyeO1ZdcB8j9o30X1egns'}})
       ]);
       if(resF.ok){
         const rawText=await resF.text();
