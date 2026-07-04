@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Rui — Monitor de Eventos</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&family=Bebas+Neue&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#080808;--surface:#101010;--s2:#181818;--s3:#222;--s4:#2C2C2C;
+  --ac:#D4AF37;--ac-l:#F0DC82;--ac-d:#A88820;--ac-faint:rgba(212,175,55,.09);
+  --tx:#F0F0F0;--tx2:#A0A0A0;--tx3:#555;
+  --grn:#004225;--grn-l:#00A065;--grn-bg:rgba(0,160,101,.12);
+  --red:#E11D48;--red-bg:rgba(225,29,72,.12);
+  --bdr:#1E1E1E;--r:14px;--rsm:8px;
+  --sh:0 2px 20px rgba(0,0,0,.6);--sh-md:0 8px 40px rgba(0,0,0,.7);
+  --stripe:3px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;}
+body::before{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);background:linear-gradient(90deg,#E11D48 0%,#D4AF37 35%,#D4AF37 65%,#004225 100%);z-index:200;}
+.main{max-width:1280px;margin:0 auto;padding:calc(var(--stripe) + 36px) 32px 70px;}
+.topbar{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:30px;flex-wrap:wrap;gap:14px;}
+.topbar .eye{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--tx3);margin-bottom:5px;font-weight:600;}
+.topbar h1{font-size:26px;font-weight:700;letter-spacing:-.04em;background:linear-gradient(135deg,#fff 0%,var(--ac-l) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.ts{font-size:12px;color:var(--tx3);text-align:right;}
+.ts strong{display:block;font-size:13px;font-weight:600;color:var(--tx2);font-family:'DM Mono',monospace;}
+.btn-ref{background:linear-gradient(135deg,var(--ac),var(--ac-d));color:#000;border:none;padding:10px 22px;border-radius:var(--rsm);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;box-shadow:0 4px 16px rgba(212,175,55,.25);margin-left:12px;}
+.btn-ref:hover{background:linear-gradient(135deg,var(--ac-l),var(--ac));transform:translateY(-2px);}
+.btn-ref:disabled{opacity:.5;cursor:default;transform:none;}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px;}
+.kpi{background:var(--surface);border-radius:var(--r);padding:22px 24px;border:1px solid var(--bdr);box-shadow:var(--sh);transition:all .25s;}
+.kpi:hover{border-color:rgba(212,175,55,.2);transform:translateY(-2px);}
+.kpi.warn{border-color:rgba(225,29,72,.25);}
+.kpi-lbl{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--tx3);margin-bottom:10px;font-weight:600;}
+.kpi-val{font-size:36px;font-weight:700;letter-spacing:-.03em;line-height:1;margin-bottom:6px;color:var(--tx);font-family:'Bebas Neue',cursive;}
+.kpi.warn .kpi-val{color:var(--red);}
+.kpi-sub{font-size:12px;color:var(--tx3);}
+
+.sec{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--tx3);margin:30px 0 16px;display:flex;align-items:center;gap:12px;font-weight:600;}
+.sec::before{content:'';width:20px;height:2px;background:linear-gradient(90deg,var(--ac),transparent);}
+.sec::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--bdr),transparent);}
+
+.card{background:var(--surface);border-radius:var(--r);border:1px solid var(--bdr);box-shadow:var(--sh);padding:22px;}
+.filters{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px;}
+.filters select,.filters input{background:var(--s2);border:1px solid var(--bdr);color:var(--tx);border-radius:var(--rsm);padding:9px 12px;font-size:13px;font-family:inherit;}
+.filters input[type="date"]{color-scheme:dark;}
+.filters button{background:var(--s2);border:1px solid var(--bdr);color:var(--tx2);border-radius:var(--rsm);padding:9px 16px;font-size:13px;font-family:inherit;cursor:pointer;font-weight:600;}
+.filters button:hover{border-color:var(--ac);color:var(--ac);}
+
+table{width:100%;border-collapse:collapse;}
+th{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);text-align:left;padding:0 10px 12px 0;border-bottom:1px solid var(--bdr);font-weight:600;}
+td{padding:11px 10px 11px 0;font-size:12.5px;border-bottom:1px solid var(--s2);vertical-align:top;}
+tr:hover td{background:rgba(255,255,255,.02);}
+.mono{font-family:'DM Mono',monospace;font-size:11.5px;color:var(--tx2);}
+.tag{display:inline-block;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:.03em;}
+.t-ok{background:var(--grn-bg);color:var(--grn-l);}
+.t-fail{background:var(--red-bg);color:var(--red);}
+.t-start{background:var(--s2);color:var(--tx2);}
+.t-other{background:var(--ac-faint);color:var(--ac);}
+.stpill{font-size:10px;padding:3px 9px;border-radius:5px;font-weight:600;}
+.st-pendente{background:rgba(212,175,55,.12);color:var(--ac);}
+.st-resolvido{background:var(--grn-bg);color:var(--grn-l);}
+.detalhe-btn{background:none;border:none;color:var(--tx3);cursor:pointer;font-size:11px;text-decoration:underline;font-family:inherit;}
+.resolve-btn{background:var(--s2);border:1px solid var(--bdr);color:var(--tx2);border-radius:6px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;}
+.resolve-btn:hover{border-color:var(--grn-l);color:var(--grn-l);}
+.resolve-btn:disabled{opacity:.4;cursor:default;}
+.pager{display:flex;justify-content:space-between;align-items:center;margin-top:16px;}
+.pager span{font-size:12px;color:var(--tx3);}
+.pager button{background:var(--s2);border:1px solid var(--bdr);color:var(--tx2);border-radius:var(--rsm);padding:7px 14px;font-size:12px;cursor:pointer;font-family:inherit;}
+.pager button:disabled{opacity:.35;cursor:default;}
+.empty{padding:40px;text-align:center;color:var(--tx3);font-size:13px;}
+.err-banner{background:var(--red-bg);border:1px solid rgba(225,29,72,.3);color:var(--red);padding:12px 16px;border-radius:var(--rsm);font-size:13px;margin-bottom:20px;display:none;}
+
+pre.detalhe-pre{background:var(--bg);border:1px solid var(--bdr);border-radius:6px;padding:10px;font-size:11px;color:var(--tx2);white-space:pre-wrap;word-break:break-all;margin-top:6px;max-height:220px;overflow:auto;}
+</style>
+</head>
+<body>
+<div class="main">
+
+  <div class="topbar">
+    <div>
+      <div class="eye">GWM · Agente Rui</div>
+      <h1>Monitor de Eventos</h1>
+    </div>
+    <div style="display:flex;align-items:center;">
+      <div class="ts">Atualizado em<strong id="ts-atualizado">—</strong></div>
+      <button class="btn-ref" id="btn-refresh" onclick="carregarTudo()">Atualizar</button>
+    </div>
+  </div>
+
+  <div class="err-banner" id="err-banner"></div>
+
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="kpi-lbl">Execuções no mês</div>
+      <div class="kpi-val" id="kpi-execucoes">—</div>
+      <div class="kpi-sub">tipo_evento = execucao_iniciada</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Custo estimado no mês</div>
+      <div class="kpi-val" id="kpi-custo">—</div>
+      <div class="kpi-sub">soma de custo_estimado_usd</div>
+    </div>
+    <div class="kpi warn" id="kpi-falha-card">
+      <div class="kpi-lbl">% eventos com falha</div>
+      <div class="kpi-val" id="kpi-pct-falha">—</div>
+      <div class="kpi-sub">sobre total de eventos do mês</div>
+    </div>
+    <div class="kpi warn">
+      <div class="kpi-lbl">Pendentes</div>
+      <div class="kpi-val" id="kpi-pendentes">—</div>
+      <div class="kpi-sub">status = pendente (total, não só do mês)</div>
+    </div>
+  </div>
+
+  <div class="sec">Eventos</div>
+  <div class="card">
+    <div class="filters">
+      <select id="f-tipo">
+        <option value="">Todos os tipos</option>
+        <option value="execucao_iniciada">execucao_iniciada</option>
+        <option value="execucao_ok">execucao_ok</option>
+        <option value="falha_supabase">falha_supabase</option>
+        <option value="falha_whatsapp">falha_whatsapp</option>
+        <option value="falha_claude">falha_claude</option>
+        <option value="falha_transcricao">falha_transcricao</option>
+        <option value="falha_dashboard">falha_dashboard</option>
+        <option value="lock_bloqueado">lock_bloqueado</option>
+        <option value="outro">outro</option>
+      </select>
+      <select id="f-status">
+        <option value="">Todos os status</option>
+        <option value="pendente">pendente</option>
+        <option value="resolvido">resolvido</option>
+      </select>
+      <input type="date" id="f-data-inicio" title="Data início">
+      <input type="date" id="f-data-fim" title="Data fim">
+      <input type="text" id="f-sender" placeholder="Buscar por sender_id">
+      <button onclick="aplicarFiltros()">Filtrar</button>
+      <button onclick="limparFiltros()">Limpar</button>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Quando</th>
+          <th>Tipo</th>
+          <th>Node</th>
+          <th>Sender</th>
+          <th>Tokens (in/out)</th>
+          <th>Custo (USD)</th>
+          <th>Status</th>
+          <th>Detalhe</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tbody-eventos">
+        <tr><td colspan="9" class="empty">Carregando...</td></tr>
+      </tbody>
+    </table>
+
+    <div class="pager">
+      <span id="pager-info">—</span>
+      <div>
+        <button id="btn-prev" onclick="pagAnterior()">‹ Anterior</button>
+        <button id="btn-next" onclick="pagProxima()">Próxima ›</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ===== CONFIG =====
+// Mesmo padrão do dashboard existente (jbs-rui-dashboard-v2): base do n8n + secret via header x-adtsa-secret.
+const BASE = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook';
+const SECRET = 'ADTSA-RUI-WoXt1nvxmkcKyeO1ZdcB8j9o30X1egns'; // mesma env var ADTSA_DASHBOARD_SECRET usada nos outros endpoints do Dashboard
+const ENDPOINT_RESUMO  = BASE + '/rui-monitor-resumo';
+const ENDPOINT_EVENTOS = BASE + '/rui-monitor-eventos';
+
+const LIMIT = 25;
+let offsetAtual = 0;
+let totalRetornadoUltimaPagina = 0;
+
+function headersAuth(){
+  return { 'Content-Type': 'application/json', 'x-adtsa-secret': SECRET };
+}
+
+function mostrarErro(msg){
+  const el = document.getElementById('err-banner');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function limparErro(){
+  document.getElementById('err-banner').style.display = 'none';
+}
+
+function fmtUsd(v){
+  if (v === null || v === undefined) return '—';
+  return 'US$ ' + Number(v).toFixed(4);
+}
+function fmtData(iso){
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleString('pt-BR');
+}
+function tagClasse(tipo){
+  if (tipo === 'execucao_ok') return 't-ok';
+  if (tipo === 'execucao_iniciada') return 't-start';
+  if (tipo && tipo.startsWith('falha_')) return 't-fail';
+  if (tipo === 'lock_bloqueado') return 't-fail';
+  return 't-other';
+}
+
+async function carregarResumo(){
+  const res = await fetch(ENDPOINT_RESUMO, { method: 'GET', headers: headersAuth() });
+  if (!res.ok) throw new Error('Resumo: HTTP ' + res.status);
+  const data = await res.json();
+
+  document.getElementById('kpi-execucoes').textContent = data.total_execucoes ?? '—';
+  document.getElementById('kpi-custo').textContent = fmtUsd(data.custo_total_estimado_usd);
+  document.getElementById('kpi-pendentes').textContent = data.total_pendentes ?? '—';
+
+  const contagem = data.contagem_por_tipo_evento || {};
+  const totalEventos = Object.values(contagem).reduce((a,b) => a + b, 0);
+  const totalFalhas = Object.entries(contagem)
+    .filter(([tipo]) => tipo.startsWith('falha_') || tipo === 'lock_bloqueado')
+    .reduce((a, [,v]) => a + v, 0);
+  const pct = totalEventos > 0 ? Math.round((totalFalhas / totalEventos) * 100) : 0;
+  document.getElementById('kpi-pct-falha').textContent = pct + '%';
+}
+
+async function carregarEventos(){
+  const params = new URLSearchParams();
+  params.set('limit', LIMIT);
+  params.set('offset', offsetAtual);
+
+  const tipo = document.getElementById('f-tipo').value;
+  const status = document.getElementById('f-status').value;
+  const dataInicio = document.getElementById('f-data-inicio').value;
+  const dataFim = document.getElementById('f-data-fim').value;
+  const sender = document.getElementById('f-sender').value.trim();
+
+  if (tipo) params.set('tipo_evento', tipo);
+  if (status) params.set('status', status);
+  if (dataInicio) params.set('data_inicio', new Date(dataInicio).toISOString());
+  if (dataFim) params.set('data_fim', new Date(dataFim + 'T23:59:59').toISOString());
+  if (sender) params.set('sender_id', sender);
+
+  const res = await fetch(ENDPOINT_EVENTOS + '?' + params.toString(), { method: 'GET', headers: headersAuth() });
+  if (!res.ok) throw new Error('Eventos: HTTP ' + res.status);
+  const data = await res.json();
+  renderEventos(data.eventos || []);
+  totalRetornadoUltimaPagina = (data.eventos || []).length;
+  atualizarPager();
+}
+
+function renderEventos(eventos){
+  const tbody = document.getElementById('tbody-eventos');
+  if (!eventos.length) {
+    tbody.innerHTML = '<tr><td colspan="9" class="empty">Nenhum evento encontrado com esses filtros.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = eventos.map(ev => {
+    const detalheId = 'det-' + ev.id;
+    const detalheJson = JSON.stringify(ev.detalhe ?? {}, null, 2).replace(/</g, '&lt;');
+    return `
+      <tr>
+        <td class="mono">${fmtData(ev.criado_em)}</td>
+        <td><span class="tag ${tagClasse(ev.tipo_evento)}">${ev.tipo_evento}</span></td>
+        <td class="mono">${ev.node_name || '—'}</td>
+        <td class="mono">${ev.sender_id || '—'}</td>
+        <td class="mono">${ev.tokens_input ?? '—'} / ${ev.tokens_output ?? '—'}</td>
+        <td class="mono">${fmtUsd(ev.custo_estimado_usd)}</td>
+        <td><span class="stpill st-${ev.status}">${ev.status}</span></td>
+        <td>
+          <button class="detalhe-btn" onclick="toggleDetalhe('${detalheId}')">ver</button>
+          <pre class="detalhe-pre" id="${detalheId}" style="display:none">${detalheJson}</pre>
+        </td>
+        <td>
+          ${ev.status === 'pendente'
+            ? `<button class="resolve-btn" onclick="resolverEvento('${ev.id}', this)">Marcar resolvido</button>`
+            : ''}
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+function toggleDetalhe(id){
+  const el = document.getElementById(id);
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+async function resolverEvento(id, btnEl){
+  btnEl.disabled = true;
+  btnEl.textContent = 'Salvando...';
+  try {
+    const res = await fetch(ENDPOINT_EVENTOS, {
+      method: 'PATCH',
+      headers: headersAuth(),
+      body: JSON.stringify({ id }),
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    await carregarEventos();
+  } catch (e) {
+    mostrarErro('Não foi possível marcar como resolvido: ' + e.message);
+    btnEl.disabled = false;
+    btnEl.textContent = 'Marcar resolvido';
+  }
+}
+
+function atualizarPager(){
+  const pagina = Math.floor(offsetAtual / LIMIT) + 1;
+  document.getElementById('pager-info').textContent =
+    `Página ${pagina} · mostrando ${totalRetornadoUltimaPagina} evento(s)`;
+  document.getElementById('btn-prev').disabled = offsetAtual === 0;
+  document.getElementById('btn-next').disabled = totalRetornadoUltimaPagina < LIMIT;
+}
+
+function pagAnterior(){
+  offsetAtual = Math.max(0, offsetAtual - LIMIT);
+  carregarEventos().catch(e => mostrarErro(e.message));
+}
+function pagProxima(){
+  offsetAtual += LIMIT;
+  carregarEventos().catch(e => mostrarErro(e.message));
+}
+
+function aplicarFiltros(){
+  offsetAtual = 0;
+  carregarEventos().catch(e => mostrarErro(e.message));
+}
+function limparFiltros(){
+  document.getElementById('f-tipo').value = '';
+  document.getElementById('f-status').value = '';
+  document.getElementById('f-data-inicio').value = '';
+  document.getElementById('f-data-fim').value = '';
+  document.getElementById('f-sender').value = '';
+  aplicarFiltros();
+}
+
+async function carregarTudo(){
+  limparErro();
+  const btn = document.getElementById('btn-refresh');
+  btn.disabled = true;
+  try {
+    await Promise.all([carregarResumo(), carregarEventos()]);
+    document.getElementById('ts-atualizado').textContent = new Date().toLocaleString('pt-BR');
+  } catch (e) {
+    mostrarErro('Falha ao carregar dados: ' + e.message);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+carregarTudo();
+</script>
+</body>
+</html>
