@@ -654,11 +654,11 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     </div>
     <div class="login-field">
       <div class="modal-label">Usuário</div>
-      <input class="modal-input" type="text" id="loginUser" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false"/>
+      <input class="modal-input" type="text" id="loginUser" name="rui-usuario-campo" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"/>
     </div>
     <div class="login-field">
       <div class="modal-label">Senha</div>
-      <input class="modal-input" type="password" id="loginPass" autocomplete="current-password"/>
+      <input class="modal-input" type="password" id="loginPass" name="rui-senha-campo" autocomplete="off"/>
     </div>
     <div class="login-actions">
       <button type="submit" class="btn-login" id="loginBtn">Entrar</button>
@@ -3271,7 +3271,8 @@ function mapLead(l){
 async function fetchFromSupabase(){
   try{
     const since=new Date(Date.now()-30*86400000).toISOString();
-    const res=await authFetch(`${N8N_LEADS_QUERY}?campo=atualizado_em&since=${encodeURIComponent(since)}&limit=500`,{method:'GET'});
+    const until=new Date().toISOString();
+    const res=await authFetch(`${N8N_LEADS_QUERY}?campo=atualizado_em&since=${encodeURIComponent(since)}&until=${encodeURIComponent(until)}&limit=500`,{method:'GET'});
     if(!res.ok) return false;
     const rows=await res.json();
     if(!Array.isArray(rows)) return false;
@@ -3289,7 +3290,8 @@ async function fetchFromSupabase(){
 async function fetchDiagnosticoFromSupabase(){
   try{
     const since=new Date(Date.now()-30*86400000).toISOString();
-    const res=await authFetch(`${N8N_LEADS_QUERY}?campo=diagnosticado_em&since=${encodeURIComponent(since)}&limit=500`,{method:'GET'});
+    const until=new Date().toISOString();
+    const res=await authFetch(`${N8N_LEADS_QUERY}?campo=diagnosticado_em&since=${encodeURIComponent(since)}&until=${encodeURIComponent(until)}&limit=500`,{method:'GET'});
     if(!res.ok) return false;
     const rows=await res.json();
     if(!Array.isArray(rows)) return false;
@@ -3609,7 +3611,9 @@ async function fetchFilaEsperaSupabase(){
   const wrap=document.getElementById('filaEsperaSupaWrap');
   if(!wrap) return;
   try{
-    const res=await authFetch(`${N8N_FILA_QUERY}`,{method:'GET'});
+    const since=new Date(Date.now()-3650*86400000).toISOString(); // 10 anos — cobre toda a fila
+    const until=new Date().toISOString();
+    const res=await authFetch(`${N8N_FILA_QUERY}?since=${encodeURIComponent(since)}&until=${encodeURIComponent(until)}`,{method:'GET'});
     if(!res.ok){
       wrap.innerHTML='<div style="padding:40px 24px;text-align:center;color:var(--tx3);font-size:13px">Erro ao carregar fila de espera.</div>';
       return;
