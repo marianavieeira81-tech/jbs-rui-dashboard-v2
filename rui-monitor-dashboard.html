@@ -73,9 +73,43 @@ tr:hover td{background:rgba(255,255,255,.02);}
 .err-banner{background:var(--red-bg);border:1px solid rgba(225,29,72,.3);color:var(--red);padding:12px 16px;border-radius:var(--rsm);font-size:13px;margin-bottom:20px;display:none;}
 
 pre.detalhe-pre{background:var(--bg);border:1px solid var(--bdr);border-radius:6px;padding:10px;font-size:11px;color:var(--tx2);white-space:pre-wrap;word-break:break-all;margin-top:6px;max-height:220px;overflow:auto;}
+
+.kpi-grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:16px;}
+.kpi-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:32px;}
+
+.card-title{font-size:12px;font-weight:600;color:var(--tx2);margin-bottom:16px;text-transform:uppercase;letter-spacing:.05em;}
+.nota{font-size:11px;color:var(--tx3);margin-top:14px;font-style:italic;}
+
+.bar-list{display:flex;flex-direction:column;gap:11px;}
+.bar-row{display:grid;grid-template-columns:170px 1fr 46px;align-items:center;gap:10px;}
+.bar-lbl{font-size:12.5px;color:var(--tx2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.bar-track{background:var(--s2);border-radius:6px;height:10px;overflow:hidden;}
+.bar-fill{background:linear-gradient(90deg,var(--ac-d),var(--ac));height:100%;border-radius:6px;}
+.bar-val{font-size:12px;text-align:right;color:var(--tx2);font-family:'DM Mono',monospace;}
+
+.login-overlay{position:fixed;inset:0;background:var(--bg);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;}
+.login-box{background:var(--surface);border:1px solid var(--bdr);border-radius:var(--r);box-shadow:var(--sh-md);padding:36px 32px;width:100%;max-width:340px;text-align:center;}
+.login-box .eye{margin-bottom:6px;}
+.login-box h1{font-size:22px;font-weight:700;margin-bottom:10px;letter-spacing:-.03em;background:linear-gradient(135deg,#fff 0%,var(--ac-l) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.login-sub{font-size:12.5px;color:var(--tx3);margin-bottom:20px;}
+.login-box input{width:100%;background:var(--s2);border:1px solid var(--bdr);color:var(--tx);border-radius:var(--rsm);padding:11px 14px;font-size:13px;font-family:inherit;margin-bottom:14px;}
+.login-box .btn-ref{width:100%;margin-left:0;}
+.login-err{color:var(--red);font-size:12px;margin-top:12px;}
 </style>
 </head>
 <body>
+
+<div class="login-overlay" id="login-overlay">
+  <div class="login-box">
+    <div class="eye">GWM · Agente Rui</div>
+    <h1>Acesso ao Monitor</h1>
+    <p class="login-sub">Digite a chave de acesso para continuar.</p>
+    <input type="password" id="login-input" placeholder="Chave de acesso" autocomplete="off">
+    <button class="btn-ref" id="login-btn" onclick="tentarLogin()">Entrar</button>
+    <div class="login-err" id="login-err" style="display:none"></div>
+  </div>
+</div>
+
 <div class="main">
 
   <div class="topbar">
@@ -169,22 +203,164 @@ pre.detalhe-pre{background:var(--bg);border:1px solid var(--bdr);border-radius:6
     </div>
   </div>
 
+  <div class="sec">Funil de Qualificação</div>
+  <div class="kpi-grid-2">
+    <div class="kpi">
+      <div class="kpi-lbl">Total de leads no mês</div>
+      <div class="kpi-val" id="kpi-funil-total">—</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">% conclusão do funil</div>
+      <div class="kpi-val" id="kpi-funil-conclusao">—</div>
+    </div>
+  </div>
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>Etapa onde o lead parou</th>
+          <th>Total de abandonos</th>
+        </tr>
+      </thead>
+      <tbody id="tbody-funil">
+        <tr><td colspan="2" class="empty">Carregando...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="sec">Diagnóstico de Não-Conversão</div>
+  <div class="kpi-grid-2">
+    <div class="kpi">
+      <div class="kpi-lbl">Total convertidos no mês</div>
+      <div class="kpi-val" id="kpi-conv-convertidos">—</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Total perdidos no mês</div>
+      <div class="kpi-val" id="kpi-conv-perdidos">—</div>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:16px;">
+    <div class="card-title">Causa (tempo real / varredura)</div>
+    <div class="bar-list" id="bars-causa"><div class="empty">Carregando...</div></div>
+    <div class="nota">Baseado em classificação em tempo real.</div>
+  </div>
+  <div class="card" style="margin-bottom:16px;">
+    <div class="card-title">Submotivo (diagnóstico por IA)</div>
+    <div class="bar-list" id="bars-submotivo"><div class="empty">Carregando...</div></div>
+    <div class="nota">Baseado em análise profunda por IA (roda 1x ao dia). Este número não deve ser somado nem comparado diretamente com "Causa" acima — cada indicador cobre uma etapa diferente do processo.</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Área responsável pela perda</div>
+    <div class="bar-list" id="bars-area"><div class="empty">Carregando...</div></div>
+  </div>
+
+  <div class="sec">Fila de Espera</div>
+  <div class="kpi-grid-3">
+    <div class="kpi">
+      <div class="kpi-lbl">Tempo médio de espera</div>
+      <div class="kpi-val" id="kpi-fila-tempo">—</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">% conversão da fila</div>
+      <div class="kpi-val" id="kpi-fila-conversao">—</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Total na fila agora</div>
+      <div class="kpi-val" id="kpi-fila-total">—</div>
+    </div>
+  </div>
+
+  <div class="sec">Handoff para Vendedor</div>
+  <div class="kpi-grid-2">
+    <div class="kpi">
+      <div class="kpi-lbl">Total de handoffs no mês</div>
+      <div class="kpi-val" id="kpi-handoff-total">—</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">% handoff sobre total de leads</div>
+      <div class="kpi-val" id="kpi-handoff-pct">—</div>
+    </div>
+  </div>
+
+  <div class="sec">Saúde do Diagnóstico Automático</div>
+  <div class="card">
+    <div class="empty" id="diag-vazio" style="display:none">Nenhuma rodada de diagnóstico registrada ainda.</div>
+    <div class="kpi-grid" id="diag-kpis">
+      <div class="kpi">
+        <div class="kpi-lbl">Leads analisados (última rodada)</div>
+        <div class="kpi-val" id="kpi-diag-analisados">—</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-lbl">Concluídos</div>
+        <div class="kpi-val" id="kpi-diag-concluidos">—</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-lbl">Sem dados suficientes</div>
+        <div class="kpi-val" id="kpi-diag-sem-dados">—</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-lbl">Tempo médio por lead</div>
+        <div class="kpi-val" id="kpi-diag-tempo">—</div>
+      </div>
+    </div>
+    <div class="kpi-sub" id="diag-data" style="margin-top:14px;">—</div>
+  </div>
+
 </div>
 
 <script>
 // ===== CONFIG =====
 // Mesmo padrão do dashboard existente (jbs-rui-dashboard-v2): base do n8n + secret via header x-adtsa-secret.
+// O secret NÃO fica mais no código-fonte — é digitado pelo usuário e guardado só em sessionStorage.
 const BASE = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook';
-const SECRET = 'ADTSA-RUI-WoXt1nvxmkcKyeO1ZdcB8j9o30X1egns'; // mesma env var ADTSA_DASHBOARD_SECRET usada nos outros endpoints do Dashboard
 const ENDPOINT_RESUMO  = BASE + '/rui-monitor-resumo';
 const ENDPOINT_EVENTOS = BASE + '/rui-monitor-eventos';
+const SECRET_STORAGE_KEY = 'adtsa_dashboard_secret';
 
 const LIMIT = 25;
 let offsetAtual = 0;
 let totalRetornadoUltimaPagina = 0;
 
+function getSecret(){
+  return sessionStorage.getItem(SECRET_STORAGE_KEY);
+}
 function headersAuth(){
-  return { 'Content-Type': 'application/json', 'x-adtsa-secret': SECRET };
+  return { 'Content-Type': 'application/json', 'x-adtsa-secret': getSecret() || '' };
+}
+
+// ===== LOGIN (tela de senha) =====
+function mostrarLogin(msg){
+  document.getElementById('login-overlay').style.display = 'flex';
+  const errEl = document.getElementById('login-err');
+  if (msg) { errEl.textContent = msg; errEl.style.display = 'block'; }
+  else { errEl.style.display = 'none'; }
+  const input = document.getElementById('login-input');
+  input.value = '';
+  input.focus();
+}
+function esconderLogin(){
+  document.getElementById('login-overlay').style.display = 'none';
+}
+function tentarLogin(){
+  const val = document.getElementById('login-input').value.trim();
+  if (!val) return;
+  sessionStorage.setItem(SECRET_STORAGE_KEY, val);
+  esconderLogin();
+  carregarTudo();
+}
+document.getElementById('login-input').addEventListener('keydown', function(e){
+  if (e.key === 'Enter') tentarLogin();
+});
+
+// fetch autenticado: se a API responder 401/403, limpa a chave e volta pro login
+async function fetchAutenticado(url, options){
+  const res = await fetch(url, options);
+  if (res.status === 401 || res.status === 403) {
+    sessionStorage.removeItem(SECRET_STORAGE_KEY);
+    mostrarLogin('Chave de acesso inválida ou expirada. Digite novamente.');
+    throw new Error('Não autorizado (chave de acesso inválida ou expirada)');
+  }
+  return res;
 }
 
 function mostrarErro(msg){
@@ -214,7 +390,7 @@ function tagClasse(tipo){
 }
 
 async function carregarResumo(){
-  const res = await fetch(ENDPOINT_RESUMO, { method: 'GET', headers: headersAuth() });
+  const res = await fetchAutenticado(ENDPOINT_RESUMO, { method: 'GET', headers: headersAuth() });
   if (!res.ok) throw new Error('Resumo: HTTP ' + res.status);
   const data = await res.json();
 
@@ -229,6 +405,136 @@ async function carregarResumo(){
     .reduce((a, [,v]) => a + v, 0);
   const pct = totalEventos > 0 ? Math.round((totalFalhas / totalEventos) * 100) : 0;
   document.getElementById('kpi-pct-falha').textContent = pct + '%';
+
+  preencherFunil(data.funil);
+  preencherConversao(data.conversao);
+  preencherFila(data.fila);
+  preencherHandoff(data.handoff);
+  preencherDiagnostico(data.diagnostico_run);
+}
+
+// ===== Formatação auxiliar (novas seções) =====
+function fmtInt(v){
+  if (v === null || v === undefined) return '—';
+  return String(v);
+}
+function fmtPct(v){
+  if (v === null || v === undefined) return '—';
+  const n = Math.round(Number(v) * 10) / 10;
+  return n + '%';
+}
+function fmtSegDuracao(seg){
+  if (seg === null || seg === undefined) return '—';
+  seg = Number(seg);
+  if (seg < 60) return Math.round(seg) + 's';
+  const min = seg / 60;
+  if (min < 60) return Math.round(min) + ' min';
+  const h = Math.floor(min / 60);
+  const restoMin = Math.round(min % 60);
+  return h + 'h' + (restoMin > 0 ? ' ' + restoMin + 'min' : '');
+}
+
+function renderBarras(containerId, dados, campoLabel, campoValor){
+  const el = document.getElementById(containerId);
+  if (!dados || !dados.length) {
+    el.innerHTML = '<div class="empty">Sem dados no período</div>';
+    return;
+  }
+  const max = Math.max(...dados.map(d => Number(d[campoValor]) || 0));
+  el.innerHTML = dados.map(d => {
+    const val = Number(d[campoValor]) || 0;
+    const larg = max > 0 ? (val / max * 100) : 0;
+    return `
+      <div class="bar-row">
+        <div class="bar-lbl" title="${d[campoLabel]}">${d[campoLabel]}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${larg}%"></div></div>
+        <div class="bar-val">${val}</div>
+      </div>`;
+  }).join('');
+}
+
+const AREA_LABELS = {
+  gestao_lead: 'Gestão do lead',
+  produto_estoque: 'Produto / estoque',
+  processo_comercial: 'Processo comercial',
+};
+function renderArea(dados){
+  const el = document.getElementById('bars-area');
+  if (!dados || !dados.length) {
+    el.innerHTML = '<div class="empty">Sem dados no período</div>';
+    return;
+  }
+  const max = Math.max(...dados.map(d => Number(d.total) || 0));
+  el.innerHTML = dados.map(d => {
+    const val = Number(d.total) || 0;
+    const larg = max > 0 ? (val / max * 100) : 0;
+    const label = AREA_LABELS[d.area] || d.area;
+    return `
+      <div class="bar-row">
+        <div class="bar-lbl" title="${label}">${label}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${larg}%"></div></div>
+        <div class="bar-val">${val}</div>
+      </div>`;
+  }).join('');
+}
+
+function renderFunilTabela(dados){
+  const tbody = document.getElementById('tbody-funil');
+  if (!dados || !dados.length) {
+    tbody.innerHTML = '<tr><td colspan="2" class="empty">Sem dados no período</td></tr>';
+    return;
+  }
+  const ordenado = [...dados].sort((a,b) => (Number(b.total)||0) - (Number(a.total)||0));
+  tbody.innerHTML = ordenado.map(d => `<tr><td>${d.etapa}</td><td class="mono">${d.total}</td></tr>`).join('');
+}
+
+function preencherFunil(funil){
+  funil = funil || {};
+  document.getElementById('kpi-funil-total').textContent = fmtInt(funil.total_leads_mes);
+  document.getElementById('kpi-funil-conclusao').textContent = fmtPct(funil.taxa_conclusao_pct);
+  renderFunilTabela(funil.abandono_por_etapa);
+}
+
+function preencherConversao(conversao){
+  conversao = conversao || {};
+  document.getElementById('kpi-conv-convertidos').textContent = fmtInt(conversao.total_convertidos_mes);
+  document.getElementById('kpi-conv-perdidos').textContent = fmtInt(conversao.total_perdidos_mes);
+  renderBarras('bars-causa', conversao.distribuicao_causa_esfriamento, 'causa', 'total');
+  renderBarras('bars-submotivo', conversao.distribuicao_submotivo, 'submotivo', 'total');
+  renderArea(conversao.distribuicao_area_responsavel);
+}
+
+function preencherFila(fila){
+  fila = fila || {};
+  document.getElementById('kpi-fila-tempo').textContent = fmtSegDuracao(fila.tempo_medio_espera_seg);
+  document.getElementById('kpi-fila-conversao').textContent = fmtPct(fila.taxa_conversao_pct);
+  document.getElementById('kpi-fila-total').textContent = fmtInt(fila.total_na_fila_agora);
+}
+
+function preencherHandoff(handoff){
+  handoff = handoff || {};
+  document.getElementById('kpi-handoff-total').textContent = fmtInt(handoff.total_handoff);
+  document.getElementById('kpi-handoff-pct').textContent = fmtPct(handoff.taxa_handoff_pct);
+}
+
+function preencherDiagnostico(run){
+  const vazio = document.getElementById('diag-vazio');
+  const kpis = document.getElementById('diag-kpis');
+  const dataEl = document.getElementById('diag-data');
+  if (!run) {
+    vazio.style.display = 'block';
+    kpis.style.display = 'none';
+    dataEl.style.display = 'none';
+    return;
+  }
+  vazio.style.display = 'none';
+  kpis.style.display = 'grid';
+  dataEl.style.display = 'block';
+  document.getElementById('kpi-diag-analisados').textContent = fmtInt(run.total_leads_analisados);
+  document.getElementById('kpi-diag-concluidos').textContent = fmtInt(run.total_concluidos);
+  document.getElementById('kpi-diag-sem-dados').textContent = fmtInt(run.total_sem_dados);
+  document.getElementById('kpi-diag-tempo').textContent = fmtSegDuracao(run.tempo_medio_segundos);
+  dataEl.textContent = 'Última rodada: ' + fmtData(run.concluido_em);
 }
 
 async function carregarEventos(){
@@ -248,7 +554,7 @@ async function carregarEventos(){
   if (dataFim) params.set('data_fim', new Date(dataFim + 'T23:59:59').toISOString());
   if (sender) params.set('sender_id', sender);
 
-  const res = await fetch(ENDPOINT_EVENTOS + '?' + params.toString(), { method: 'GET', headers: headersAuth() });
+  const res = await fetchAutenticado(ENDPOINT_EVENTOS + '?' + params.toString(), { method: 'GET', headers: headersAuth() });
   if (!res.ok) throw new Error('Eventos: HTTP ' + res.status);
   const data = await res.json();
   renderEventos(data.eventos || []);
@@ -296,7 +602,7 @@ async function resolverEvento(id, btnEl){
   btnEl.disabled = true;
   btnEl.textContent = 'Salvando...';
   try {
-    const res = await fetch(ENDPOINT_EVENTOS, {
+    const res = await fetchAutenticado(ENDPOINT_EVENTOS, {
       method: 'PATCH',
       headers: headersAuth(),
       body: JSON.stringify({ id }),
@@ -354,7 +660,16 @@ async function carregarTudo(){
   }
 }
 
-carregarTudo();
+function initApp(){
+  if (getSecret()) {
+    esconderLogin();
+    carregarTudo();
+  } else {
+    mostrarLogin();
+  }
+}
+
+initApp();
 </script>
 </body>
 </html>
