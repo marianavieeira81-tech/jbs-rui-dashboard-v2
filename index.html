@@ -3110,9 +3110,6 @@ const REFRESH_INTERVAL_MS = 30000;
 // depois disso leva esse token, e é o n8n quem decide (no servidor)
 // qual concessionária ele representa e qual banco consultar.
 const SESSION_KEY = 'rui_session';
-// Login/senha ficam válidos por até 72h contínuas de inatividade do usuário; passado esse tempo
-// sem nenhum clique/tecla, a sessão expira sozinha e a pessoa precisa entrar com usuário e senha de novo.
-const SESSION_MAX_INATIVIDADE_MS = 72*60*60*1000;
 
 function getSession(){
   try{ return JSON.parse(localStorage.getItem(SESSION_KEY)||'null'); }catch(e){ return null; }
@@ -3120,39 +3117,6 @@ function getSession(){
 function setSession(s){ localStorage.setItem(SESSION_KEY, JSON.stringify(s)); }
 function clearSession(){ localStorage.removeItem(SESSION_KEY); }
 function authToken(){ const s=getSession(); return (s&&s.token) ? s.token : null; }
-
-// true quando faz mais de 72h desde a última atividade registrada nesta sessão
-function sessaoExpiradaPorInatividade(){
-  const s=getSession();
-  if(!s||!s.token) return false;
-  if(!s.ultimaAtividade) return false; // sessão antiga sem esse campo — registrarAtividade() completa no próximo uso
-  return (Date.now()-s.ultimaAtividade) > SESSION_MAX_INATIVIDADE_MS;
-}
-
-// Marca "usuário ativo agora" — chamada em cliques/teclas reais, nunca pelo refresh automático de dados
-let _ultimaMarcacaoAtividade=0;
-function registrarAtividade(){
-  const s=getSession();
-  if(!s||!s.token) return;
-  const agora=Date.now();
-  if(agora-_ultimaMarcacaoAtividade<60000) return; // throttle: no máximo 1x por minuto, evita gravar localStorage a cada clique
-  _ultimaMarcacaoAtividade=agora;
-  s.ultimaAtividade=agora;
-  setSession(s);
-}
-
-let _monitorInatividadeAtivo=false;
-function iniciarMonitorInatividade(){
-  if(_monitorInatividadeAtivo) return;
-  _monitorInatividadeAtivo=true;
-  ['click','keydown','touchstart'].forEach(evt=>document.addEventListener(evt, registrarAtividade, {passive:true}));
-  setInterval(()=>{ if(authToken() && sessaoExpiradaPorInatividade()) forcarLogoutPorInatividade(); }, 5*60*1000);
-}
-
-function forcarLogoutPorInatividade(){
-  clearSession();
-  showLogin('Sessão expirada após 72h sem uso. Faça login novamente.');
-}
 
 function showLogin(msg){
   const ov=document.getElementById('loginOverlay');
@@ -3201,7 +3165,7 @@ async function doLogin(ev){
       btn.disabled=false; btn.textContent='Entrar';
       return false;
     }
-    setSession({token:data.token, concessionaria:data.concessionaria||'', loja_slug:data.loja_slug||'', ultimaAtividade:Date.now()});
+    setSession({token:data.token, concessionaria:data.concessionaria||'', loja_slug:data.loja_slug||''});
     hideLogin();
     startDashboard();
   }catch(e){
@@ -3941,15 +3905,11 @@ function startDashboard(){
   atualizarDashboard();
   setInterval(atualizarDashboard, REFRESH_INTERVAL_MS);
   setInterval(()=>{ if(document.getElementById('p-filaespera').style.display!=='none') fetchFilaData(); }, REFRESH_INTERVAL_MS);
-  registrarAtividade();
-  iniciarMonitorInatividade();
 }
 
 document.addEventListener('DOMContentLoaded',()=>{
-  if(!authToken()){ showLogin(); return; }
-  if(sessaoExpiradaPorInatividade()){ forcarLogoutPorInatividade(); return; }
-  hideLogin();
-  startDashboard();
+  if(authToken()){ hideLogin(); startDashboard(); }
+  else{ showLogin(); }
 });
 
 function filterFila(btn, filter) {
