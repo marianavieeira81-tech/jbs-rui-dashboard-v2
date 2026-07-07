@@ -59,6 +59,9 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 .ts strong{display:block;font-size:13px;font-weight:600;color:var(--tx2);font-family:'DM Mono',monospace;}
 .btn-ref{background:linear-gradient(135deg,var(--ac),var(--ac-d));color:#000;border:none;padding:10px 22px;border-radius:var(--rsm);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;box-shadow:0 4px 16px rgba(212,175,55,.25);}
 .btn-ref:hover{background:linear-gradient(135deg,var(--ac-l),var(--ac));transform:translateY(-2px);box-shadow:0 6px 24px rgba(212,175,55,.45);}
+.loja-select,.modelo-select{background:var(--s2);color:var(--tx);border:1px solid var(--bdr);border-radius:var(--rsm);padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
+.loja-select:hover{border-color:rgba(212,175,55,.35);}
+.loja-hint{display:none;font-size:11px;color:var(--tx3);max-width:170px;line-height:1.4;}
 .sec{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--tx3);margin:30px 0 16px;display:flex;align-items:center;gap:12px;font-weight:600;}
 .sec::before{content:'';width:20px;height:2px;background:linear-gradient(90deg,var(--ac),transparent);}
 .sec::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--bdr),transparent);}
@@ -783,6 +786,13 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   <div class="topbar">
     <div><div class="eye">Painel de Controle</div><h1>Performance do Agente Rui</h1></div>
     <div class="topbar-r">
+      <span class="loja-hint">⚠ leads ainda sem loja marcada no n8n</span>
+      <select class="loja-select" onchange="setLojaFilter(this.value)">
+        <option value="todas">Todas as lojas</option>
+        <option value="Boa Viagem">Boa Viagem</option>
+        <option value="Parnamirim">Parnamirim</option>
+        <option value="Caruaru">Caruaru</option>
+      </select>
       <div class="ts"><span>Última atualização · <span style="color:var(--grn-l);font-size:10px">auto a cada 30s</span></span><strong id="tsVal">—</strong></div>
       <button class="btn-ref" onclick="refresh()">↺ Atualizar</button>
     </div>
@@ -834,6 +844,21 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   <div class="topbar">
     <div><div class="eye">Pipeline do Agente</div><h1>Fila de Leads</h1></div>
     <div class="topbar-r">
+      <span class="loja-hint">⚠ leads ainda sem loja marcada no n8n</span>
+      <select class="loja-select" onchange="setLojaFilter(this.value)">
+        <option value="todas">Todas as lojas</option>
+        <option value="Boa Viagem">Boa Viagem</option>
+        <option value="Parnamirim">Parnamirim</option>
+        <option value="Caruaru">Caruaru</option>
+      </select>
+      <select class="modelo-select" onchange="setModeloFilter(this.value)">
+        <option value="todos">Todos os modelos</option>
+        <option value="Haval">Haval</option>
+        <option value="ORA">ORA</option>
+        <option value="Tank">Tank</option>
+        <option value="Poer">Poer</option>
+        <option value="WEY">WEY</option>
+      </select>
       <div class="ts"><span>Última atualização</span><strong id="filaTs">—</strong></div>
       <button class="btn-ref" onclick="fetchFilaData()">&#8629; Atualizar</button>
     </div>
@@ -952,6 +977,23 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 <div id="p-plataformas" style="display:none">
   <div class="topbar">
     <div><div class="eye">Principal</div><h1>Central de Leads</h1></div>
+    <div class="topbar-r">
+      <span class="loja-hint">⚠ leads ainda sem loja marcada no n8n</span>
+      <select class="loja-select" onchange="setLojaFilter(this.value)">
+        <option value="todas">Todas as lojas</option>
+        <option value="Boa Viagem">Boa Viagem</option>
+        <option value="Parnamirim">Parnamirim</option>
+        <option value="Caruaru">Caruaru</option>
+      </select>
+      <select class="modelo-select" onchange="setModeloFilter(this.value)">
+        <option value="todos">Todos os modelos</option>
+        <option value="Haval">Haval</option>
+        <option value="ORA">ORA</option>
+        <option value="Tank">Tank</option>
+        <option value="Poer">Poer</option>
+        <option value="WEY">WEY</option>
+      </select>
+    </div>
   </div>
 
   <!-- BUSCA POR TELEFONE -->
@@ -962,12 +1004,8 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   <div id="psr-plataformas" style="margin-bottom:4px;"></div>
 
   <div id="drb-plataformas"></div>
-  <!-- controles de período + relatório -->
+  <!-- controles de relatório -->
   <div class="plt-controls">
-    <button class="period-btn active" onclick="setPeriod('dia',this)">Diário</button>
-    <button class="period-btn" onclick="setPeriod('semana',this)">Semanal</button>
-    <button class="period-btn" onclick="setPeriod('mes',this)">Mensal</button>
-    <div class="sep"></div>
     <button class="report-btn" onclick="openReportModal()">📄 Relatório</button>
   </div>
 
@@ -1058,6 +1096,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   <!-- LEADS PRESENCIAIS — ACESSO POR MODELO GWM -->
   <div style="margin-top:48px;">
     <div class="sec">Leads Presenciais · registrados via Check-in</div>
+    <div id="drb-plataformasci"></div>
 
     <!-- BUSCA POR TELEFONE OU CPF -->
     <div style="margin-bottom:16px;display:flex;gap:10px;align-items:center;max-width:480px;">
@@ -1191,7 +1230,26 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 
 <!-- ============ FUNIL ============ -->
 <div id="p-funil" style="display:none">
-  <div class="topbar"><div><div class="eye">Leads</div><h1>Funil de Qualificação</h1></div></div>
+  <div class="topbar">
+    <div><div class="eye">Leads</div><h1>Funil de Qualificação</h1></div>
+    <div class="topbar-r">
+      <span class="loja-hint">⚠ leads ainda sem loja marcada no n8n</span>
+      <select class="loja-select" onchange="setLojaFilter(this.value)">
+        <option value="todas">Todas as lojas</option>
+        <option value="Boa Viagem">Boa Viagem</option>
+        <option value="Parnamirim">Parnamirim</option>
+        <option value="Caruaru">Caruaru</option>
+      </select>
+      <select class="modelo-select" onchange="setModeloFilter(this.value)">
+        <option value="todos">Todos os modelos</option>
+        <option value="Haval">Haval</option>
+        <option value="ORA">ORA</option>
+        <option value="Tank">Tank</option>
+        <option value="Poer">Poer</option>
+        <option value="WEY">WEY</option>
+      </select>
+    </div>
+  </div>
   <div id="drb-funil"></div>
   <!-- BUSCA POR TELEFONE -->
   <div style="margin-bottom:22px;display:flex;gap:10px;align-items:center;">
@@ -1225,6 +1283,21 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       <h1>Diagnóstico de Leads Esfriados</h1>
     </div>
     <div class="topbar-r">
+      <span class="loja-hint">⚠ leads ainda sem loja marcada no n8n</span>
+      <select class="loja-select" onchange="setLojaFilter(this.value)">
+        <option value="todas">Todas as lojas</option>
+        <option value="Boa Viagem">Boa Viagem</option>
+        <option value="Parnamirim">Parnamirim</option>
+        <option value="Caruaru">Caruaru</option>
+      </select>
+      <select class="modelo-select" onchange="setModeloFilter(this.value)">
+        <option value="todos">Todos os modelos</option>
+        <option value="Haval">Haval</option>
+        <option value="ORA">ORA</option>
+        <option value="Tank">Tank</option>
+        <option value="Poer">Poer</option>
+        <option value="WEY">WEY</option>
+      </select>
       <div class="ts"><strong>Últimos 30 dias</strong><span id="diagTotalLabel">100 leads analisados</span></div>
     </div>
   </div>
@@ -1332,6 +1405,20 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   <div class="topbar">
     <div><div class="eye">Vendedor</div><h1>Check-in de Atendimento</h1></div>
     <div class="topbar-r">
+      <select class="loja-select" onchange="setLojaFilter(this.value)">
+        <option value="todas">Todas as lojas</option>
+        <option value="Boa Viagem">Boa Viagem</option>
+        <option value="Parnamirim">Parnamirim</option>
+        <option value="Caruaru">Caruaru</option>
+      </select>
+      <select class="modelo-select" onchange="setModeloFilter(this.value)">
+        <option value="todos">Todos os modelos</option>
+        <option value="Haval">Haval</option>
+        <option value="ORA">ORA</option>
+        <option value="Tank">Tank</option>
+        <option value="Poer">Poer</option>
+        <option value="WEY">WEY</option>
+      </select>
       <div class="ts"><span>Registros salvos</span><strong id="ciCount">0</strong></div>
     </div>
   </div>
@@ -1370,6 +1457,17 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
             <div class="ci-label">Vendedor responsável</div>
             <input class="ci-input" id="ci-vendedor" type="text" placeholder="Seu nome"/>
           </div>
+          <div class="ci-field">
+            <div class="ci-label">Loja</div>
+            <select class="ci-input" id="ci-loja">
+              <option value="">Selecione a loja</option>
+              <option value="Boa Viagem">Boa Viagem</option>
+              <option value="Parnamirim">Parnamirim</option>
+              <option value="Caruaru">Caruaru</option>
+            </select>
+          </div>
+        </div>
+        <div class="ci-row2">
           <div class="ci-field">
             <div class="ci-label">Data e hora do atendimento</div>
             <input class="ci-input" id="ci-dt" type="datetime-local"/>
@@ -1470,6 +1568,12 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   <div class="topbar">
     <div><div class="eye">Agendamentos</div><h1>Agenda de Visitas & Test Drives</h1></div>
     <div class="topbar-r">
+      <select class="loja-select" onchange="setLojaFilter(this.value)">
+        <option value="todas">Todas as lojas</option>
+        <option value="Boa Viagem">Boa Viagem</option>
+        <option value="Parnamirim">Parnamirim</option>
+        <option value="Caruaru">Caruaru</option>
+      </select>
       <button class="btn-ag-new" onclick="agOpenModal()">＋ Novo Agendamento</button>
     </div>
   </div>
@@ -1516,6 +1620,15 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
         <input class="ag-input" id="ag-nome" list="ag-leads-list" placeholder="Ex: Carlos Menezes" autocomplete="off"/>
         <datalist id="ag-leads-list"></datalist>
       </div>
+      <div class="ag-field">
+        <div class="ag-field-label">Loja</div>
+        <select class="ag-input" id="ag-loja">
+          <option value="">Selecione a loja</option>
+          <option value="Boa Viagem">Boa Viagem</option>
+          <option value="Parnamirim">Parnamirim</option>
+          <option value="Caruaru">Caruaru</option>
+        </select>
+      </div>
       <div class="ag-row2">
         <div class="ag-field">
           <div class="ag-field-label">Data</div>
@@ -1549,6 +1662,69 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 </main>
 
 <script>
+// ============================================================
+// FILTRO POR LOJA — Boa Viagem / Parnamirim / Caruaru
+// ============================================================
+const LOJAS = ['Boa Viagem','Parnamirim','Caruaru'];
+let selectedLoja = localStorage.getItem('rui_loja_filtro') || 'todas';
+
+// true (mostra) se a loja escolhida bater com a do registro, ou se "todas" estiver selecionado
+function matchLoja(loja){
+  return selectedLoja==='todas' || (loja||'')===selectedLoja;
+}
+
+// Mostra o aviso "ainda sem loja no n8n" só quando há um filtro específico ativo
+// e nenhum dos dados carregados do agente Rui traz a loja preenchida.
+function updateLojaHints(){
+  const temLoja = ACTIVE_LEADS.some(l=>l.loja) || ACTIVE_FILA.some(f=>f.loja) || DIAGNOSTICO_LEADS.some(l=>l.loja);
+  const show = selectedLoja!=='todas' && !temLoja;
+  document.querySelectorAll('.loja-hint').forEach(el=>{ el.style.display = show?'inline':'none'; });
+}
+
+function setLojaFilter(v){
+  selectedLoja = v;
+  localStorage.setItem('rui_loja_filtro', v);
+  document.querySelectorAll('.loja-select').forEach(s=>{ if(s.value!==v) s.value=v; });
+  refreshAllTabsForFilters();
+}
+
+// Reaplica loja + modelo em tudo que usa esses filtros — chamado tanto por
+// setLojaFilter quanto por setModeloFilter, já que os dois se combinam (E lógico).
+function refreshAllTabsForFilters(){
+  buildTable();
+  buildFunil();
+  buildDiagnostico();
+  buildFilaEspera();
+  fetchFilaEsperaSupabase();
+  updateOrbCount();
+  updateCategoryCount();
+  renderLeadsPresenciais();
+  ciRenderHistory();
+  agRender();
+  if(document.getElementById('pltLeadList') && document.getElementById('pltLeadList').style.display!=='none') renderLeadList(currentCategory);
+  updateLojaHints();
+}
+
+// ============================================================
+// FILTRO POR MODELO — Haval / ORA / Tank / Poer / WEY
+// ============================================================
+const GWM_MODELOS = ['Haval','ORA','Tank','Poer','WEY'];
+let selectedModelo = localStorage.getItem('rui_modelo_filtro') || 'todos';
+
+// true (mostra) se o modelo escolhido aparecer no texto do veículo do registro
+// (mesmo tipo de comparação por substring já usado na navegação por modelo do Check-in),
+// ou se "todos" estiver selecionado.
+function matchModelo(modelo){
+  return selectedModelo==='todos' || (modelo||'').toLowerCase().includes(selectedModelo.toLowerCase());
+}
+
+function setModeloFilter(v){
+  selectedModelo = v;
+  localStorage.setItem('rui_modelo_filtro', v);
+  document.querySelectorAll('.modelo-select').forEach(s=>{ if(s.value!==v) s.value=v; });
+  refreshAllTabsForFilters();
+}
+
 // ============================================================
 // DADOS SIMULADOS — Agente de IA · Dados Fictícios
 // Ticket médio: R$350.000 | Leads/semana: ~50 | Público: Classe A
@@ -1711,7 +1887,7 @@ function go(id){
   document.getElementById('p-'+id).style.display='block';
   document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
   document.querySelectorAll('.sb-item').forEach(i=>{if(i.getAttribute('onclick')?.includes("'"+id+"'"))i.classList.add('active');});
-  if(id==='plataformas'){updateOrbCount();updateCICount();renderLeadsPresenciais();}
+  if(id==='plataformas'){updateOrbCount();updateCICount();renderLeadsPresenciais();drBuild('plataformasci');}
   if(id==='cobertura') buildCobertura();
   if(id==='funil') buildFunil();
   if(id==='filaespera') fetchFilaData();
@@ -1762,7 +1938,7 @@ function ciGetYN(groupId){
 }
 
 function ciClear(){
-  ['ci-nome','ci-wa','ci-cpf','ci-vendedor','ci-modelo','ci-obs'].forEach(id=>{
+  ['ci-nome','ci-wa','ci-cpf','ci-vendedor','ci-loja','ci-modelo','ci-obs'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.value='';
   });
   const dtEl=document.getElementById('ci-dt');
@@ -1781,6 +1957,7 @@ async function ciSave(){
   const nome    = document.getElementById('ci-nome').value.trim();
   const wa      = document.getElementById('ci-wa').value.trim();
   const vend    = document.getElementById('ci-vendedor').value.trim();
+  const loja    = document.getElementById('ci-loja').value;
   const dt      = document.getElementById('ci-dt').value;
   const intenc  = ciGetChip('ci-intencao');
   const modelo  = document.getElementById('ci-modelo').value.trim();
@@ -1791,6 +1968,7 @@ async function ciSave(){
   if(!nome)    missing.push('Nome');
   if(!wa)      missing.push('WhatsApp');
   if(!vend)    missing.push('Vendedor');
+  if(!loja)    missing.push('Loja');
   if(!dt)      missing.push('Data/hora');
   if(!intenc)  missing.push('Intenção de compra');
   if(!desfech) missing.push('Desfecho');
@@ -1820,7 +1998,7 @@ async function ciSave(){
 
   const reg = {
     id: Date.now(),
-    nome, wa, cpf, vend, dt, intencao: intenc, modelos: modelo,
+    nome, wa, cpf, vend, loja, dt, intencao: intenc, modelos: modelo,
     troca:         ciGetYN('ci-troca'),
     financiamento: ciGetYN('ci-finan'),
     test_drive:    ciGetYN('ci-td'),
@@ -1840,6 +2018,7 @@ async function ciSave(){
     whatsapp:            wa,
     cpf:                 cpf.replace(/\D/g,''),
     vendedor:            vend,
+    loja:                loja,
     atendimento_em:      dt,
     intencao_compra:     INTENCAO_MAP[intenc]   || intenc,
     modelo_interesse:    modelo,
@@ -1909,6 +2088,7 @@ function ciPresencialLeads(){
       wa:           l.telefone,
       cpf:          l.cpf || '',
       vend:         l.vendedor || '—',
+      loja:         l.loja || '',
       dt:           l.atendimento_em || '',
       intencao:     INTENCAO_LABEL[l.prazo] || l.prazo || '',
       modelos:      l.modelo || '',
@@ -1918,7 +2098,21 @@ function ciPresencialLeads(){
     }));
   const supaWas = new Set(fromSupabase.map(l => (l.wa||'').replace(/\D/g,'')));
   const localOnly = ciLoad().filter(r => !supaWas.has((r.wa||'').replace(/\D/g,'')));
-  return [...fromSupabase, ...localOnly];
+  return [...fromSupabase, ...localOnly].filter(r => matchLoja(r.loja)&&matchModelo(r.modelos));
+}
+
+// Mesma lista de ciPresencialLeads(), mas restrita ao período selecionado no
+// filtro de datas de Central de Leads (Hoje/Esta Semana/Este Mês/Intervalo).
+// Usada só na navegação por modelo dentro de Central de Leads — a busca por
+// telefone/CPF e a aba Check-in continuam mostrando todos os registros.
+function ciPresencialLeadsInRange(){
+  const arr = ciPresencialLeads();
+  if(!GLOBAL_RANGE.from||!GLOBAL_RANGE.to) return arr;
+  return arr.filter(r=>{
+    if(!r.dt) return false;
+    const d=new Date(r.dt);
+    return d>=GLOBAL_RANGE.from&&d<=GLOBAL_RANGE.to;
+  });
 }
 
 function ciSearchPresencial(q){
@@ -1945,7 +2139,7 @@ function ciSearchPresencial(q){
         <div style="width:34px;height:34px;border-radius:50%;background:${av};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;">${(r.nome||'?').charAt(0).toUpperCase()}</div>
         <div style="flex:1;min-width:0;">
           <div class="ci-hi-nome">${r.nome||'—'}</div>
-          <div class="ci-hi-sub">${r.vend||'—'} · ${dtFmt}</div>
+          <div class="ci-hi-sub">${r.vend||'—'}${r.loja?' · '+r.loja:''} · ${dtFmt}</div>
           <div style="font-size:11px;color:var(--tx3);margin-top:2px;">📞 ${r.wa||'—'}${r.cpf?' &nbsp;·&nbsp; CPF: '+r.cpf:''}</div>
         </div>
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex-shrink:0;">
@@ -2005,7 +2199,7 @@ function ciRenderHistory(){
         <div class="ci-hi-av" style="background:${clrAv}">${ini}</div>
         <div>
           <div class="ci-hi-name">${r.nome}</div>
-          <div class="ci-hi-sub">${r.vend} · ${dtFmt}</div>
+          <div class="ci-hi-sub">${r.vend}${r.loja?' · '+r.loja:''} · ${dtFmt}</div>
         </div>
         <div style="display:flex;gap:6px;margin-left:auto;align-items:center;flex-wrap:wrap;">
           <span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;${ciBadgeStyle(iCls)}">${r.intenc||'—'}</span>
@@ -2038,7 +2232,7 @@ function renderLeadsPresenciais(){
   if(cats)   cats.style.display='none';
   if(list)   list.style.display='none';
   // Atualiza contagem no orb
-  const arr = ciPresencialLeads();
+  const arr = ciPresencialLeadsInRange();
   const elCI = document.getElementById('orbLeadCountCI');
   if(elCI) elCI.textContent = `${arr.length} lead${arr.length!==1?'s':''}`;
 }
@@ -2046,6 +2240,7 @@ function renderLeadsPresenciais(){
 // ============================================================
 // FLUXO CHECK-IN — 5 modelos GWM
 // ============================================================
+let currentCIModel = null; // último modelo aberto — usado pra atualizar a lista ao trocar o período
 const CI_GWM_MODELS = [
   {
     name:'Haval', color:'#D4AF37', bg:'rgba(212,175,55,.07)', bdr:'rgba(212,175,55,.25)',
@@ -2104,7 +2299,7 @@ function closeCICategories(){
 function renderCIModelCards(){
   const container = document.getElementById('ciModelCardsGrid');
   if(!container) return;
-  const arr = ciPresencialLeads();
+  const arr = ciPresencialLeadsInRange();
   container.innerHTML = CI_GWM_MODELS.map(m=>{
     const leads = arr.filter(r=>(r.modelos||'').toLowerCase().includes(m.name.toLowerCase()));
     return `<div class="cat-card" onclick="openCIModel('${m.name}')" style="border-color:${m.bdr};background:${m.bg};">
@@ -2117,6 +2312,7 @@ function renderCIModelCards(){
 }
 
 function openCIModel(model){
+  currentCIModel = model;
   document.getElementById('ciPltCategories').style.display='none';
   document.getElementById('ciPltModelList').style.display='block';
   renderCILeadList(model);
@@ -2130,7 +2326,7 @@ function backToCICategories(){
 
 function renderCILeadList(model){
   const gwm    = CI_GWM_MODELS.find(m=>m.name===model);
-  const arr    = ciPresencialLeads();
+  const arr    = ciPresencialLeadsInRange();
   const leads  = arr.filter(r=>(r.modelos||'').toLowerCase().includes(model.toLowerCase()));
 
   const titleEl = document.getElementById('ciModelListTitle');
@@ -2219,7 +2415,7 @@ function phoneSearch(term, pageId){
 
   // Leads WA (produção usa ACTIVE_LEADS; demo usa fictícios)
   const waLeads = DATA_MODE==='production'
-    ? ACTIVE_LEADS
+    ? ACTIVE_LEADS.filter(l=>matchLoja(l.loja)&&matchModelo(l.modelo))
     : NETWORK_LEADS_MES;
   waLeads.forEach(l=>{
     if((l.telefone||'').replace(/[^0-9]/g,'').includes(digits))
@@ -2228,20 +2424,20 @@ function phoneSearch(term, pageId){
 
   // Fila de espera (demo ou produção)
   const filaLeads = (DATA_MODE==='production'&&ACTIVE_FILA.length>0)
-    ? ACTIVE_FILA : DEMO_FILA;
+    ? ACTIVE_FILA.filter(f=>matchLoja(f.loja)&&matchModelo(f.modelo)) : DEMO_FILA;
   filaLeads.forEach(l=>{
     if((l.telefone||'').replace(/[^0-9]/g,'').includes(digits))
       add(l.nome, l.telefone, l.modelo||'—', 'Fila de Espera');
   });
 
-  // Check-ins presenciais (Supabase + localStorage)
+  // Check-ins presenciais (Supabase + localStorage) — ciPresencialLeads() já filtra pela loja e pelo modelo
   ciPresencialLeads().forEach(r=>{
     if((r.wa||'').replace(/[^0-9]/g,'').includes(digits))
       add(r.nome, r.wa, r.modelos||'—', 'Check-in');
   });
 
   // Diagnóstico — busca em leads com causa de esfriamento registrada
-  ACTIVE_LEADS.filter(l=>l.causa).forEach(l=>{
+  ACTIVE_LEADS.filter(l=>l.causa&&matchLoja(l.loja)&&matchModelo(l.modelo)).forEach(l=>{
     const telD=(l.telefone||'').replace(/[^0-9]/g,'');
     if(telD.includes(digits)) add(l.nome, l.telefone, l.causa||'—', 'Diagnóstico');
   });
@@ -2280,7 +2476,7 @@ function phoneSearch(term, pageId){
 }
 
 function updateOrbCount(){
-  const {wa} = getLeadsForPeriod(networkPeriod);
+  const {wa} = getLeadsForPeriod();
   const elWA = document.getElementById('orbLeadCountWA');
   if(elWA) elWA.textContent = `${wa.length} lead${wa.length!==1?'s':''}`;
 }
@@ -2302,7 +2498,7 @@ function closeWACategories(){
 }
 
 function updateCategoryCount(){
-  const leads = getLeadsForPeriod(networkPeriod).wa;
+  const leads = getLeadsForPeriod().wa;
   const pr = leads.filter(l=>l.score>85).length;
   const q  = leads.filter(l=>l.score>=71&&l.score<=85).length;
   const en = leads.filter(l=>l.score>=51&&l.score<=70).length;
@@ -2353,7 +2549,7 @@ function renderLeadList(cat){
   if(titleEl){
     titleEl.innerHTML=`<span style="color:${catColors[cat]}">${labels[cat]}</span>`;
   }
-  const leads=(getLeadsForPeriod(networkPeriod).wa)||[];
+  const leads=(getLeadsForPeriod().wa)||[];
   const filtered=leads.filter(l=>{
     if(cat==='premium')  return l.score>85;
     if(cat==='quentes')  return l.score>=71&&l.score<=85;
@@ -2569,7 +2765,7 @@ function buildTable(){
   const scC=s=>s>=70?'sh':s>=45?'sm':'sl';
   // Em produção usa ACTIVE_LEADS; em demo usa o array LEADS (formato curto)
   if(DATA_MODE==='production'&&ACTIVE_LEADS.length>0){
-    tb.innerHTML=ACTIVE_LEADS.slice(0,15).map(l=>`<tr>
+    tb.innerHTML=ACTIVE_LEADS.filter(l=>matchLoja(l.loja)&&matchModelo(l.modelo)).slice(0,15).map(l=>`<tr>
       <td><strong>${l.nome}</strong></td>
       <td><span class="ptag wa">WhatsApp</span></td>
       <td><span class="sp ${scC(l.score)}">${l.score}/100</span></td>
@@ -2619,7 +2815,7 @@ function buildFunil(){
   const TEST_IDS = new Set(['5511999990002']);
 
   // Classificação por etapa com dados reais (sem leads de teste)
-  const todos     = ACTIVE_LEADS.filter(l => !TEST_IDS.has(l.telefone));
+  const todos     = ACTIVE_LEADS.filter(l => !TEST_IDS.has(l.telefone) && matchLoja(l.loja) && matchModelo(l.modelo));
   // Iniciaram: leads com score > 0 (bot atribuiu pontuação, houve interação real)
   const iniciaram = todos.filter(l => l.score > 0);
   // Qualificação completa: bot marcou explicitamente como qualificado (qualificado_em preenchido)
@@ -2726,18 +2922,20 @@ function toggleFn(i){const b=document.getElementById('fb-'+i),a=document.getElem
 
 
 // ============================================================
-// PERÍODOS — WhatsApp
+// PERÍODOS — WhatsApp e Check-in agora usam o filtro de datas
+// compartilhado (Hoje/Esta Semana/Este Mês/Intervalo) — ver GLOBAL_RANGE
 // ============================================================
-let networkPeriod = 'dia';
 
-function setPeriod(p, btn){
-  networkPeriod = p;
-  document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
+// Reaplica o período atual (GLOBAL_RANGE) em tudo que está visível na
+// aba Central de Leads — chamado quando o usuário troca o filtro de datas.
+function refreshPlataformasFiltered(){
+  buildTable();
   updateOrbCount();
-  updateCICount(); // Ponto 10: garante que contador CI também atualiza ao trocar período
+  updateCICount();
   if(document.getElementById('pltCategories').style.display!=='none') updateCategoryCount();
   if(document.getElementById('pltLeadList').style.display!=='none') renderLeadList(currentCategory);
+  if(document.getElementById('ciPltCategories').style.display!=='none') renderCIModelCards();
+  if(document.getElementById('ciPltModelList').style.display!=='none' && currentCIModel) renderCILeadList(currentCIModel);
 }
 
 function initNetwork(){
@@ -2941,10 +3139,11 @@ function closeReportModal(){
 
 function generateReport(){
   closeReportModal();
-  const periodLabels={dia:'Diário (24h)',semana:'Semanal (7 dias)',mes:'Mensal (30 dias)'};
-  const pLabel=periodLabels[networkPeriod]||networkPeriod;
+  const periodLabels={hoje:'Hoje',semana:'Esta Semana',mes:'Este Mês',custom:'Intervalo personalizado'};
+  const fmtBr=d=>d?d.toLocaleDateString('pt-BR'):'—';
+  const pLabel=(periodLabels[GLOBAL_RANGE.preset]||GLOBAL_RANGE.preset)+' · '+fmtBr(GLOBAL_RANGE.from)+' a '+fmtBr(GLOBAL_RANGE.to);
   const reportLeads=(DATA_MODE==='production'&&ACTIVE_LEADS.length>0)
-    ?getLeadsForPeriod(networkPeriod).wa.filter(l=>{
+    ?getLeadsForPeriod().wa.filter(l=>{
         const c=(l.canal||'').toLowerCase(),o=(l.origem||'').toLowerCase();
         return c!=='checkin'&&o!=='checkin';
       })
@@ -3041,7 +3240,7 @@ async function refresh(){
 
 // Ponto 10: atualiza contador de leads presenciais no orb Check-in
 function updateCICount(){
-  const arr=ciPresencialLeads();
+  const arr=ciPresencialLeadsInRange();
   const el=document.getElementById('orbLeadCountCI');
   if(el) el.textContent=`${arr.length} lead${arr.length!==1?'s':''}`;
 }
@@ -3248,6 +3447,7 @@ function mapLead(l){
     nome:        l.nome||'',
     telefone:    l.telefone||l.sender_id||'',
     canal:       l.canal||'whatsapp',
+    loja:        l.loja||l.loja_slug||l.unidade||'',
     score:       l.score_final||0,
     temperatura: calcTemperatura(l.score_final||0),
     status:      getStatus(l),
@@ -3412,22 +3612,24 @@ async function fetchAllData(){
   calcCoberturaFromLeads();
 }
 
-function getLeadsForPeriod(period){
+// Filtra os leads de WhatsApp pelo período selecionado no filtro de datas
+// compartilhado (GLOBAL_RANGE — Hoje/Esta Semana/Este Mês/Intervalo).
+function getLeadsForPeriod(){
   if(DATA_MODE==='production'&&ACTIVE_LEADS.length>0){
-    const today=new Date().toISOString().split('T')[0];
-    const weekAgo=new Date(Date.now()-7*86400000).toISOString().split('T')[0];
     // Ponto 1: apenas leads com canal WhatsApp (exclui presenciais)
-    const waAll=ACTIVE_LEADS.filter(l=>(l.canal||'').toLowerCase()!=='presencial');
-    const wa=period==='dia'?waAll.filter(l=>l.data===today)
-            :period==='semana'?waAll.filter(l=>(l.data||'')>=weekAgo)
-            :waAll;
+    const waAll=ACTIVE_LEADS.filter(l=>(l.canal||'').toLowerCase()!=='presencial'&&matchLoja(l.loja)&&matchModelo(l.modelo));
+    if(!GLOBAL_RANGE.from||!GLOBAL_RANGE.to) return {wa:waAll};
+    const wa=waAll.filter(l=>{
+      if(!l.data) return false;
+      const d=new Date(l.data+'T12:00:00');
+      return d>=GLOBAL_RANGE.from&&d<=GLOBAL_RANGE.to;
+    });
     return {wa};
   }
   // Em produção sem dados ainda — retorna lista vazia (sem fallback fictício)
   if(DATA_MODE==='production') return {wa:[]};
-  // modo demo — arrays pré-divididos por período
-  const wa=period==='dia'?NETWORK_LEADS_DIA:period==='semana'?NETWORK_LEADS_SEMANA:NETWORK_LEADS_MES;
-  return {wa};
+  // modo demo — usa o conjunto fictício do mês
+  return {wa:NETWORK_LEADS_MES};
 }
 
 async function atualizarDashboard(){
@@ -3518,7 +3720,7 @@ function toggleFilaPerfil(idx){
 
 function buildFilaEspera(){
   const source = (DATA_MODE==='production') ? ACTIVE_FILA : DEMO_FILA;
-  const fila = source.slice().sort((a,b)=>new Date(a.entradaISO)-new Date(b.entradaISO));
+  const fila = source.filter(f=>matchLoja(f.loja)&&matchModelo(f.modelo)).sort((a,b)=>new Date(a.entradaISO)-new Date(b.entradaISO));
 
   const wrap=document.getElementById('filaList');
   if(!wrap) return;
@@ -3612,15 +3814,6 @@ function buildFilaEspera(){
   }).join('');
 }
 
-function canalFilaPill(canal){
-  if(!canal) return '<span class="ptag ot">—</span>';
-  const c=(canal||'').toLowerCase();
-  if(c.includes('whatsapp')) return '<span class="ptag wa">WhatsApp</span>';
-  if(c.includes('instagram')) return '<span class="ptag ig">Instagram</span>';
-  if(c.includes('facebook')) return '<span class="ptag fb">Facebook</span>';
-  return `<span class="ptag ot">${canal}</span>`;
-}
-
 async function fetchFilaEsperaSupabase(){
   const wrap=document.getElementById('filaEsperaSupaWrap');
   if(!wrap) return;
@@ -3632,8 +3825,9 @@ async function fetchFilaEsperaSupabase(){
       wrap.innerHTML='<div style="padding:40px 24px;text-align:center;color:var(--tx3);font-size:13px">Erro ao carregar fila de espera.</div>';
       return;
     }
-    const rows=await res.json();
-    if(!Array.isArray(rows)||rows.length===0){
+    const rowsRaw=await res.json();
+    const rows=(Array.isArray(rowsRaw)?rowsRaw:[]).filter(r=>matchLoja(r.loja||r.loja_slug||'')&&matchModelo(r.modelo));
+    if(rows.length===0){
       wrap.innerHTML='<div style="padding:40px 24px;text-align:center;color:var(--tx3);font-size:13px">Nenhum lead aguardando no momento.</div>';
       return;
     }
@@ -3642,14 +3836,12 @@ async function fetchFilaEsperaSupabase(){
         <th>Nome</th>
         <th>Modelo de Interesse</th>
         <th>Especificações</th>
-        <th>Canal</th>
         <th>Entrada</th>
       </tr></thead>
       <tbody>${rows.map(r=>`<tr>
         <td style="font-weight:600;color:var(--tx)">${r.nome||'—'}</td>
-        <td>${r.modelo_interesse||'—'}</td>
+        <td>${r.modelo||'—'}</td>
         <td style="color:var(--tx3);font-size:12px">${r.especificacoes||'—'}</td>
-        <td>${canalFilaPill(r.canal)}</td>
         <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--tx3)">${fmtDataHoraFila(r.registrado_em)}</td>
       </tr>`).join('')}</tbody>
     </table>`;
@@ -3675,6 +3867,7 @@ async function fetchFilaData(){
         ACTIVE_FILA=filaRaw.map(f=>({
           nome:        f.nome||'',
           telefone:    f.telefone||f.lead_sender_id||'',
+          loja:        f.loja||f.loja_slug||f.unidade||'',
           modelo:      f.modelo||'',
           notas:       f.observacao||f.especificacoes||'',
           score:       f.score_final||0,
@@ -3748,7 +3941,7 @@ function buildEstoqueSection(estoque, resumo){
 // FILTRO DE PERÍODO — barra de datas compartilhada entre abas
 // ============================================================
 let GLOBAL_RANGE={from:null,to:null,preset:'mes'};
-const DR_TABS=['dash','filaespera','funil','diagnostico','checkin','plataformas'];
+const DR_TABS=['dash','filaespera','funil','diagnostico','checkin','plataformas','plataformasci'];
 
 function _drISO(d){return d.toISOString().slice(0,10);}
 function _drStartDay(d=new Date()){const r=new Date(d);r.setHours(0,0,0,0);return r;}
@@ -3761,12 +3954,14 @@ function drBuild(tabId){
   if(!el) return;
   if(!GLOBAL_RANGE.from) GLOBAL_RANGE={from:_drStartMonth(),to:_drEndDay(),preset:'mes'};
   const f=_drISO(GLOBAL_RANGE.from),t=_drISO(GLOBAL_RANGE.to),p=GLOBAL_RANGE.preset;
-  el.innerHTML=`<div class="drb-wrap">
-    <span class="drb-lbl">Período:</span>
+  const presetsHtml = `
     <button id="drb-btn-hoje-${tabId}" class="drb-preset${p==='hoje'?' active':''}" onclick="drSetPreset('hoje','${tabId}')">Hoje</button>
     <button id="drb-btn-semana-${tabId}" class="drb-preset${p==='semana'?' active':''}" onclick="drSetPreset('semana','${tabId}')">Esta Semana</button>
     <button id="drb-btn-mes-${tabId}" class="drb-preset${p==='mes'?' active':''}" onclick="drSetPreset('mes','${tabId}')">Este Mês</button>
-    <div class="drb-sep"></div>
+    <div class="drb-sep"></div>`;
+  el.innerHTML=`<div class="drb-wrap">
+    <span class="drb-lbl">Período:</span>
+    ${presetsHtml}
     <input id="drb-from-${tabId}" class="drb-input" type="date" value="${f}">
     <span style="color:var(--tx3);font-size:12px;flex-shrink:0">→</span>
     <input id="drb-to-${tabId}" class="drb-input" type="date" value="${t}">
@@ -3852,7 +4047,7 @@ async function drFetchLeads(tabId,from,to){
     drSetCount(tabId,ACTIVE_LEADS.length);
     if(tabId==='dash'){buildTable();buildDiagnostico();animateCounters();}
     else if(tabId==='funil') buildFunil();
-    else if(tabId==='plataformas'){buildTable();updateOrbCount();}
+    else if(tabId==='plataformas'||tabId==='plataformasci') refreshPlataformasFiltered();
     else if(tabId==='checkin') ciRenderHistory();
   }catch(e){console.warn('[RuiAI] drFetchLeads:',e);}
 }
@@ -3870,19 +4065,19 @@ async function drFetchFilaEspera(from,to){
       wrap.innerHTML='<div style="padding:40px 24px;text-align:center;color:var(--tx3);font-size:13px">Erro ao carregar fila de espera.</div>';
       return;
     }
-    const rows=await res.json();
+    const rowsRaw=await res.json();
+    const rows=(Array.isArray(rowsRaw)?rowsRaw:[]).filter(r=>matchLoja(r.loja||r.loja_slug||'')&&matchModelo(r.modelo));
     drSetCount('filaespera',rows.length);
-    if(!Array.isArray(rows)||rows.length===0){
+    if(rows.length===0){
       wrap.innerHTML='<div style="padding:40px 24px;text-align:center;color:var(--tx3);font-size:13px">Nenhum lead aguardando no momento.</div>';
       return;
     }
     wrap.innerHTML=`<table class="ltbl" style="display:table;width:calc(100% - 48px);margin:16px 24px;">
-      <thead><tr><th>Nome</th><th>Modelo de Interesse</th><th>Especificações</th><th>Canal</th><th>Entrada</th></tr></thead>
+      <thead><tr><th>Nome</th><th>Modelo de Interesse</th><th>Especificações</th><th>Entrada</th></tr></thead>
       <tbody>${rows.map(r=>`<tr>
         <td style="font-weight:600;color:var(--tx)">${r.nome||'—'}</td>
-        <td>${r.modelo_interesse||'—'}</td>
+        <td>${r.modelo||'—'}</td>
         <td style="color:var(--tx3);font-size:12px">${r.especificacoes||'—'}</td>
-        <td>${canalFilaPill(r.canal)}</td>
         <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--tx3)">${fmtDataHoraFila(r.registrado_em)}</td>
       </tr>`).join('')}</tbody>
     </table>`;
@@ -3905,9 +4100,14 @@ function startDashboard(){
   atualizarDashboard();
   setInterval(atualizarDashboard, REFRESH_INTERVAL_MS);
   setInterval(()=>{ if(document.getElementById('p-filaespera').style.display!=='none') fetchFilaData(); }, REFRESH_INTERVAL_MS);
+  // Sem isso, quem deixasse a aba Diagnóstico aberta esperando o pipeline das 23h
+  // nunca via os dados aparecerem sozinhos — só ao trocar de aba e voltar.
+  setInterval(()=>{ if(document.getElementById('p-diagnostico').style.display!=='none') fetchDiagnosticoFromSupabase().then(buildDiagnostico); }, REFRESH_INTERVAL_MS);
 }
 
 document.addEventListener('DOMContentLoaded',()=>{
+  document.querySelectorAll('.loja-select').forEach(s=>{ s.value = selectedLoja; });
+  document.querySelectorAll('.modelo-select').forEach(s=>{ s.value = selectedModelo; });
   if(authToken()){ hideLogin(); startDashboard(); }
   else{ showLogin(); }
 });
@@ -3983,6 +4183,10 @@ const DIAG_AVATARCOLORS=['#E11D48','#D4AF37','#6090FF','#00A065','#F97316','#8B5
 let DIAG_LIVE=[];  // barras de submotivo renderizadas — consultadas pelo modal
 let DIAG_AREAS=[]; // cards de área renderizados — consultados pelo modal
 
+function diagLeadsFiltrados(){
+  return DIAGNOSTICO_LEADS.filter(l=>matchLoja(l.loja)&&matchModelo(l.modelo));
+}
+
 function buildDiagnostico(){
   const container=document.getElementById('diagBars');
   if(!container) return;
@@ -4010,11 +4214,12 @@ function buildDiagnostico(){
     Aguardando diagnóstico do Agente Rui<br>
     <span style="font-size:11px">Os dados aparecem automaticamente após o pipeline de diagnóstico executar (23h)</span></div>`;
 
-  // Sem leads carregados para a aba Diagnóstico (DIAGNOSTICO_LEADS) → mantém estado vazio
-  if(!DIAGNOSTICO_LEADS||DIAGNOSTICO_LEADS.length===0) return;
+  // Sem leads carregados para a aba Diagnóstico (DIAGNOSTICO_LEADS, já filtrados pela loja) → mantém estado vazio
+  const diagLeads=diagLeadsFiltrados();
+  if(diagLeads.length===0) return;
 
-  const leadsComSubmotivo=DIAGNOSTICO_LEADS.filter(l=>l.submotivo);
-  const leadsComArea     =DIAGNOSTICO_LEADS.filter(l=>l.area_responsavel);
+  const leadsComSubmotivo=diagLeads.filter(l=>l.submotivo);
+  const leadsComArea     =diagLeads.filter(l=>l.area_responsavel);
   if(leadsComSubmotivo.length===0&&leadsComArea.length===0) return;
 
   // Agrupa por categoria fixa de motivo (Preço, Falta de estoque, etc.) — contagem real, direto de cada
@@ -4031,7 +4236,7 @@ function buildDiagnostico(){
 
   // KPIs
   const stats   =ACTIVE_STATS;
-  const tot     =stats?.leadsEsfriados??DIAGNOSTICO_LEADS.length;
+  const tot     =selectedLoja==='todas'?(stats?.leadsEsfriados??diagLeads.length):diagLeads.length;
   const diagQtd =leadsComSubmotivo.length;
   const pctDiag =tot>0?Math.round((diagQtd/tot)*100):100;
   const topCausa=causas[0];
@@ -4139,8 +4344,8 @@ function openDiagModal(id, tipo){
   // Para submotivo, compara pela categoria fixa (motivo_categoria) — não pelo texto bruto, já que
   // "Outro motivo" agrupa várias descrições livres diferentes sob a mesma categoria.
   const leadsComCausa=(tipo==='area'
-    ? DIAGNOSTICO_LEADS.filter(l=>l.area_responsavel===reason.valor)
-    : DIAGNOSTICO_LEADS.filter(l=>(l.motivo_categoria||categorizaMotivo(l.submotivo))===reason.valor)
+    ? diagLeadsFiltrados().filter(l=>l.area_responsavel===reason.valor)
+    : diagLeadsFiltrados().filter(l=>(l.motivo_categoria||categorizaMotivo(l.submotivo))===reason.valor)
   ).slice(0,10);
 
   document.getElementById('diagModalSub').innerHTML=
@@ -4213,6 +4418,7 @@ function agOpenModal(){
   document.getElementById('ag-opt-visita').className='ag-type-opt sel-visita';
   document.getElementById('ag-opt-testdrive').className='ag-type-opt';
   document.getElementById('ag-nome').value='';
+  document.getElementById('ag-loja').value='';
   document.getElementById('ag-modelo').value='';
   document.getElementById('ag-phone').value='';
   document.getElementById('ag-notes').value='';
@@ -4252,15 +4458,18 @@ function agSelectType(t){
 
 function agSave(){
   const nome = document.getElementById('ag-nome').value.trim();
+  const loja = document.getElementById('ag-loja').value;
   const data = document.getElementById('ag-data').value;
   const hora = document.getElementById('ag-hora').value;
   if(!nome){ showToast('Informe o nome do lead'); return; }
+  if(!loja){ showToast('Informe a loja'); return; }
   if(!data){ showToast('Informe a data'); return; }
   const arr = agLoad();
   arr.push({
     id: Date.now(),
     tipo: agSelectedType,
     nome,
+    loja,
     data,
     hora,
     modelo: document.getElementById('ag-modelo').value.trim(),
@@ -4297,7 +4506,7 @@ function agFilter(f, btn){
 }
 
 function agRender(){
-  const all = agLoad();
+  const all = agLoad().filter(a=>matchLoja(a.loja));
   const today = new Date().toISOString().slice(0,10);
   const weekEnd = new Date(); weekEnd.setDate(weekEnd.getDate()+7);
   const weekEndStr = weekEnd.toISOString().slice(0,10);
@@ -4358,7 +4567,7 @@ function agRender(){
       <div class="ag-type-badge ${typeClass}">${typeIcon}</div>
       <div class="ag-info">
         <div class="ag-lead-name">${a.nome}${doneBadge}</div>
-        <div><span class="ag-type-label ${labelClass}">${labelTxt}</span>${a.modelo?`<span style="font-size:12px;color:var(--tx3)">${a.modelo}</span>`:''}</div>
+        <div><span class="ag-type-label ${labelClass}">${labelTxt}</span>${a.loja?`<span style="font-size:12px;color:var(--ac);margin-left:6px">📍 ${a.loja}</span>`:''}${a.modelo?`<span style="font-size:12px;color:var(--tx3)">${a.modelo}</span>`:''}</div>
         ${a.notes?`<div class="ag-notes">"${a.notes}"</div>`:''}
       </div>
       <div class="ag-meta">
