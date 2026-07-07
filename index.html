@@ -3110,6 +3110,9 @@ const REFRESH_INTERVAL_MS = 30000;
 // depois disso leva esse token, e é o n8n quem decide (no servidor)
 // qual concessionária ele representa e qual banco consultar.
 const SESSION_KEY = 'rui_session';
+// Login/senha ficam válidos por até 72h contínuas de inatividade do usuário; passado esse tempo
+// sem nenhum clique/tecla, a sessão expira sozinha e a pessoa precisa entrar com usuário e senha de novo.
+const SESSION_MAX_INATIVIDADE_MS = 72*60*60*1000;
 
 function getSession(){
   try{ return JSON.parse(localStorage.getItem(SESSION_KEY)||'null'); }catch(e){ return null; }
@@ -3117,6 +3120,39 @@ function getSession(){
 function setSession(s){ localStorage.setItem(SESSION_KEY, JSON.stringify(s)); }
 function clearSession(){ localStorage.removeItem(SESSION_KEY); }
 function authToken(){ const s=getSession(); return (s&&s.token) ? s.token : null; }
+
+// true quando faz mais de 72h desde a última atividade registrada nesta sessão
+function sessaoExpiradaPorInatividade(){
+  const s=getSession();
+  if(!s||!s.token) return false;
+  if(!s.ultimaAtividade) return false; // sessão antiga sem esse campo — registrarAtividade() completa no próximo uso
+  return (Date.now()-s.ultimaAtividade) > SESSION_MAX_INATIVIDADE_MS;
+}
+
+// Marca "usuário ativo agora" — chamada em cliques/teclas reais, nunca pelo refresh automático de dados
+let _ultimaMarcacaoAtividade=0;
+function registrarAtividade(){
+  const s=getSession();
+  if(!s||!s.token) return;
+  const agora=Date.now();
+  if(agora-_ultimaMarcacaoAtividade<60000) return; // throttle: no máximo 1x por minuto, evita gravar localStorage a cada clique
+  _ultimaMarcacaoAtividade=agora;
+  s.ultimaAtividade=agora;
+  setSession(s);
+}
+
+let _monitorInatividadeAtivo=false;
+function iniciarMonitorInatividade(){
+  if(_monitorInatividadeAtivo) return;
+  _monitorInatividadeAtivo=true;
+  ['click','keydown','touchstart'].forEach(evt=>document.addEventListener(evt, registrarAtividade, {passive:true}));
+  setInterval(()=>{ if(authToken() && sessaoExpiradaPorInatividade()) forcarLogoutPorInatividade(); }, 5*60*1000);
+}
+
+function forcarLogoutPorInatividade(){
+  clearSession();
+  showLogin('Sessão expirada após 72h sem uso. Faça login novamente.');
+}
 
 function showLogin(msg){
   const ov=document.getElementById('loginOverlay');
@@ -3165,7 +3201,7 @@ async function doLogin(ev){
       btn.disabled=false; btn.textContent='Entrar';
       return false;
     }
-    setSession({token:data.token, concessionaria:data.concessionaria||'', loja_slug:data.loja_slug||''});
+    setSession({token:data.token, concessionaria:data.concessionaria||'', loja_slug:data.loja_slug||'', ultimaAtividade:Date.now()});
     hideLogin();
     startDashboard();
   }catch(e){
@@ -3266,6 +3302,7 @@ function mapLead(l){
     localizacao: '',
     causa:       l.submotivo||l.causa_esfriamento||'',
     submotivo:        l.submotivo||'',
+    motivo_categoria: categorizaMotivo(l.submotivo||l.causa_esfriamento||''),
     area_responsavel: l.area_responsavel||'',
     data_esfriamento: l.data_esfriamento||'',
     desfecho:    l.desfecho_visita||'',
@@ -3904,11 +3941,15 @@ function startDashboard(){
   atualizarDashboard();
   setInterval(atualizarDashboard, REFRESH_INTERVAL_MS);
   setInterval(()=>{ if(document.getElementById('p-filaespera').style.display!=='none') fetchFilaData(); }, REFRESH_INTERVAL_MS);
+  registrarAtividade();
+  iniciarMonitorInatividade();
 }
 
 document.addEventListener('DOMContentLoaded',()=>{
-  if(authToken()){ hideLogin(); startDashboard(); }
-  else{ showLogin(); }
+  if(!authToken()){ showLogin(); return; }
+  if(sessaoExpiradaPorInatividade()){ forcarLogoutPorInatividade(); return; }
+  hideLogin();
+  startDashboard();
 });
 
 function filterFila(btn, filter) {
@@ -3938,6 +3979,38 @@ const AREA_LABELS = {
   produto_estoque:    {nome:'Produto/Estoque',    cor:'#D4AF37'},
   processo_comercial: {nome:'Processo Comercial', cor:'#6090FF'}
 };
+
+// Motivos fixos que o Agente Rui pode escolher para caracterizar um lead esfriado (campo submotivo).
+// Qualquer texto que não bater com um destes é tratado como "Outro motivo" (a IA descreve livremente
+// no mesmo campo submotivo quando o caso não se encaixa em nenhuma categoria fixa).
+const OUTRO_MOTIVO_LABEL = 'Outro motivo';
+const MOTIVOS_FIXOS = [
+  'Preço',
+  'Falta de estoque',
+  'Prazo longo de entrega',
+  'Só pesquisando (lead frio)',
+  'Ghosting',
+  'Indecisão',
+  'Insatisfeito',
+  'Co-decisor pendente'
+];
+const _MOTIVOS_FIXOS_NORM = MOTIVOS_FIXOS.map(m=>_normTxt(m));
+
+// Normaliza acentos, caixa e separadores (_ e -) — permite reconhecer tanto texto natural
+// ("Co-decisor pendente") quanto valor técnico em snake_case vindo do n8n ("co_decisor_pendente").
+function _normTxt(s){
+  return (s||'').normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .replace(/[_-]+/g,' ').replace(/\s+/g,' ').trim().toLowerCase();
+}
+
+// Classifica o texto bruto de submotivo em uma das categorias fixas, ou em "Outro motivo"
+// quando o texto não corresponde a nenhuma delas (ex: descrição livre da IA).
+function categorizaMotivo(submotivoBruto){
+  if(!submotivoBruto) return '';
+  const norm=_normTxt(submotivoBruto);
+  const i=_MOTIVOS_FIXOS_NORM.indexOf(norm);
+  return i>=0 ? MOTIVOS_FIXOS[i] : OUTRO_MOTIVO_LABEL;
+}
 
 // Gera slug único para cada causa/área (usado como ID nas barras/cards/modal)
 function slugCausa(label){
@@ -3984,13 +4057,15 @@ function buildDiagnostico(){
   const leadsComArea     =DIAGNOSTICO_LEADS.filter(l=>l.area_responsavel);
   if(leadsComSubmotivo.length===0&&leadsComArea.length===0) return;
 
-  // Agrupa por submotivo — contagem real, direto de cada lead (l.submotivo), não mais o agregado do N8N
+  // Agrupa por categoria fixa de motivo (Preço, Falta de estoque, etc.) — contagem real, direto de cada
+  // lead. Textos que não batem com nenhuma categoria fixa (ex: descrição livre da IA) caem em "Outro motivo".
   const causaMap={};
   leadsComSubmotivo.forEach(l=>{
-    if(!causaMap[l.submotivo]) causaMap[l.submotivo]={label:l.submotivo,count:0,areaCounts:{}};
-    causaMap[l.submotivo].count++;
+    const cat=l.motivo_categoria||categorizaMotivo(l.submotivo);
+    if(!causaMap[cat]) causaMap[cat]={label:cat,count:0,areaCounts:{}};
+    causaMap[cat].count++;
     const ar=l.area_responsavel||'';
-    causaMap[l.submotivo].areaCounts[ar]=(causaMap[l.submotivo].areaCounts[ar]||0)+1;
+    causaMap[cat].areaCounts[ar]=(causaMap[cat].areaCounts[ar]||0)+1;
   });
   const causas=Object.values(causaMap).sort((a,b)=>b.count-a.count);
 
@@ -4024,7 +4099,7 @@ function buildDiagnostico(){
     const meta=AREA_LABELS[key];
     if(!areaMap[key]) areaMap[key]={valor:key,nome:meta?meta.nome:key,cor:meta?meta.cor:'#6B7280',total:0,itens:{}};
     areaMap[key].total++;
-    const subl=l.submotivo||'Motivo não especificado';
+    const subl=l.motivo_categoria||categorizaMotivo(l.submotivo)||'Motivo não especificado';
     areaMap[key].itens[subl]=(areaMap[key].itens[subl]||0)+1;
   });
   const areas=Object.values(areaMap).sort((a,b)=>b.total-a.total);
@@ -4100,10 +4175,12 @@ function openDiagModal(id, tipo){
 
   document.getElementById('diagModalTitle').textContent=reason.label;
 
-  // Filtra leads reais por comparação EXATA no campo correspondente (nunca por texto aproximado)
+  // Filtra leads reais por comparação EXATA no campo correspondente (nunca por texto aproximado).
+  // Para submotivo, compara pela categoria fixa (motivo_categoria) — não pelo texto bruto, já que
+  // "Outro motivo" agrupa várias descrições livres diferentes sob a mesma categoria.
   const leadsComCausa=(tipo==='area'
     ? DIAGNOSTICO_LEADS.filter(l=>l.area_responsavel===reason.valor)
-    : DIAGNOSTICO_LEADS.filter(l=>l.submotivo===reason.valor)
+    : DIAGNOSTICO_LEADS.filter(l=>(l.motivo_categoria||categorizaMotivo(l.submotivo))===reason.valor)
   ).slice(0,10);
 
   document.getElementById('diagModalSub').innerHTML=
@@ -4123,11 +4200,15 @@ function openDiagModal(id, tipo){
       const tel=(l.telefone||'').replace(/\D/g,'');
       const href=tel?`https://wa.me/${tel}`:'#';
       const dataEsf=l.data_esfriamento?new Date(l.data_esfriamento).toLocaleDateString('pt-BR'):'—';
+      // Na categoria "Outro motivo" cada lead tem uma descrição livre diferente — mostra o texto
+      // exato registrado pelo Rui para esse lead (útil nas demais categorias também, como confirmação)
+      const submotivoTxt=(l.submotivo&&l.submotivo!==reason.label)?`<div class="diag-lead-meta" style="margin-top:2px;color:var(--tx2)">"${l.submotivo}"</div>`:'';
       return `<div class="diag-lead-row">
         <div class="diag-lead-av" style="background:${col}">${initials}</div>
         <div class="diag-lead-info">
           <div class="diag-lead-name">${l.nome||'—'}</div>
           <div class="diag-lead-meta">Score ${l.score||0} · ${l.temperatura||'—'} · ${l.modelo||'—'} · ${l.canal||'—'} · Esfriou em ${dataEsf}</div>
+          ${submotivoTxt}
         </div>
         <a class="diag-wa-btn" href="${href}" target="_blank" rel="noopener">${waIcon} WhatsApp</a>
       </div>`;
