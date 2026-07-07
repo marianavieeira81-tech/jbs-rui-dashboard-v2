@@ -4141,23 +4141,26 @@ const AREA_LABELS = {
 };
 
 // Motivos fixos que o Agente Rui pode escolher para caracterizar um lead esfriado (campo submotivo).
+// Lista sincronizada com os "SUBMOTIVOS VÁLIDOS" do prompt real do n8n (nó "Code — Montar Prompt").
 // Qualquer texto que não bater com um destes é tratado como "Outro motivo" (a IA descreve livremente
 // no mesmo campo submotivo quando o caso não se encaixa em nenhuma categoria fixa).
 const OUTRO_MOTIVO_LABEL = 'Outro motivo';
 const MOTIVOS_FIXOS = [
-  'Preço',
-  'Falta de estoque',
-  'Prazo longo de entrega',
-  'Só pesquisando (lead frio)',
-  'Ghosting',
-  'Indecisão',
-  'Insatisfeito',
-  'Co-decisor pendente'
+  'Sem resposta após follow-up',
+  'Perdido na transferência',
+  'Qualificação incompleta',
+  'Preço fora do orçamento',
+  'Financiamento provável negado',
+  'Modelo indisponível',
+  'Desistência por concorrente',
+  'Sem urgência',
+  'Co-decisor dependente',
+  'Intenção de troca sem acordo'
 ];
 const _MOTIVOS_FIXOS_NORM = MOTIVOS_FIXOS.map(m=>_normTxt(m));
 
 // Normaliza acentos, caixa e separadores (_ e -) — permite reconhecer tanto texto natural
-// ("Co-decisor pendente") quanto valor técnico em snake_case vindo do n8n ("co_decisor_pendente").
+// ("Co-decisor dependente") quanto valor técnico em snake_case vindo do n8n ("co_decisor_dependente").
 function _normTxt(s){
   return (s||'').normalize('NFD').replace(/[̀-ͯ]/g,'')
     .replace(/[_-]+/g,' ').replace(/\s+/g,' ').trim().toLowerCase();
@@ -4222,7 +4225,7 @@ function buildDiagnostico(){
   const leadsComArea     =diagLeads.filter(l=>l.area_responsavel);
   if(leadsComSubmotivo.length===0&&leadsComArea.length===0) return;
 
-  // Agrupa por categoria fixa de motivo (Preço, Falta de estoque, etc.) — contagem real, direto de cada
+  // Agrupa por categoria fixa de motivo (Preço fora do orçamento, Modelo indisponível, etc.) — contagem real, direto de cada
   // lead. Textos que não batem com nenhuma categoria fixa (ex: descrição livre da IA) caem em "Outro motivo".
   const causaMap={};
   leadsComSubmotivo.forEach(l=>{
