@@ -842,7 +842,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   <div class="sec">Últimos leads atendidos pelo Rui</div>
   <div class="card" data-tabela="leads">
     <table class="ltbl">
-      <thead><tr><th>Lead</th><th>Canal</th><th>Score Rui</th><th>Modelo buscado</th><th>Pagamento</th><th>Status</th><th>Setor</th></tr></thead>
+      <thead><tr><th>Lead</th><th>Canal</th><th>Score Rui</th><th>Modelo buscado</th><th>Status</th><th>Setor</th></tr></thead>
       <tbody id="ltbody"></tbody>
     </table>
   </div>
@@ -2782,12 +2782,12 @@ function buildTable(){
       <td><strong>${l.nome}</strong></td>
       <td>${canalPill(l)}</td>
       <td><span class="sp ${scC(l.score)}">${l.score}/100</span></td>
-      <td>${l.modelo||'—'}</td><td>${l.pagamento||'—'}</td>
+      <td>${l.modelo||'—'}</td>
       <td><span class="stpill ${stM[l.status]||'st-i'}">${l.status}</span></td>
       <td>${setorPill(l.setor)}</td>
     </tr>`).join('');
   } else {
-    tb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:40px 20px;color:var(--tx3);font-size:13px">Aguardando primeiros leads do agente Rui...</td></tr>';
+    tb.innerHTML='<tr><td colspan="6" style="text-align:center;padding:40px 20px;color:var(--tx3);font-size:13px">Aguardando primeiros leads do agente Rui...</td></tr>';
   }
 }
 
