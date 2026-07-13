@@ -328,7 +328,6 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 .btn-close-report:hover{color:var(--tx);}
 
 @keyframes pulseRing{0%{transform:scale(1);opacity:.6;}100%{transform:scale(1.5);opacity:0;}}
-#ciOrb:hover{transform:scale(1.06);box-shadow:0 0 60px rgba(212,175,55,.5),0 0 120px rgba(212,175,55,.18);}
 
 /* PANORAMA — Central de Leads (WhatsApp + Check-in juntos) */
 .plt-panorama-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px;flex-wrap:wrap;}
@@ -351,7 +350,6 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 .cat-tag{position:absolute;top:10px;left:50%;transform:translateX(-50%);font-size:8.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;background:var(--ac);color:#1a1300;padding:3px 9px;border-radius:20px;white-space:nowrap;}
 .cat-card-top{display:flex;align-items:center;justify-content:center;gap:7px;margin-bottom:12px;}
 .cat-card-chip{width:9px;height:9px;border-radius:3px;flex-shrink:0;}
-.cat-card-ico{font-size:36px;margin-bottom:14px;}
 .cat-card-lbl{font-size:15px;font-weight:700;margin-bottom:6px;}
 .cat-card-cnt{font-size:28px;font-weight:700;font-family:'Bebas Neue',cursive;line-height:1;margin-bottom:4px;}
 .cat-card-pct{font-size:11px;color:var(--tx3);margin-bottom:10px;}
@@ -1123,41 +1121,19 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     </div>
     <div id="ci-search-results" style="margin-bottom:16px;"></div>
 
-    <!-- ESTADO 1: Orb Check-in -->
-    <div id="ciPltClosed" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 0 40px;">
-      <div style="font-size:12px;color:var(--tx3);margin-bottom:40px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;">Clique para ver os leads presenciais por modelo</div>
-      <div style="display:flex;flex-direction:column;align-items:center;">
-        <div id="ciOrb" onclick="openCICategories()" style="
-          width:130px;height:130px;border-radius:50%;
-          background:radial-gradient(circle at 35% 35%,#2a1f00,#120e00 60%,#060400);
-          border:2px solid var(--ac);
-          box-shadow:0 0 0 8px rgba(212,175,55,.06),0 0 40px rgba(212,175,55,.28),0 0 80px rgba(212,175,55,.10);
-          display:flex;align-items:center;justify-content:center;
-          cursor:pointer;transition:all .28s;position:relative;
-        ">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64" fill="var(--ac)">
-            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-          </svg>
-          <div style="position:absolute;inset:-10px;border-radius:50%;border:1px solid rgba(212,175,55,.25);animation:pulseRing 2.8s ease-out infinite;"></div>
-          <div style="position:absolute;inset:-22px;border-radius:50%;border:1px solid rgba(212,175,55,.12);animation:pulseRing 2.8s ease-out infinite .6s;"></div>
-        </div>
-        <div style="margin-top:20px;font-size:14px;font-weight:700;color:var(--ac);letter-spacing:.04em;">Check-in</div>
-        <div style="font-size:11px;color:var(--tx3);margin-top:5px;" id="orbLeadCountCI">— leads</div>
-      </div>
-    </div>
-
-    <!-- ESTADO 2: Escolha de modelo GWM -->
-    <div id="ciPltCategories" style="display:none;">
-      <div style="display:flex;align-items:center;gap:14px;margin-bottom:28px;">
-        <button onclick="closeCICategories()" style="background:var(--s2);border:1px solid var(--bdr);color:var(--tx2);padding:7px 16px;border-radius:var(--rsm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;">&#8592; Voltar</button>
-        <div style="display:flex;align-items:center;gap:10px;">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="var(--ac)">
-            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-          </svg>
-          <span style="font-size:13px;color:var(--tx3);font-weight:600;">Check-in &#8212; Selecione o modelo de interesse</span>
+    <!-- Categorias por modelo GWM — mesmo padrão visual da parte de WhatsApp acima -->
+    <div id="ciPltCategories">
+      <div class="plt-panorama-head">
+        <div class="plt-panorama-id">
+          <span class="plt-dot" style="background:var(--ac);"></span>
+          <span class="plt-panorama-name">Leads presenciais</span>
+          <span class="plt-panorama-cnt">· <strong id="ciTotalCount">—</strong> no período · Check-in</span>
         </div>
       </div>
-      <div id="ciModelCardsGrid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:20px;"></div>
+      <span class="plt-ov-t">Panorama por modelo</span>
+      <div class="plt-ov-bar" id="ciOvBar"></div>
+      <div class="plt-ov-pcts" id="ciOvPcts"></div>
+      <div class="cat-grid" id="ciModelCardsGrid"></div>
     </div>
 
     <!-- ESTADO 3: Lista de leads do modelo selecionado -->
@@ -2236,17 +2212,12 @@ function ciRenderHistory(){
 // LEADS PRESENCIAIS — orb de check-in por modelo GWM
 // ============================================================
 function renderLeadsPresenciais(){
-  // Reseta para o estado do orb sempre que a aba é carregada
-  const closed = document.getElementById('ciPltClosed');
-  const cats   = document.getElementById('ciPltCategories');
-  const list   = document.getElementById('ciPltModelList');
-  if(closed) closed.style.display='flex';
-  if(cats)   cats.style.display='none';
-  if(list)   list.style.display='none';
-  // Atualiza contagem no orb
-  const arr = ciPresencialLeadsInRange();
-  const elCI = document.getElementById('orbLeadCountCI');
-  if(elCI) elCI.textContent = `${arr.length} lead${arr.length!==1?'s':''}`;
+  // Garante que a tela volte pra grade de modelos sempre que a aba é reaberta
+  const cats = document.getElementById('ciPltCategories');
+  const list = document.getElementById('ciPltModelList');
+  if(cats) cats.style.display='block';
+  if(list) list.style.display='none';
+  renderCIModelCards();
 }
 
 // ============================================================
@@ -2297,27 +2268,34 @@ const CI_GWM_MODELS = [
   },
 ];
 
-function openCICategories(){
-  document.getElementById('ciPltClosed').style.display='none';
-  document.getElementById('ciPltCategories').style.display='block';
-  renderCIModelCards();
-}
-
-function closeCICategories(){
-  document.getElementById('ciPltCategories').style.display='none';
-  document.getElementById('ciPltClosed').style.display='flex';
-}
-
+// Mesmo padrão da parte de WhatsApp (updateCategoryCount): total + painel de
+// panorama com % + cartões com % do total, sem clique extra pra chegar aqui.
 function renderCIModelCards(){
   const container = document.getElementById('ciModelCardsGrid');
   if(!container) return;
   const arr = ciPresencialLeadsInRange();
-  container.innerHTML = CI_GWM_MODELS.map(m=>{
-    const leads = arr.filter(r=>(r.modelos||'').toLowerCase().includes(m.name.toLowerCase()));
+  const total = arr.length;
+  const totalEl=document.getElementById('ciTotalCount');
+  if(totalEl) totalEl.textContent=total;
+  const counts = CI_GWM_MODELS.map(m=>({
+    m, n: arr.filter(r=>(r.modelos||'').toLowerCase().includes(m.name.toLowerCase())).length
+  }));
+  const barEl=document.getElementById('ciOvBar');
+  const pctsEl=document.getElementById('ciOvPcts');
+  if(barEl) barEl.innerHTML = counts.map(c=>{
+    const pct = total>0?Math.round(c.n/total*100):0;
+    return `<div class="plt-ov-seg" style="background:${c.m.color};width:${pct}%"></div>`;
+  }).join('');
+  if(pctsEl) pctsEl.innerHTML = counts.map(c=>{
+    const pct = total>0?Math.round(c.n/total*100):0;
+    return `<span style="color:${c.m.color}">${pct}%</span>`;
+  }).join('');
+  container.innerHTML = counts.map(({m,n})=>{
+    const pct = total>0?Math.round(n/total*100):0;
     return `<div class="cat-card" onclick="openCIModel('${m.name}')" style="border-color:${m.bdr};background:${m.bg};">
-      <div class="cat-card-ico" style="color:${m.color};display:flex;align-items:center;justify-content:center;margin-bottom:14px;">${m.ico}</div>
-      <div class="cat-card-lbl" style="color:${m.color};">${m.name}</div>
-      <div class="cat-card-cnt" style="color:${m.color};">${leads.length}</div>
+      <div class="cat-card-top"><span class="cat-card-chip" style="background:${m.color};"></span><div class="cat-card-lbl" style="color:${m.color};">${m.name}</div></div>
+      <div class="cat-card-cnt" style="color:${m.color};">${n}</div>
+      <div class="cat-card-pct" style="margin-bottom:2px;">${pct}% do total</div>
       <div class="cat-card-sub">leads com interesse</div>
     </div>`;
   }).join('');
@@ -3259,9 +3237,7 @@ async function refresh(){
 
 // Ponto 10: atualiza contador de leads presenciais no orb Check-in
 function updateCICount(){
-  const arr=ciPresencialLeadsInRange();
-  const el=document.getElementById('orbLeadCountCI');
-  if(el) el.textContent=`${arr.length} lead${arr.length!==1?'s':''}`;
+  renderCIModelCards();
 }
 
 // ============================================================
