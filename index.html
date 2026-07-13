@@ -115,7 +115,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 .lav{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;font-family:'Bebas Neue',cursive;}
 .lname{font-size:12px;font-weight:600;color:var(--tx);}
 .ptag{display:inline-block;font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;}
-.wa{background:rgba(0,120,60,.2);color:#00C060;}.ig{background:rgba(180,30,150,.15);color:#E060C0;}.fb{background:rgba(30,80,200,.15);color:#6090FF;}.ot{background:var(--s3);color:var(--tx2);}
+.wa{background:rgba(0,120,60,.2);color:#00C060;}.ig{background:rgba(180,30,150,.15);color:#E060C0;}.fb{background:rgba(30,80,200,.15);color:#6090FF;}.ot{background:var(--s3);color:var(--tx2);}.pr{background:rgba(212,175,55,.18);color:var(--ac);}
 
 /* TABLE */
 .ltbl{width:100%;border-collapse:collapse;}
@@ -795,6 +795,14 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
         <option value="Parnamirim">Parnamirim</option>
         <option value="Caruaru">Caruaru</option>
       </select>
+      <select class="modelo-select" onchange="setModeloFilter(this.value)">
+        <option value="todos">Todos os modelos</option>
+        <option value="Haval">Haval</option>
+        <option value="ORA">ORA</option>
+        <option value="Tank">Tank</option>
+        <option value="Poer">Poer</option>
+        <option value="WEY">WEY</option>
+      </select>
       <div class="ts"><span>Última atualização · <span style="color:var(--grn-l);font-size:10px">auto a cada 30s</span></span><strong id="tsVal">—</strong></div>
       <button class="btn-ref" onclick="refresh()">↺ Atualizar</button>
     </div>
@@ -816,12 +824,12 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     </div>
     <div class="kpi">
       <div class="kpi-tag">⚡ Rui qualificou</div><div class="kpi-lbl">Qualificação completa</div>
-      <div class="kpi-val" data-count="0">—</div>
+      <div class="kpi-val" data-count="0" data-kpi="qualificados">—</div>
       <div class="kpi-sub"><span class="pill nu">aguardando dados</span></div>
     </div>
     <div class="kpi">
-      <div class="kpi-tag">⚡ Rui transferiu</div><div class="kpi-lbl">Leads qualificados entregues</div>
-      <div class="kpi-val" data-count="0" data-kpi="transferidos">—</div>
+      <div class="kpi-tag">⏳ Fila de espera</div><div class="kpi-lbl">Leads aguardando</div>
+      <div class="kpi-val" data-count="0" data-kpi="filaEspera">—</div>
       <div class="kpi-sub"><span class="pill nu">aguardando dados</span></div>
     </div>
     <div class="kpi">
@@ -2767,11 +2775,12 @@ function buildTable(){
   const scC=s=>s>=70?'sh':s>=45?'sm':'sl';
   const setorM={'Novos':'setor-novo','Semi-novos':'setor-seminovo','Oficina':'setor-oficina','Reclamações e elogios':'setor-reclamacao','Vendas de peças e acessórios':'setor-pecas'};
   const setorPill=s=>s&&setorM[s]?`<span class="setor-pill ${setorM[s]}">${s}</span>`:'<span style="color:var(--tx3)">—</span>';
+  const canalPill=l=>(l.canal||'').toLowerCase()==='presencial'?'<span class="ptag pr">Check-in</span>':'<span class="ptag wa">WhatsApp</span>';
   // Em produção usa ACTIVE_LEADS; em demo usa o array LEADS (formato curto)
   if(DATA_MODE==='production'&&ACTIVE_LEADS.length>0){
     tb.innerHTML=ACTIVE_LEADS.filter(l=>matchLoja(l.loja)&&matchModelo(l.modelo)).slice(0,15).map(l=>`<tr>
       <td><strong>${l.nome}</strong></td>
-      <td><span class="ptag wa">WhatsApp</span></td>
+      <td>${canalPill(l)}</td>
       <td><span class="sp ${scC(l.score)}">${l.score}/100</span></td>
       <td>${l.modelo||'—'}</td><td>${l.pagamento||'—'}</td>
       <td><span class="stpill ${stM[l.status]||'st-i'}">${l.status}</span></td>
@@ -3640,11 +3649,16 @@ function getLeadsForPeriod(){
 
 async function atualizarDashboard(){
   await fetchAllData();
+  await fetchFilaData();
   buildTable();
   updateOrbCount();
   updateCICount(); // Ponto 10: mantém contador CI sincronizado no ciclo automático
   document.getElementById('tsVal').textContent=new Date().toLocaleString('pt-BR');
   if(document.getElementById('p-funil')&&document.getElementById('p-funil').style.display!=='none') buildFunil();
+  const kpiQ=document.querySelector('[data-kpi="qualificados"]');
+  if(kpiQ) kpiQ.textContent=ACTIVE_LEADS.filter(l=>l.qualificadoEm).length;
+  const kpiF=document.querySelector('[data-kpi="filaEspera"]');
+  if(kpiF) kpiF.textContent=ACTIVE_FILA.length;
 }
 
 // ============================================================
