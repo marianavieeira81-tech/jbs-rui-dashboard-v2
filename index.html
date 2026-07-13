@@ -3738,9 +3738,17 @@ function toggleFilaPerfil(idx){
   if(btn) btn.textContent=open?'▲ Ocultar qualificação':'▼ Ver qualificação completa';
 }
 
+// Prioridade da fila: score do lead + 2 pontos pra cada dia de espera —
+// cruza temperatura e tempo de espera numa única pontuação, mais quente e mais tempo esperando = mais prioridade.
+const PESO_DIA_ESPERA = 2;
+function prioridadeFila(f){
+  const dias = f.entradaISO ? Math.max(0, (new Date()-new Date(f.entradaISO))/86400000) : 0;
+  return (f.score||0) + dias*PESO_DIA_ESPERA;
+}
+
 function buildFilaEspera(){
   const source = (DATA_MODE==='production') ? ACTIVE_FILA : DEMO_FILA;
-  const fila = source.filter(f=>matchLoja(f.loja)&&matchModelo(f.modelo)).sort((a,b)=>new Date(a.entradaISO)-new Date(b.entradaISO));
+  const fila = source.filter(f=>matchLoja(f.loja)&&matchModelo(f.modelo)).sort((a,b)=>prioridadeFila(b)-prioridadeFila(a));
 
   const wrap=document.getElementById('filaList');
   if(!wrap) return;
