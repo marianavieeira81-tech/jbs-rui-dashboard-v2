@@ -1173,7 +1173,18 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 
 <!-- ============ COBERTURA NOTURNA ============ -->
 <div id="p-cobertura" style="display:none">
-  <div class="topbar"><div><div class="eye">Principal</div><h1>Cobertura 24/7</h1></div></div>
+  <div class="topbar">
+    <div><div class="eye">Principal</div><h1>Cobertura 24/7</h1></div>
+    <div class="topbar-r">
+      <span class="loja-hint">⚠ leads ainda sem loja marcada no n8n</span>
+      <select class="loja-select" onchange="setLojaFilter(this.value)">
+        <option value="todas">Todas as lojas</option>
+        <option value="Boa Viagem">Boa Viagem</option>
+        <option value="Parnamirim">Parnamirim</option>
+        <option value="Caruaru">Caruaru</option>
+      </select>
+    </div>
+  </div>
   <div style="font-size:13px;color:var(--tx2);margin-bottom:24px;line-height:1.7;max-width:640px">
     Horário humano: <strong style="color:var(--tx)">Seg–Sex 08h–19h</strong> · <strong style="color:var(--tx)">Sáb 08h–14h</strong> · <strong style="color:var(--red)">Dom fechado</strong>.
     Fora desses horários — incluindo madrugada, domingo e feriados — o Rui opera sozinho. Qualifica, responde e transfere leads que de outra forma perderiam o timing sem nenhuma resposta até o dia seguinte.
@@ -1417,20 +1428,6 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   <div class="topbar">
     <div><div class="eye">Vendedor</div><h1>Check-in de Atendimento</h1></div>
     <div class="topbar-r">
-      <select class="loja-select" onchange="setLojaFilter(this.value)">
-        <option value="todas">Todas as lojas</option>
-        <option value="Boa Viagem">Boa Viagem</option>
-        <option value="Parnamirim">Parnamirim</option>
-        <option value="Caruaru">Caruaru</option>
-      </select>
-      <select class="modelo-select" onchange="setModeloFilter(this.value)">
-        <option value="todos">Todos os modelos</option>
-        <option value="Haval">Haval</option>
-        <option value="ORA">ORA</option>
-        <option value="Tank">Tank</option>
-        <option value="Poer">Poer</option>
-        <option value="WEY">WEY</option>
-      </select>
       <div class="ts"><span>Registros salvos</span><strong id="ciCount">0</strong></div>
     </div>
   </div>
@@ -1708,6 +1705,7 @@ function refreshAllTabsForFilters(){
   buildDiagnostico();
   buildFilaEspera();
   fetchFilaEsperaSupabase();
+  calcCoberturaFromLeads(true);
   updateOrbCount();
   updateCategoryCount();
   renderLeadsPresenciais();
@@ -1921,7 +1919,7 @@ function ciInit(){
     dtEl.value = now.toISOString().slice(0,16);
   }
   ciRenderHistory();
-  document.getElementById('ciCount').textContent = ciPresencialLeads().length;
+  document.getElementById('ciCount').textContent = ciPresencialLeadsRaw().length;
 }
 
 function ciChip(el, groupId, selClass){
@@ -2066,7 +2064,7 @@ async function ciSave(){
   const arr = ciLoad();
   arr.unshift(reg);
   localStorage.setItem('ci_registros', JSON.stringify(arr));
-  document.getElementById('ciCount').textContent = ciPresencialLeads().length;
+  document.getElementById('ciCount').textContent = ciPresencialLeadsRaw().length;
   saveBtn.disabled = false;
   saveBtn.textContent = '✔ Salvar Check-in';
   ciClear();
@@ -2078,7 +2076,9 @@ function ciLoad(){
   try{ return JSON.parse(localStorage.getItem('ci_registros')||'[]'); }catch(e){return [];}
 }
 
-function ciPresencialLeads(){
+// Versão sem filtro de loja/modelo — usada na aba Check-in, que não tem esses
+// controles (foram removidos a pedido dela) e por isso deve sempre mostrar tudo.
+function ciPresencialLeadsRaw(){
   const INTENCAO_LABEL = {
     'agora':       'Comprar agora',
     'ate_30d':     'Em breve (até 30d)',
@@ -2110,7 +2110,12 @@ function ciPresencialLeads(){
     }));
   const supaWas = new Set(fromSupabase.map(l => (l.wa||'').replace(/\D/g,'')));
   const localOnly = ciLoad().filter(r => !supaWas.has((r.wa||'').replace(/\D/g,'')));
-  return [...fromSupabase, ...localOnly].filter(r => matchLoja(r.loja)&&matchModelo(r.modelos));
+  return [...fromSupabase, ...localOnly];
+}
+
+// Usada em Central de Leads (que mantém os filtros de loja/modelo compartilhados no topo).
+function ciPresencialLeads(){
+  return ciPresencialLeadsRaw().filter(r => matchLoja(r.loja)&&matchModelo(r.modelos));
 }
 
 // Mesma lista de ciPresencialLeads(), mas restrita ao período selecionado no
@@ -2193,7 +2198,7 @@ function ciBadgeStyle(cls){
 }
 
 function ciRenderHistory(){
-  const arr = ciPresencialLeads();
+  const arr = ciPresencialLeadsRaw();
   const el = document.getElementById('ci-history');
   if(!el) return;
   if(!arr.length){
@@ -3567,10 +3572,12 @@ function calcMainKPIsFromLeads(){
   });
 }
 
-// Calcula KPIs da Cobertura 24/7 a partir de ACTIVE_LEADS
-// Usado quando o N8N não retorna cobLeads/cobPct/carteiraNoturna
-function calcCoberturaFromLeads(){
-  if(!ACTIVE_LEADS.length) return;
+// Calcula KPIs da Cobertura 24/7 a partir de ACTIVE_LEADS, respeitando o filtro de loja.
+// Sem force: só preenche o que o N8N não retornou (valor ainda em "—"), usado no carregamento inicial.
+// Com force (ou filtro de loja específico ativo): sempre recalcula, usado quando o filtro muda.
+function calcCoberturaFromLeads(force){
+  const leadsDaLoja=ACTIVE_LEADS.filter(l=>matchLoja(l.loja));
+  if(!leadsDaLoja.length) return;
   function isForaHorario(dataStr,horaStr){
     if(!dataStr||!horaStr) return false;
     const d=new Date(dataStr+'T12:00:00');
@@ -3581,13 +3588,13 @@ function calcCoberturaFromLeads(){
     if(dow===6) return !(h>=8&&h<14);             // Sábado: 08h–14h
     return !(h>=8&&h<19);                          // Seg–Sex: 08h–19h
   }
-  const fora=ACTIVE_LEADS.filter(l=>isForaHorario(l.data,l.hora));
+  const fora=leadsDaLoja.filter(l=>isForaHorario(l.data,l.hora));
   const cobLeads=fora.length;
-  const cobPct=Math.round((cobLeads/ACTIVE_LEADS.length)*100);
+  const cobPct=Math.round((cobLeads/leadsDaLoja.length)*100);
   const soma=fora.reduce((s,l)=>s+(l.carteiraRaw||0),0);
   const cobCarteira=soma>=1000000?'R$ '+(soma/1000000).toFixed(1)+'M':soma>=1000?'R$ '+Math.round(soma/1000)+'k':soma>0?'R$ '+soma:'—';
-  // Preenche apenas se o N8N não tiver fornecido (valor ainda em "—")
-  const trySet=(sel,v)=>{const el=document.querySelector(sel);if(el&&(el.textContent==='—'||el.textContent==='0'))el.textContent=v;};
+  const forceNow=force||selectedLoja!=='todas';
+  const trySet=(sel,v)=>{const el=document.querySelector(sel);if(el&&(forceNow||el.textContent==='—'||el.textContent==='0'))el.textContent=v;};
   trySet('[data-kpi="cobLeads"]', cobLeads);
   trySet('[data-kpi="cobPct"]',   cobPct+'%');
   trySet('[data-kpi="cobCarteira"]', cobCarteira);
