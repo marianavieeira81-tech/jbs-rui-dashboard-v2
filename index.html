@@ -530,6 +530,11 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 .ci-chip.sel-gold{background:var(--ac-faint);color:var(--ac);border-color:rgba(212,175,55,.35);}
 .ci-chip.sel-green{background:var(--grn-bg);color:var(--grn-l);border-color:rgba(0,160,101,.3);}
 .ci-chip.sel-red{background:var(--red-bg);color:var(--red);border-color:rgba(225,29,72,.3);}
+.ci-chip.sel-setor-novo{background:rgba(56,189,248,.12);color:#38BDF8;border-color:rgba(56,189,248,.35);}
+.ci-chip.sel-setor-seminovo{background:rgba(167,139,250,.12);color:#A78BFA;border-color:rgba(167,139,250,.35);}
+.ci-chip.sel-setor-oficina{background:rgba(251,146,60,.12);color:#FB923C;border-color:rgba(251,146,60,.35);}
+.ci-chip.sel-setor-reclamacao{background:rgba(251,113,133,.12);color:#FB7185;border-color:rgba(251,113,133,.35);}
+.ci-chip.sel-setor-pecas{background:rgba(163,230,53,.12);color:#A3E635;border-color:rgba(163,230,53,.35);}
 .ci-yesno{display:flex;gap:8px;}
 .ci-yn{flex:1;padding:9px;border-radius:var(--rsm);font-size:13px;font-weight:700;cursor:pointer;border:1px solid var(--bdr);background:var(--s2);color:var(--tx3);transition:all .18s;text-align:center;font-family:inherit;}
 .ci-yn:hover{background:var(--s3);}
@@ -1483,6 +1488,18 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
           </div>
         </div>
 
+        <!-- SETOR -->
+        <div class="ci-field">
+          <div class="ci-label">Setor</div>
+          <div class="ci-chips" id="ci-setor">
+            <div class="ci-chip" data-val="Novos" onclick="ciChip(this,'ci-setor','sel-setor-novo')">Novos</div>
+            <div class="ci-chip" data-val="Semi-novos" onclick="ciChip(this,'ci-setor','sel-setor-seminovo')">Semi-novos</div>
+            <div class="ci-chip" data-val="Oficina" onclick="ciChip(this,'ci-setor','sel-setor-oficina')">Oficina</div>
+            <div class="ci-chip" data-val="Reclamações e elogios" onclick="ciChip(this,'ci-setor','sel-setor-reclamacao')">Reclamações e elogios</div>
+            <div class="ci-chip" data-val="Vendas de peças e acessórios" onclick="ciChip(this,'ci-setor','sel-setor-pecas')">Vendas de peças e acessórios</div>
+          </div>
+        </div>
+
         <!-- INTENÇÃO -->
         <div class="ci-field">
           <div class="ci-label">Intenção de compra</div>
@@ -1924,7 +1941,7 @@ function ciInit(){
 
 function ciChip(el, groupId, selClass){
   document.querySelectorAll('#'+groupId+' .ci-chip').forEach(c=>{
-    c.classList.remove('sel-gold','sel-green','sel-red');
+    [...c.classList].forEach(cls=>{ if(cls.startsWith('sel-')) c.classList.remove(cls); });
   });
   el.classList.add(selClass);
 }
@@ -1938,7 +1955,7 @@ function ciYN(groupId, val){
 }
 
 function ciGetChip(groupId){
-  const sel = document.querySelector('#'+groupId+' .ci-chip.sel-gold, #'+groupId+' .ci-chip.sel-green, #'+groupId+' .ci-chip.sel-red');
+  const sel = [...document.querySelectorAll('#'+groupId+' .ci-chip')].find(c=>[...c.classList].some(cls=>cls.startsWith('sel-')));
   return sel ? sel.dataset.val : '';
 }
 
@@ -1953,8 +1970,10 @@ function ciClear(){
   });
   const dtEl=document.getElementById('ci-dt');
   if(dtEl){const now=new Date();now.setMinutes(now.getMinutes()-now.getTimezoneOffset());dtEl.value=now.toISOString().slice(0,16);}
-  ['ci-intencao','ci-desfecho'].forEach(g=>{
-    document.querySelectorAll('#'+g+' .ci-chip').forEach(c=>c.classList.remove('sel-gold','sel-green','sel-red'));
+  ['ci-setor','ci-intencao','ci-desfecho'].forEach(g=>{
+    document.querySelectorAll('#'+g+' .ci-chip').forEach(c=>{
+      [...c.classList].forEach(cls=>{ if(cls.startsWith('sel-')) c.classList.remove(cls); });
+    });
   });
   ['ci-troca','ci-finan','ci-td','ci-prop'].forEach(g=>{
     const el=document.getElementById(g);
@@ -1969,6 +1988,7 @@ async function ciSave(){
   const vend    = document.getElementById('ci-vendedor').value.trim();
   const loja    = document.getElementById('ci-loja').value;
   const dt      = document.getElementById('ci-dt').value;
+  const setor   = ciGetChip('ci-setor');
   const intenc  = ciGetChip('ci-intencao');
   const modelo  = document.getElementById('ci-modelo').value.trim();
   const desfech = ciGetChip('ci-desfecho');
@@ -1980,6 +2000,7 @@ async function ciSave(){
   if(!vend)    missing.push('Vendedor');
   if(!loja)    missing.push('Loja');
   if(!dt)      missing.push('Data/hora');
+  if(!setor)   missing.push('Setor');
   if(!intenc)  missing.push('Intenção de compra');
   if(!desfech) missing.push('Desfecho');
 
@@ -2008,7 +2029,7 @@ async function ciSave(){
 
   const reg = {
     id: Date.now(),
-    nome, wa, cpf, vend, loja, dt, intencao: intenc, modelos: modelo,
+    nome, wa, cpf, vend, loja, dt, setor, intencao: intenc, modelos: modelo,
     troca:         ciGetYN('ci-troca'),
     financiamento: ciGetYN('ci-finan'),
     test_drive:    ciGetYN('ci-td'),
@@ -2030,6 +2051,7 @@ async function ciSave(){
     vendedor:            vend,
     loja:                loja,
     atendimento_em:      dt,
+    setor:               setor,
     intencao_compra:     INTENCAO_MAP[intenc]   || intenc,
     modelo_interesse:    modelo,
     fez_test_drive:      ciGetYN('ci-td')    === 'S',
@@ -2209,8 +2231,8 @@ function ciRenderHistory(){
     const ini = r.nome.charAt(0).toUpperCase();
     const clrAv = ciAvatarColor(r.nome);
     const dtFmt = r.dt ? new Date(r.dt).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
-    const iCls = ciIntencaoBadgeClass(r.intenc);
-    const dCls = ciDesfechoBadgeClass(r.desfech);
+    const iCls = ciIntencaoBadgeClass(r.intencao);
+    const dCls = ciDesfechoBadgeClass(r.desfecho);
     return `<div class="ci-hi">
       <div class="ci-hi-head">
         <div class="ci-hi-av" style="background:${clrAv}">${ini}</div>
@@ -2219,20 +2241,21 @@ function ciRenderHistory(){
           <div class="ci-hi-sub">${r.vend}${r.loja?' · '+r.loja:''} · ${dtFmt}</div>
         </div>
         <div style="display:flex;gap:6px;margin-left:auto;align-items:center;flex-wrap:wrap;">
-          <span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;${ciBadgeStyle(iCls)}">${r.intenc||'—'}</span>
-          <span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;${ciBadgeStyle(dCls)}">${r.desfech||'—'}</span>
+          <span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;${ciBadgeStyle(iCls)}">${r.intencao||'—'}</span>
+          <span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;${ciBadgeStyle(dCls)}">${r.desfecho||'—'}</span>
           <button class="btn-del-ci" onclick="ciDelete(${r.id})" title="Excluir">✕</button>
         </div>
       </div>
       <div class="ci-hi-grid">
         <div class="ci-hi-f"><div class="ci-hi-k">WhatsApp</div><div class="ci-hi-v">${r.wa||'—'}</div></div>
-        <div class="ci-hi-f"><div class="ci-hi-k">Modelo(s)</div><div class="ci-hi-v">${r.modelo||'—'}</div></div>
+        <div class="ci-hi-f"><div class="ci-hi-k">Setor</div><div class="ci-hi-v">${r.setor||'—'}</div></div>
+        <div class="ci-hi-f"><div class="ci-hi-k">Modelo(s)</div><div class="ci-hi-v">${r.modelos||'—'}</div></div>
         <div class="ci-hi-f"><div class="ci-hi-k">Troca</div><div class="ci-hi-v">${ciYNLabel(r.troca)}</div></div>
-        <div class="ci-hi-f"><div class="ci-hi-k">Financiamento</div><div class="ci-hi-v">${ciYNLabel(r.finan)}</div></div>
-        <div class="ci-hi-f"><div class="ci-hi-k">Test drive</div><div class="ci-hi-v">${ciYNLabel(r.td)}</div></div>
-        <div class="ci-hi-f"><div class="ci-hi-k">Proposta/Simulação</div><div class="ci-hi-v">${ciYNLabel(r.prop)}</div></div>
+        <div class="ci-hi-f"><div class="ci-hi-k">Financiamento</div><div class="ci-hi-v">${ciYNLabel(r.financiamento)}</div></div>
+        <div class="ci-hi-f"><div class="ci-hi-k">Test drive</div><div class="ci-hi-v">${ciYNLabel(r.test_drive)}</div></div>
+        <div class="ci-hi-f"><div class="ci-hi-k">Proposta/Simulação</div><div class="ci-hi-v">${ciYNLabel(r.proposta)}</div></div>
       </div>
-      ${r.obs?`<div class="ci-hi-obs">${r.obs}</div>`:''}
+      ${r.observacoes?`<div class="ci-hi-obs">${r.observacoes}</div>`:''}
     </div>`;
   }).join('');
 }
