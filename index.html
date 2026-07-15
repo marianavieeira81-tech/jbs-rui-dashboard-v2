@@ -372,14 +372,6 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 .cat-card-sub{font-size:11px;color:var(--tx3);font-weight:600;letter-spacing:.08em;text-transform:uppercase;}
 
 /* LEAD LIST */
-.ll-card{background:var(--surface);border-radius:var(--rsm);border:1px solid var(--bdr);padding:14px 18px;display:flex;align-items:center;gap:14px;margin-bottom:8px;transition:all .2s;}
-.ll-card:hover{border-color:var(--s4);}
-.ll-av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0;font-family:'Archivo',cursive;cursor:pointer;}
-.ll-info{flex:1;}
-.ll-name{font-size:14px;font-weight:600;color:var(--tx);margin-bottom:3px;cursor:pointer;}
-.ll-name:hover{color:var(--ac);}
-.ll-score{font-size:12px;font-weight:600;}
-.ll-status{display:flex;gap:8px;align-items:center;flex-shrink:0;}
 .btn-aguardando{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);color:#F59E0B;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;letter-spacing:.03em;}
 .btn-aguardando:hover{background:rgba(245,158,11,.2);transform:scale(1.04);}
 .btn-cliente{background:var(--grn-bg);border:1px solid rgba(0,160,101,.3);color:var(--grn-l);padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;}
@@ -535,6 +527,11 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 .ci-chip.sel-setor-oficina{background:rgba(251,146,60,.12);color:#FB923C;border-color:rgba(251,146,60,.35);}
 .ci-chip.sel-setor-reclamacao{background:rgba(251,113,133,.12);color:#FB7185;border-color:rgba(251,113,133,.35);}
 .ci-chip.sel-setor-pecas{background:rgba(163,230,53,.12);color:#A3E635;border-color:rgba(163,230,53,.35);}
+.ci-chip.sel-temp-frio{background:rgba(56,189,248,.12);color:#38BDF8;border-color:rgba(56,189,248,.35);}
+.ci-chip.sel-temp-morno{background:rgba(34,197,94,.12);color:#22c55e;border-color:rgba(34,197,94,.35);}
+.ci-chip.sel-temp-engajado{background:rgba(234,179,8,.12);color:#EAB308;border-color:rgba(234,179,8,.35);}
+.ci-chip.sel-temp-quente{background:rgba(249,115,22,.12);color:#F97316;border-color:rgba(249,115,22,.35);}
+.ci-chip.sel-temp-premium{background:rgba(239,68,68,.12);color:#EF4444;border-color:rgba(239,68,68,.35);}
 .ci-yesno{display:flex;gap:8px;}
 .ci-yn{flex:1;padding:9px;border-radius:var(--rsm);font-size:13px;font-weight:700;cursor:pointer;border:1px solid var(--bdr);background:var(--s2);color:var(--tx3);transition:all .18s;text-align:center;font-family:inherit;}
 .ci-yn:hover{background:var(--s3);}
@@ -1076,126 +1073,56 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     <button class="report-btn" onclick="openReportModal()">📄 Relatório</button>
   </div>
 
-  <!-- CATEGORIAS DE TEMPERATURA — WhatsApp + Check-in juntos -->
-  <div id="pltCategories">
+  <!-- CENTRAL DE LEADS UNIFICADA — WhatsApp + Check-in juntos, organizados por Setor.
+       Cada lead traz a tag de origem (WhatsApp/Presencial). Novos/Semi-novos abrem
+       por modelo GWM; os outros 3 setores vão direto pra lista final. -->
+  <div class="sec" style="margin-top:8px;">Leads qualificados · WhatsApp + Check-in</div>
+
+  <!-- BUSCA POR TELEFONE OU CPF (check-in) -->
+  <div style="margin-bottom:16px;display:flex;gap:10px;align-items:center;max-width:480px;">
+    <div style="position:relative;flex:1;">
+      <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none;opacity:.45;">🔍</span>
+      <input id="ci-search-input" type="text" class="ci-input" style="padding-left:36px;"
+        placeholder="Buscar lead por telefone ou CPF..."
+        oninput="ciSearchPresencial(this.value)"/>
+    </div>
+    <button onclick="document.getElementById('ci-search-input').value='';ciSearchPresencial('')"
+      style="background:none;border:1px solid var(--bdr);color:var(--tx3);padding:9px 13px;border-radius:var(--rsm);font-size:12px;cursor:pointer;font-family:inherit;" title="Limpar">✕</button>
+  </div>
+  <div id="ci-search-results" style="margin-bottom:16px;"></div>
+
+  <!-- ESTADO 1: setores — bloco principal, todo lead (WhatsApp ou check-in) é de algum dos 5 setores -->
+  <div id="ciPltCategories">
     <div class="plt-panorama-head">
       <div class="plt-panorama-id">
         <span class="plt-dot"></span>
         <span class="plt-panorama-name">Leads qualificados</span>
-        <span class="plt-panorama-cnt">· <strong id="pltTotalCount">—</strong> no período · WhatsApp + Check-in</span>
+        <span class="plt-panorama-cnt">· <strong id="ciTotalCount">—</strong> no período · WhatsApp + Check-in</span>
       </div>
     </div>
-    <span class="plt-ov-t">Panorama do período</span>
-    <div class="plt-ov-bar">
-      <div class="plt-ov-seg" id="ovSegPremium" style="background:#EF4444;width:0%"></div>
-      <div class="plt-ov-seg" id="ovSegQuentes" style="background:#F97316;width:0%"></div>
-      <div class="plt-ov-seg" id="ovSegEngajados" style="background:#EAB308;width:0%"></div>
-      <div class="plt-ov-seg" id="ovSegMornos" style="background:#22c55e;width:0%"></div>
-      <div class="plt-ov-seg" id="ovSegFrios" style="background:#38BDF8;width:0%"></div>
-    </div>
-    <div class="plt-ov-pcts">
-      <span style="color:#EF4444" id="ovPctPremium">—</span>
-      <span style="color:#F97316" id="ovPctQuentes">—</span>
-      <span style="color:#EAB308" id="ovPctEngajados">—</span>
-      <span style="color:#22c55e" id="ovPctMornos">—</span>
-      <span style="color:#38BDF8" id="ovPctFrios">—</span>
-    </div>
-    <div class="cat-grid">
-      <div class="cat-card priority" onclick="openLeadCategory('premium')">
-        <div class="cat-tag">Agir agora</div>
-        <div class="cat-card-top"><span class="cat-card-chip" style="background:#EF4444;"></span><div class="cat-card-lbl" style="color:#EF4444;">Premium</div></div>
-        <div class="cat-card-cnt" style="color:#EF4444;" id="cntPremium">—</div>
-        <div class="cat-card-pct" id="pctPremium">— do total</div>
-        <div class="cat-card-sub">Score acima de 85</div>
-      </div>
-      <div class="cat-card priority" onclick="openLeadCategory('quentes')">
-        <div class="cat-tag">Agir agora</div>
-        <div class="cat-card-top"><span class="cat-card-chip" style="background:#F97316;"></span><div class="cat-card-lbl" style="color:#F97316;">Quentes</div></div>
-        <div class="cat-card-cnt" style="color:#F97316;" id="cntQuentes">—</div>
-        <div class="cat-card-pct" id="pctQuentes">— do total</div>
-        <div class="cat-card-sub">Score 71 a 85</div>
-      </div>
-      <div class="cat-card" onclick="openLeadCategory('engajados')">
-        <div class="cat-card-top"><span class="cat-card-chip" style="background:#EAB308;"></span><div class="cat-card-lbl" style="color:#EAB308;">Engajados</div></div>
-        <div class="cat-card-cnt" style="color:#EAB308;" id="cntEngajados">—</div>
-        <div class="cat-card-pct" id="pctEngajados">— do total</div>
-        <div class="cat-card-sub">Score 51 a 70</div>
-      </div>
-      <div class="cat-card" onclick="openLeadCategory('mornos')">
-        <div class="cat-card-top"><span class="cat-card-chip" style="background:#22c55e;"></span><div class="cat-card-lbl" style="color:#22c55e;">Mornos</div></div>
-        <div class="cat-card-cnt" style="color:#22c55e;" id="cntMornos">—</div>
-        <div class="cat-card-pct" id="pctMornos">— do total</div>
-        <div class="cat-card-sub">Score 26 a 50</div>
-      </div>
-      <div class="cat-card" onclick="openLeadCategory('frios')">
-        <div class="cat-card-top"><span class="cat-card-chip" style="background:#38BDF8;"></span><div class="cat-card-lbl" style="color:#38BDF8;">Frios</div></div>
-        <div class="cat-card-cnt" style="color:#38BDF8;" id="cntFrios">—</div>
-        <div class="cat-card-pct" id="pctFrios">— do total</div>
-        <div class="cat-card-sub">Score até 25</div>
-      </div>
-    </div>
+    <span class="plt-ov-t">Temperatura dos leads qualificados</span>
+    <div class="plt-ov-bar" id="ciOvBar"></div>
+    <div class="plt-ov-pcts" id="ciOvPcts"></div>
+    <span class="plt-ov-t" style="margin-top:22px;">Demanda por setor</span>
+    <div class="cat-grid" id="ciSectorCardsGrid"></div>
   </div>
 
-  <!-- ESTADO 3: lista de leads da categoria -->
-  <div id="pltLeadList" style="display:none;">
+  <!-- ESTADO 2: modelo de carro — só aparece dentro de Novos/Semi-novos -->
+  <div id="ciPltModelCards" style="display:none;">
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;">
-      <button onclick="backToCategories()" style="background:var(--s2);border:1px solid var(--bdr);color:var(--tx2);padding:7px 16px;border-radius:var(--rsm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;">← Categorias</button>
-      <div id="pltLeadListTitle" style="font-size:16px;font-weight:700;color:var(--tx)"></div>
+      <button onclick="backToCISectors()" style="background:var(--s2);border:1px solid var(--bdr);color:var(--tx2);padding:7px 16px;border-radius:var(--rsm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;">&#8592; Setores</button>
+      <div id="ciModelCardsTitle" style="font-size:16px;font-weight:700;color:var(--tx)"></div>
     </div>
-    <div id="pltLeadListContent"></div>
+    <div class="cat-grid" id="ciModelCardsGrid"></div>
   </div>
 
-  <!-- LEADS PRESENCIAIS — ACESSO POR MODELO GWM -->
-  <div style="margin-top:48px;">
-    <div class="sec">Leads Presenciais · registrados via Check-in</div>
-    <div id="drb-plataformasci"></div>
-
-    <!-- BUSCA POR TELEFONE OU CPF -->
-    <div style="margin-bottom:16px;display:flex;gap:10px;align-items:center;max-width:480px;">
-      <div style="position:relative;flex:1;">
-        <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none;opacity:.45;">🔍</span>
-        <input id="ci-search-input" type="text" class="ci-input" style="padding-left:36px;"
-          placeholder="Buscar lead por telefone ou CPF..."
-          oninput="ciSearchPresencial(this.value)"/>
-      </div>
-      <button onclick="document.getElementById('ci-search-input').value='';ciSearchPresencial('')"
-        style="background:none;border:1px solid var(--bdr);color:var(--tx3);padding:9px 13px;border-radius:var(--rsm);font-size:12px;cursor:pointer;font-family:inherit;" title="Limpar">✕</button>
+  <!-- ESTADO 3: lista final de leads -->
+  <div id="ciPltModelList" style="display:none;">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;">
+      <button onclick="backToCIFromList()" style="background:var(--s2);border:1px solid var(--bdr);color:var(--tx2);padding:7px 16px;border-radius:var(--rsm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;">&#8592; Voltar</button>
+      <div id="ciModelListTitle" style="font-size:16px;font-weight:700;color:var(--tx)"></div>
     </div>
-    <div id="ci-search-results" style="margin-bottom:16px;"></div>
-
-    <!-- ESTADO 1: setores — bloco principal, todo check-in é de algum dos 5 setores -->
-    <div id="ciPltCategories">
-      <div class="plt-panorama-head">
-        <div class="plt-panorama-id">
-          <span class="plt-dot" style="background:var(--ac);"></span>
-          <span class="plt-panorama-name">Leads presenciais</span>
-          <span class="plt-panorama-cnt">· <strong id="ciTotalCount">—</strong> no período · Check-in</span>
-        </div>
-      </div>
-      <span class="plt-ov-t">Temperatura dos leads presenciais</span>
-      <div class="plt-ov-bar" id="ciOvBar"></div>
-      <div class="plt-ov-pcts" id="ciOvPcts"></div>
-      <span class="plt-ov-t" style="margin-top:22px;">Demanda por setor</span>
-      <div class="cat-grid" id="ciSectorCardsGrid"></div>
-    </div>
-
-    <!-- ESTADO 2: modelo de carro — só aparece dentro de Novos/Semi-novos -->
-    <div id="ciPltModelCards" style="display:none;">
-      <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;">
-        <button onclick="backToCISectors()" style="background:var(--s2);border:1px solid var(--bdr);color:var(--tx2);padding:7px 16px;border-radius:var(--rsm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;">&#8592; Setores</button>
-        <div id="ciModelCardsTitle" style="font-size:16px;font-weight:700;color:var(--tx)"></div>
-      </div>
-      <div class="cat-grid" id="ciModelCardsGrid"></div>
-    </div>
-
-    <!-- ESTADO 3: lista final de leads -->
-    <div id="ciPltModelList" style="display:none;">
-      <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;">
-        <button onclick="backToCIFromList()" style="background:var(--s2);border:1px solid var(--bdr);color:var(--tx2);padding:7px 16px;border-radius:var(--rsm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;">&#8592; Voltar</button>
-        <div id="ciModelListTitle" style="font-size:16px;font-weight:700;color:var(--tx)"></div>
-      </div>
-      <div id="ciModelListContent"></div>
-    </div>
+    <div id="ciModelListContent"></div>
   </div>
 </div>
 
@@ -1515,11 +1442,11 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
         <div class="ci-field">
           <div class="ci-label">Setor</div>
           <div class="ci-chips" id="ci-setor">
-            <div class="ci-chip" data-val="Novos" onclick="ciChip(this,'ci-setor','sel-setor-novo')">Novos</div>
-            <div class="ci-chip" data-val="Semi-novos" onclick="ciChip(this,'ci-setor','sel-setor-seminovo')">Semi-novos</div>
-            <div class="ci-chip" data-val="Oficina" onclick="ciChip(this,'ci-setor','sel-setor-oficina')">Oficina</div>
-            <div class="ci-chip" data-val="Reclamações e elogios" onclick="ciChip(this,'ci-setor','sel-setor-reclamacao')">Reclamações e elogios</div>
-            <div class="ci-chip" data-val="Vendas de peças e acessórios" onclick="ciChip(this,'ci-setor','sel-setor-pecas')">Vendas de peças e acessórios</div>
+            <div class="ci-chip" data-val="Novos" onclick="ciChip(this,'ci-setor','sel-setor-novo');ciAtualizarQualificacaoVisivel()">Novos</div>
+            <div class="ci-chip" data-val="Semi-novos" onclick="ciChip(this,'ci-setor','sel-setor-seminovo');ciAtualizarQualificacaoVisivel()">Semi-novos</div>
+            <div class="ci-chip" data-val="Oficina" onclick="ciChip(this,'ci-setor','sel-setor-oficina');ciAtualizarQualificacaoVisivel()">Oficina</div>
+            <div class="ci-chip" data-val="Reclamações e elogios" onclick="ciChip(this,'ci-setor','sel-setor-reclamacao');ciAtualizarQualificacaoVisivel()">Reclamações e elogios</div>
+            <div class="ci-chip" data-val="Vendas de peças e acessórios" onclick="ciChip(this,'ci-setor','sel-setor-pecas');ciAtualizarQualificacaoVisivel()">Vendas de peças e acessórios</div>
           </div>
         </div>
 
@@ -1586,6 +1513,27 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
             <div class="ci-chip" data-val="Comprou"          onclick="ciChip(this,'ci-desfecho','sel-green')">🏆 Comprou</div>
             <div class="ci-chip" data-val="Desistiu"         onclick="ciChip(this,'ci-desfecho','sel-red')">Desistiu</div>
             <div class="ci-chip" data-val="Saiu sem definição" onclick="ciChip(this,'ci-desfecho','sel-red')">Saiu sem definição</div>
+          </div>
+        </div>
+
+        <!-- QUALIFICAÇÃO DO LEAD — só aparece para Novos/Semi-novos, quem quer -->
+        <!-- comprar carro novo ou semi-novo é quem passa pelo processo de -->
+        <!-- qualificação; o vendedor define a temperatura e justifica. -->
+        <div class="ci-sec-title" id="ci-qualif-title" style="margin-top:6px;display:none;">Qualificação do lead (Novos/Semi-novos)</div>
+        <div id="ci-qualif-block" style="display:none;">
+          <div class="ci-field">
+            <div class="ci-label">Temperatura do lead</div>
+            <div class="ci-chips" id="ci-temperatura">
+              <div class="ci-chip" data-val="Frio" onclick="ciChip(this,'ci-temperatura','sel-temp-frio')">Frio</div>
+              <div class="ci-chip" data-val="Morno" onclick="ciChip(this,'ci-temperatura','sel-temp-morno')">Morno</div>
+              <div class="ci-chip" data-val="Engajado" onclick="ciChip(this,'ci-temperatura','sel-temp-engajado')">Engajado</div>
+              <div class="ci-chip" data-val="Quente" onclick="ciChip(this,'ci-temperatura','sel-temp-quente')">Quente</div>
+              <div class="ci-chip" data-val="Premium" onclick="ciChip(this,'ci-temperatura','sel-temp-premium')">Premium</div>
+            </div>
+          </div>
+          <div class="ci-field">
+            <div class="ci-label">Justifique a temperatura escolhida</div>
+            <textarea class="ci-textarea" id="ci-justificativa" placeholder="Explique por que o lead está nessa temperatura: interesse demonstrado, urgência, orçamento, objeções, etc."></textarea>
           </div>
         </div>
 
@@ -1747,11 +1695,9 @@ function refreshAllTabsForFilters(){
   fetchFilaEsperaSupabase();
   calcCoberturaFromLeads(true);
   updateOrbCount();
-  updateCategoryCount();
-  renderLeadsPresenciais();
+  refreshCentralDeLeadsNav();
   ciRenderHistory();
   agRender();
-  if(document.getElementById('pltLeadList') && document.getElementById('pltLeadList').style.display!=='none') renderLeadList(currentCategory);
   updateLojaHints();
 }
 
@@ -1937,7 +1883,7 @@ function go(id){
   document.getElementById('p-'+id).style.display='block';
   document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
   document.querySelectorAll('.sb-item').forEach(i=>{if(i.getAttribute('onclick')?.includes("'"+id+"'"))i.classList.add('active');});
-  if(id==='plataformas'){updateOrbCount();updateCategoryCount();updateCICount();renderLeadsPresenciais();drBuild('plataformasci');}
+  if(id==='plataformas'){updateOrbCount();updateCICount();renderLeadsPresenciais();}
   if(id==='cobertura') buildCobertura();
   if(id==='funil') buildFunil();
   if(id==='filaespera') fetchFilaData();
@@ -1982,18 +1928,41 @@ function ciGetChip(groupId){
   return sel ? sel.dataset.val : '';
 }
 
+// Só quem procura carro Novo ou Semi-novo no check-in passa pela qualificação
+// (temperatura definida pelo vendedor + justificativa) — Oficina, Reclamações
+// e elogios e Vendas de peças e acessórios não são qualificados.
+function ciEhSetorQualificavel(setor){
+  return setor==='Novos'||setor==='Semi-novos';
+}
+
+// Mostra/esconde o bloco de Temperatura+Justificativa conforme o Setor escolhido.
+function ciAtualizarQualificacaoVisivel(){
+  const qualifica = ciEhSetorQualificavel(ciGetChip('ci-setor'));
+  const title = document.getElementById('ci-qualif-title');
+  const block = document.getElementById('ci-qualif-block');
+  if(title) title.style.display = qualifica ? 'flex' : 'none';
+  if(block) block.style.display = qualifica ? 'block' : 'none';
+}
+
+// Converte a temperatura escolhida pelo vendedor numa nota de 0 a 100, usando
+// o ponto médio da mesma faixa que calcTemperatura() usa pro WhatsApp — assim
+// as notas dos dois canais continuam na mesma régua e comparáveis entre si.
+function ciTemperaturaParaNota(temp){
+  return {Frio:13, Morno:38, Engajado:60, Quente:78, Premium:93}[temp] ?? null;
+}
+
 function ciGetYN(groupId){
   const grp = document.getElementById(groupId);
   return grp ? (grp.dataset.val || '') : '';
 }
 
 function ciClear(){
-  ['ci-nome','ci-wa','ci-cpf','ci-vendedor','ci-loja','ci-modelo','ci-obs'].forEach(id=>{
+  ['ci-nome','ci-wa','ci-cpf','ci-vendedor','ci-loja','ci-modelo','ci-obs','ci-justificativa'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.value='';
   });
   const dtEl=document.getElementById('ci-dt');
   if(dtEl){const now=new Date();now.setMinutes(now.getMinutes()-now.getTimezoneOffset());dtEl.value=now.toISOString().slice(0,16);}
-  ['ci-setor','ci-intencao','ci-desfecho'].forEach(g=>{
+  ['ci-setor','ci-intencao','ci-desfecho','ci-temperatura'].forEach(g=>{
     document.querySelectorAll('#'+g+' .ci-chip').forEach(c=>{
       [...c.classList].forEach(cls=>{ if(cls.startsWith('sel-')) c.classList.remove(cls); });
     });
@@ -2002,6 +1971,7 @@ function ciClear(){
     const el=document.getElementById(g);
     if(el){el.querySelectorAll('.ci-yn').forEach(b=>b.classList.remove('sel'));delete el.dataset.val;}
   });
+  ciAtualizarQualificacaoVisivel();
   const err=document.getElementById('ci-err');if(err)err.style.display='none';
 }
 
@@ -2016,6 +1986,9 @@ async function ciSave(){
   const modelo  = document.getElementById('ci-modelo').value.trim();
   const desfech = ciGetChip('ci-desfecho');
   const err     = document.getElementById('ci-err');
+  const qualifica     = ciEhSetorQualificavel(setor);
+  const temperatura   = qualifica ? ciGetChip('ci-temperatura') : '';
+  const justificativa = qualifica ? document.getElementById('ci-justificativa').value.trim() : '';
 
   const missing = [];
   if(!nome)    missing.push('Nome');
@@ -2026,6 +1999,8 @@ async function ciSave(){
   if(!setor)   missing.push('Setor');
   if(!intenc)  missing.push('Intenção de compra');
   if(!desfech) missing.push('Desfecho');
+  if(qualifica && !temperatura)   missing.push('Temperatura');
+  if(qualifica && !justificativa) missing.push('Justificativa da temperatura');
 
   if(missing.length){
     err.textContent = 'Preencha: '+missing.join(', ');
@@ -2058,11 +2033,13 @@ async function ciSave(){
     test_drive:    ciGetYN('ci-td'),
     proposta:      ciGetYN('ci-prop'),
     desfecho:      desfech,
-    observacoes:   document.getElementById('ci-obs').value.trim()
+    observacoes:   document.getElementById('ci-obs').value.trim(),
+    justificativa: justificativa
   };
-  const pont = ciCalcScore(reg);
-  reg.score = pont.score;
-  reg.temperatura = pont.temperatura;
+  // Nota e temperatura vêm sempre do que o vendedor escolheu (não são mais
+  // calculadas automaticamente) — só existem quando o setor é qualificável.
+  reg.score = qualifica ? ciTemperaturaParaNota(temperatura) : null;
+  reg.temperatura = qualifica ? temperatura : null;
 
   const saveBtn = document.querySelector('.btn-ci-save');
   saveBtn.disabled = true;
@@ -2085,10 +2062,12 @@ async function ciSave(){
     tem_veiculo_troca:   ciGetYN('ci-troca') === 'S',
     financiamento_aprov: ciGetYN('ci-finan') === 'S',
     desfecho_visita:     DESFECHO_MAP[desfech]  || desfech,
-    // score_final/temperatura calculados no dashboard a partir das respostas acima —
-    // pendente: o workflow n8n do check-in ainda não grava essas 2 colunas em `leads`.
-    score_final:         pont.score,
-    temperatura:         pont.temperatura,
+    // score_final/temperatura vêm da temperatura que o vendedor escolheu acima
+    // (só para Novos/Semi-novos; os demais setores não são qualificados) —
+    // pendente: o workflow n8n do check-in ainda não grava essas colunas em `leads`.
+    score_final:         reg.score ?? 0,
+    temperatura:         reg.temperatura || '',
+    justificativa_temperatura: justificativa,
     observacoes:         document.getElementById('ci-obs').value.trim()
   });
   // ATENÇÃO — Decisão (2026-07-15): uma única tentativa, sempre em modo JSON
@@ -2164,57 +2143,20 @@ function ciPresencialLeadsRaw(){
         modelos:      l.modelo || '',
         desfecho:     DESFECHO_LABEL[l.desfecho] || l.desfecho || '',
         troca:        'N', test_drive: 'N', proposta: 'N', financiamento: 'N',
-        observacoes:  ''
+        observacoes:  '',
+        justificativa: l.justificativa || ''
       };
-      // score_final ainda não é calculado pelo n8n para check-in (l.score vem 0/vazio) —
-      // enquanto isso não mudar lá, aproxima com os mesmos campos usados no check-in local.
-      if(l.score>0){ reg.score=l.score; reg.temperatura=l.temperatura; }
-      else{ const c=ciCalcScore(reg); reg.score=c.score; reg.temperatura=c.temperatura; }
+      // A nota é sempre a temperatura que o vendedor escolheu no formulário —
+      // só existe quando o setor é qualificável (Novos/Semi-novos). Os demais
+      // setores ficam sem nota ("Não qualificado"), mesmo que o Supabase já
+      // tenha algum valor antigo calculado automaticamente antes dessa mudança.
+      if(ciEhSetorQualificavel(reg.setor) && l.score>0){ reg.score=l.score; reg.temperatura=l.temperatura; }
+      else{ reg.score=null; reg.temperatura=null; }
       return reg;
     });
   const supaWas = new Set(fromSupabase.map(l => (l.wa||'').replace(/\D/g,'')));
-  const localOnly = ciLoad().filter(r => !supaWas.has((r.wa||'').replace(/\D/g,''))).map(r=>{
-    if(r.score==null){ const c=ciCalcScore(r); r.score=c.score; r.temperatura=c.temperatura; }
-    return r;
-  });
+  const localOnly = ciLoad().filter(r => !supaWas.has((r.wa||'').replace(/\D/g,'')));
   return [...fromSupabase, ...localOnly];
-}
-
-// ============================================================
-// PONTUAÇÃO DO CHECK-IN (D1–D5) — mesma régua de 0 a 100 usada no
-// funil de qualificação do WhatsApp (D1 Intenção/modelo, D2 Capacidade
-// financeira, D3 Urgência, D4 Decisor, D5 Objeção), mas calculada a
-// partir dos campos que JÁ existem no formulário de check-in (ela
-// decidiu não adicionar novas perguntas). Como o check-in não pergunta
-// diretamente "quem decide" nem "qual objeção", D4/D5 são aproximados
-// pelo avanço do atendimento (proposta/test drive/desfecho) — é uma
-// estimativa, não uma pontuação exata como a do bot.
-function ciCalcScore(r){
-  const intencao = r.intencao||'';
-  const temModelo = !!(r.modelos||'').trim();
-  const troca = r.troca==='S', finan = r.financiamento==='S', td = r.test_drive==='S', prop = r.proposta==='S';
-  const desfecho = r.desfecho||'';
-
-  // D1 (máx 25) — Intenção e especificidade do modelo buscado
-  const d1base = {'Comprar agora':20,'Em breve (até 30d)':15,'Pesquisando':8,'Só curiosidade':3}[intencao] ?? 5;
-  const d1 = Math.min(25, d1base + (temModelo?5:0));
-
-  // D2 (máx 20) — capacidade financeira / recurso disponível
-  const d2 = finan?20 : troca?12 : prop?10 : 5;
-
-  // D3 (máx 25) — urgência / prazo de compra
-  const d3base = desfecho==='Comprou' ? 20
-    : ({'Comprar agora':20,'Em breve (até 30d)':14,'Pesquisando':6,'Só curiosidade':2}[intencao] ?? 4);
-  const d3 = Math.min(25, d3base + (td?5:0));
-
-  // D4 (máx 20) — decisor identificado (aproximado pelo avanço do atendimento)
-  const d4 = desfecho==='Comprou'?20 : prop?14 : td?11 : 8;
-
-  // D5 (máx 10) — objeção latente / disposição (aproximado pelo desfecho)
-  const d5 = ({'Comprou':10,'Pediu retorno':5,'Vai pensar':4,'Saiu sem definição':2,'Desistiu':0}[desfecho]) ?? 6;
-
-  const score = Math.round(d1+d2+d3+d4+d5);
-  return {score, temperatura: calcTemperatura(score), d1,d2,d3,d4,d5};
 }
 
 // Status de negócio do check-in — "comprou" vira cliente; os demais
@@ -2337,7 +2279,9 @@ function ciRenderHistory(){
           <div class="ci-hi-sub">${r.vend}${r.loja?' · '+r.loja:''} · ${dtFmt}</div>
         </div>
         <div style="display:flex;gap:6px;margin-left:auto;align-items:center;flex-wrap:wrap;">
-          <span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;color:${tempColor(r.temperatura)};border:1px solid ${tempColor(r.temperatura)}44;background:${tempColor(r.temperatura)}1a;">${r.score??0}/100 · ${r.temperatura||'—'}</span>
+          ${r.score!=null
+            ? `<span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;color:${tempColor(r.temperatura)};border:1px solid ${tempColor(r.temperatura)}44;background:${tempColor(r.temperatura)}1a;">${r.score}/100 · ${r.temperatura}</span>`
+            : `<span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;color:var(--tx3);border:1px solid var(--bdr);background:var(--s2);">Não qualificado</span>`}
           <span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;${ciBadgeStyle(iCls)}">${r.intencao||'—'}</span>
           <span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;${ciBadgeStyle(dCls)}">${r.desfecho||'—'}</span>
           ${statusBadge}
@@ -2353,6 +2297,7 @@ function ciRenderHistory(){
         <div class="ci-hi-f"><div class="ci-hi-k">Test drive</div><div class="ci-hi-v">${ciYNLabel(r.test_drive)}</div></div>
         <div class="ci-hi-f"><div class="ci-hi-k">Proposta/Simulação</div><div class="ci-hi-v">${ciYNLabel(r.proposta)}</div></div>
       </div>
+      ${r.justificativa?`<div class="ci-hi-obs"><strong>Justificativa da temperatura:</strong> ${r.justificativa}</div>`:''}
       ${r.observacoes?`<div class="ci-hi-obs">${r.observacoes}</div>`:''}
     </div>`;
   }).join('');
@@ -2433,25 +2378,38 @@ const CI_GWM_MODELS = [
 // ESTADO 1 — cartões de setor (bloco principal). Mostra também a
 // distribuição de temperatura de todos os leads presenciais no período,
 // já que agora o check-in recebe pontuação (D1–D5) igual ao WhatsApp.
+// Leads de WhatsApp do período, com o setor "efetivo": quando o n8n ainda não
+// gravou o setor pro WhatsApp (comum hoje), assume Novos — o Rui só atende
+// quem quer comprar carro novo ou semi-novo, nunca oficina/peças/reclamação.
+function waLeadsComSetor(){
+  return (getLeadsForPeriod().wa||[]).map(l=>({...l, setor: l.setor || 'Novos'}));
+}
+
+// ESTADO 1 — cartões de setor (bloco principal). Junta WhatsApp + Check-in
+// num só painel. A distribuição de temperatura só considera quem foi
+// qualificado (WhatsApp sempre é; check-in só quando o vendedor já definiu
+// a temperatura em Novos/Semi-novos — os outros setores não são qualificados).
 function renderCISectorCards(){
   const container = document.getElementById('ciSectorCardsGrid');
   if(!container) return;
-  const arr = ciPresencialLeadsInRange();
+  const arr = [...waLeadsComSetor(), ...ciPresencialLeadsInRange()];
   const total = arr.length;
   const totalEl=document.getElementById('ciTotalCount');
   if(totalEl) totalEl.textContent=total;
 
-  // Painel de temperatura (Premium/Quente/Engajado/Morno/Frio)
+  // Painel de temperatura (Premium/Quente/Engajado/Morno/Frio) — só qualificados
+  const qualificados = arr.filter(l=>l.score!=null);
+  const totalQ = qualificados.length;
   const tempOrder = ['Premium','Quente','Engajado','Morno','Frio'];
-  const tempCounts = tempOrder.map(t=>({t, n: arr.filter(r=>r.temperatura===t).length}));
+  const tempCounts = tempOrder.map(t=>({t, n: qualificados.filter(r=>r.temperatura===t).length}));
   const barEl=document.getElementById('ciOvBar');
   const pctsEl=document.getElementById('ciOvPcts');
   if(barEl) barEl.innerHTML = tempCounts.map(c=>{
-    const pct = total>0?Math.round(c.n/total*100):0;
+    const pct = totalQ>0?Math.round(c.n/totalQ*100):0;
     return `<div class="plt-ov-seg" style="background:${tempColor(c.t)};width:${pct}%"></div>`;
   }).join('');
   if(pctsEl) pctsEl.innerHTML = tempCounts.map(c=>{
-    const pct = total>0?Math.round(c.n/total*100):0;
+    const pct = totalQ>0?Math.round(c.n/totalQ*100):0;
     return `<span style="color:${tempColor(c.t)}">${c.t} ${pct}%</span>`;
   }).join('');
 
@@ -2491,10 +2449,10 @@ function renderCIModelCardsForSector(setor){
   if(!container) return;
   const info = CI_SETORES.find(s=>s.nome===setor);
   if(titleEl) titleEl.innerHTML = `<span style="color:${info?.cor}">${setor}</span> · modelo de interesse`;
-  const arr = ciPresencialLeadsInRange().filter(r=>r.setor===setor);
+  const arr = [...waLeadsComSetor(), ...ciPresencialLeadsInRange()].filter(r=>r.setor===setor);
   const total = arr.length;
   const counts = CI_GWM_MODELS.map(m=>({
-    m, n: arr.filter(r=>(r.modelos||'').toLowerCase().includes(m.name.toLowerCase())).length
+    m, n: arr.filter(r=>((r.modelos||r.modelo||'')).toLowerCase().includes(m.name.toLowerCase())).length
   }));
   container.innerHTML = counts.map(({m,n})=>{
     const pct = total>0?Math.round(n/total*100):0;
@@ -2535,13 +2493,137 @@ function backToCIFromList(){
   }
 }
 
+// Estilos de badge reaproveitados pelos cards de check-in (Central de Leads e aba Check-in)
+const CI_DESFECHO_STYLE = {
+  'Comprou':            'background:var(--grn-bg);color:var(--grn-l);border:1px solid rgba(0,160,101,.3);',
+  'Pediu retorno':      'background:rgba(96,144,255,.12);color:#6090FF;border:1px solid rgba(96,144,255,.3);',
+  'Vai pensar':         'background:var(--ac-faint);color:var(--ac);border:1px solid rgba(212,175,55,.3);',
+  'Desistiu':           'background:var(--red-bg);color:var(--red);border:1px solid rgba(225,29,72,.3);',
+  'Saiu sem definição': 'background:var(--red-bg);color:var(--red);border:1px solid rgba(225,29,72,.3);',
+};
+const CI_INTENCAO_STYLE = {
+  'Comprar agora':      'background:var(--grn-bg);color:var(--grn-l);',
+  'Em breve (até 30d)': 'background:var(--ac-faint);color:var(--ac);',
+  'Pesquisando':        'background:var(--ac-faint);color:var(--ac);',
+  'Só curiosidade':     'background:var(--red-bg);color:var(--red);',
+};
+
+// Card de um lead de check-in (canal presencial) — usado tanto na Central de
+// Leads unificada quanto na aba Check-in. Mostra "Não qualificado" quando o
+// setor não é Novos/Semi-novos (não passa pelo processo de qualificação).
+function ciHiCardHTML(r){
+  const cor    = ciAvatarColor(r.nome);
+  const iniA   = r.nome.charAt(0).toUpperCase();
+  const dtFmt  = r.dt ? new Date(r.dt).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
+  const dSty   = CI_DESFECHO_STYLE[r.desfecho]  || 'background:var(--s2);color:var(--tx2);border:1px solid var(--bdr);';
+  const iSty   = CI_INTENCAO_STYLE[r.intencao]  || 'background:var(--s2);color:var(--tx2);';
+  const waLink = (r.wa||'').replace(/[^0-9]/g,'');
+  const status = ciGetStatus(r);
+  const statusBadge = status==='Cliente'
+    ? `<span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;background:var(--grn-bg);color:var(--grn-l);border:1px solid rgba(0,160,101,.3);">🏆 Cliente</span>` : '';
+  const notaBadge = r.score!=null
+    ? `<span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;color:${tempColor(r.temperatura)};border:1px solid ${tempColor(r.temperatura)}44;background:${tempColor(r.temperatura)}1a;">${r.score}/100 · ${r.temperatura}</span>`
+    : `<span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;color:var(--tx3);border:1px solid var(--bdr);background:var(--s2);">Não qualificado</span>`;
+  return `<div class="ci-hi">
+    <div class="ci-hi-head">
+      <div class="ci-hi-av" style="background:${cor}">${iniA}</div>
+      <div style="flex:1;">
+        <div class="ci-hi-name">${r.nome}</div>
+        <div class="ci-hi-sub">${r.vend||'—'} &middot; ${dtFmt}</div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex-shrink:0;">
+        <span class="ptag pr" style="margin-top:0;">Presencial</span>
+        ${notaBadge}
+        <span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;${iSty}">${r.intencao||'—'}</span>
+        <span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;${dSty}">${r.desfecho||'—'}</span>
+        ${statusBadge}
+        ${waLink?`<a href="https://wa.me/55${waLink}" target="_blank" rel="noopener" class="diag-wa-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.116 1.527 5.847L.057 23.882a.5.5 0 0 0 .612.612l6.035-1.47A11.942 11.942 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.65-.523-5.15-1.43l-.369-.218-3.827.932.933-3.827-.22-.371A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+          WhatsApp
+        </a>`:''}
+      </div>
+    </div>
+    <div class="ci-hi-grid">
+      <div class="ci-hi-f"><div class="ci-hi-k">WhatsApp</div><div class="ci-hi-v">${r.wa||'—'}</div></div>
+      <div class="ci-hi-f"><div class="ci-hi-k">Modelo(s)</div><div class="ci-hi-v">${r.modelos||'—'}</div></div>
+      <div class="ci-hi-f"><div class="ci-hi-k">Troca</div><div class="ci-hi-v">${ciYNLabel(r.troca)}</div></div>
+      <div class="ci-hi-f"><div class="ci-hi-k">Financiamento</div><div class="ci-hi-v">${ciYNLabel(r.financiamento)}</div></div>
+      <div class="ci-hi-f"><div class="ci-hi-k">Test drive</div><div class="ci-hi-v">${ciYNLabel(r.test_drive)}</div></div>
+      <div class="ci-hi-f"><div class="ci-hi-k">Proposta/Simulação</div><div class="ci-hi-v">${ciYNLabel(r.proposta)}</div></div>
+    </div>
+    ${r.justificativa?`<div class="ci-hi-obs"><strong>Justificativa da temperatura:</strong> ${r.justificativa}</div>`:''}
+    ${r.observacoes?`<div class="ci-hi-obs">${r.observacoes}</div>`:''}
+  </div>`;
+}
+
+// Card de um lead de WhatsApp dentro da Central de Leads unificada — mesma
+// família visual do check-in (ci-hi), com a tag WhatsApp e nota sempre
+// preenchida (o bot qualifica todo mundo). Clicar abre o card completo já
+// usado no resto do painel (mesmas 7 perguntas do funil de qualificação).
+// idx referencia window._ciUnifiedLeads (evita serializar o objeto no HTML).
+function waHiCardHTML(l, idx){
+  const cor    = ciAvatarColor(l.nome||'?');
+  const iniA   = ini(l.nome||'?');
+  const dtFmt  = l.data ? new Date(l.data+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'})+(l.hora?' '+l.hora:'') : (l.hora||'—');
+  const isTransferred = l.status==='Transferido';
+  const state = isTransferred ? getLeadState(l.nome) : null;
+  let statusHtml = '';
+  if(isTransferred){
+    if(state==='aguardando'){
+      statusHtml = `<button class="btn-aguardando" onclick="event.stopPropagation();leadAttend('${(l.nome||'').replace(/'/g,"\\'")}')">⏳ aguardando</button>`;
+    } else if(state==='atendendo'){
+      statusHtml = `<button class="btn-cliente" onclick="event.stopPropagation();leadOutcome('${(l.nome||'').replace(/'/g,"\\'")}','cliente')">✓ cliente</button>
+        <button class="btn-nao-fechou" onclick="event.stopPropagation();leadOutcome('${(l.nome||'').replace(/'/g,"\\'")}','nao-fechou')">✗ não fechou</button>`;
+    } else if(state==='cliente'){
+      statusHtml = `<span class="badge-cliente">✓ Cliente</span>`;
+    } else if(state==='nao-fechou'){
+      statusHtml = `<span class="badge-nao-fechou">✗ Não fechou</span>`;
+    }
+  } else {
+    statusHtml = `<span class="badge-status">${l.status||'—'}</span>`;
+  }
+  return `<div class="ci-hi" style="cursor:pointer;" onclick="openLeadCard(window._ciUnifiedLeads[${idx}])">
+    <div class="ci-hi-head">
+      <div class="ci-hi-av" style="background:${cor}">${iniA}</div>
+      <div style="flex:1;">
+        <div class="ci-hi-name">${l.nome||'—'}</div>
+        <div class="ci-hi-sub">${l.loja||'—'} &middot; ${dtFmt}</div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex-shrink:0;" onclick="event.stopPropagation()">
+        <span class="ptag wa" style="margin-top:0;">WhatsApp</span>
+        <span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;color:${tempColor(l.temperatura)};border:1px solid ${tempColor(l.temperatura)}44;background:${tempColor(l.temperatura)}1a;">${l.score}/100 · ${l.temperatura}</span>
+        ${statusHtml}
+      </div>
+    </div>
+    <div class="ci-hi-grid">
+      <div class="ci-hi-f"><div class="ci-hi-k">WhatsApp</div><div class="ci-hi-v">${l.telefone||'—'}</div></div>
+      <div class="ci-hi-f"><div class="ci-hi-k">Modelo</div><div class="ci-hi-v">${l.modelo||'—'}</div></div>
+      <div class="ci-hi-f"><div class="ci-hi-k">Veículo atual</div><div class="ci-hi-v">${l.veicAtual||'—'}</div></div>
+    </div>
+  </div>`;
+}
+
 function renderCILeadList(){
   const setor  = currentCISetor;
   const model  = currentCIModel;
   const sInfo  = CI_SETORES.find(s=>s.nome===setor);
   const gwm    = CI_GWM_MODELS.find(m=>m.name===model);
-  const arr    = ciPresencialLeadsInRange();
-  const leads  = arr.filter(r=>r.setor===setor && (!model || (r.modelos||'').toLowerCase().includes(model.toLowerCase())));
+  const matchesModel = m => !model || (m||'').toLowerCase().includes(model.toLowerCase());
+
+  const waLeads = waLeadsComSetor()
+    .filter(l=>l.setor===setor && matchesModel(l.modelo))
+    .map(l=>({...l, _origem:'whatsapp'}));
+  const ciLeads = ciPresencialLeadsInRange()
+    .filter(r=>r.setor===setor && matchesModel(r.modelos))
+    .map(r=>({...r, _origem:'presencial'}));
+  const leads = [...waLeads, ...ciLeads].sort((a,b)=>{
+    const da = a._origem==='whatsapp' ? (a.data||'') : (a.dt||'');
+    const db = b._origem==='whatsapp' ? (b.data||'') : (b.dt||'');
+    return db.localeCompare(da);
+  });
+  // Guarda a lista pra permitir abrir o card completo do WhatsApp por índice
+  // (evita serializar o lead inteiro dentro do atributo onclick).
+  window._ciUnifiedLeads = leads;
 
   const titleEl = document.getElementById('ciModelListTitle');
   if(titleEl){
@@ -2555,65 +2637,12 @@ function renderCILeadList(){
   if(!leads.length){
     content.innerHTML = `<div style="text-align:center;padding:60px 0;color:var(--tx3);font-size:13px;">
       <div style="font-size:42px;margin-bottom:14px;">📋</div>
-      Nenhum atendimento registrado em <strong style="color:var(--tx);">${model?setor+' · '+model:setor}</strong> ainda.<br>
-      <span style="font-size:11px;">Use a aba Check-in para registrar atendimentos.</span>
+      Nenhum lead em <strong style="color:var(--tx);">${model?setor+' · '+model:setor}</strong> no período selecionado.
     </div>`;
     return;
   }
 
-  const desfechoStyle = {
-    'Comprou':            'background:var(--grn-bg);color:var(--grn-l);border:1px solid rgba(0,160,101,.3);',
-    'Pediu retorno':      'background:rgba(96,144,255,.12);color:#6090FF;border:1px solid rgba(96,144,255,.3);',
-    'Vai pensar':         'background:var(--ac-faint);color:var(--ac);border:1px solid rgba(212,175,55,.3);',
-    'Desistiu':           'background:var(--red-bg);color:var(--red);border:1px solid rgba(225,29,72,.3);',
-    'Saiu sem definição': 'background:var(--red-bg);color:var(--red);border:1px solid rgba(225,29,72,.3);',
-  };
-  const intencaoStyle = {
-    'Comprar agora':      'background:var(--grn-bg);color:var(--grn-l);',
-    'Em breve (até 30d)': 'background:var(--ac-faint);color:var(--ac);',
-    'Pesquisando':        'background:var(--ac-faint);color:var(--ac);',
-    'Só curiosidade':     'background:var(--red-bg);color:var(--red);',
-  };
-
-  content.innerHTML = leads.map(r=>{
-    const cor    = ciAvatarColor(r.nome);
-    const ini    = r.nome.charAt(0).toUpperCase();
-    const dtFmt  = r.dt ? new Date(r.dt).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
-    const dSty   = desfechoStyle[r.desfecho]  || 'background:var(--s2);color:var(--tx2);border:1px solid var(--bdr);';
-    const iSty   = intencaoStyle[r.intencao]  || 'background:var(--s2);color:var(--tx2);';
-    const waLink = (r.wa||'').replace(/[^0-9]/g,'');
-    const status = ciGetStatus(r);
-    const statusBadge = status==='Cliente'
-      ? `<span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;background:var(--grn-bg);color:var(--grn-l);border:1px solid rgba(0,160,101,.3);">🏆 Cliente</span>` : '';
-    return `<div class="ci-hi">
-      <div class="ci-hi-head">
-        <div class="ci-hi-av" style="background:${cor}">${ini}</div>
-        <div style="flex:1;">
-          <div class="ci-hi-name">${r.nome}</div>
-          <div class="ci-hi-sub">${r.vend||'—'} &middot; ${dtFmt}</div>
-        </div>
-        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex-shrink:0;">
-          <span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;color:${tempColor(r.temperatura)};border:1px solid ${tempColor(r.temperatura)}44;background:${tempColor(r.temperatura)}1a;">${r.score??0}/100 · ${r.temperatura||'—'}</span>
-          <span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;${iSty}">${r.intencao||'—'}</span>
-          <span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;${dSty}">${r.desfecho||'—'}</span>
-          ${statusBadge}
-          ${waLink?`<a href="https://wa.me/55${waLink}" target="_blank" rel="noopener" class="diag-wa-btn">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.116 1.527 5.847L.057 23.882a.5.5 0 0 0 .612.612l6.035-1.47A11.942 11.942 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.65-.523-5.15-1.43l-.369-.218-3.827.932.933-3.827-.22-.371A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
-            WhatsApp
-          </a>`:''}
-        </div>
-      </div>
-      <div class="ci-hi-grid">
-        <div class="ci-hi-f"><div class="ci-hi-k">WhatsApp</div><div class="ci-hi-v">${r.wa||'—'}</div></div>
-        <div class="ci-hi-f"><div class="ci-hi-k">Modelo(s)</div><div class="ci-hi-v">${r.modelos||'—'}</div></div>
-        <div class="ci-hi-f"><div class="ci-hi-k">Troca</div><div class="ci-hi-v">${ciYNLabel(r.troca)}</div></div>
-        <div class="ci-hi-f"><div class="ci-hi-k">Financiamento</div><div class="ci-hi-v">${ciYNLabel(r.financiamento)}</div></div>
-        <div class="ci-hi-f"><div class="ci-hi-k">Test drive</div><div class="ci-hi-v">${ciYNLabel(r.test_drive)}</div></div>
-        <div class="ci-hi-f"><div class="ci-hi-k">Proposta/Simulação</div><div class="ci-hi-v">${ciYNLabel(r.proposta)}</div></div>
-      </div>
-      ${r.observacoes?`<div class="ci-hi-obs">${r.observacoes}</div>`:''}
-    </div>`;
-  }).join('');
+  content.innerHTML = leads.map((l,idx)=> l._origem==='presencial' ? ciHiCardHTML(l) : waHiCardHTML(l,idx)).join('');
 }
 
 // ============================================================
@@ -2703,51 +2732,9 @@ function updateOrbCount(){
 }
 
 // ============================================================
-// PLATAFORMAS — CATEGORIA + LISTA DE LEADS
+// PLATAFORMAS — CONTROLE DE HANDOFF (Transferido → aguardando/atendendo/cliente)
+// Usado dentro dos cards de WhatsApp da Central de Leads unificada (waHiCardHTML)
 // ============================================================
-let currentCategory = 'quentes';
-
-// Ponto novo: as 5 categorias somam leads de WhatsApp + Check-in juntos
-// (ambos já têm score_final/temperatura calculados pelo mapLead()).
-function updateCategoryCount(){
-  const leads = getLeadsForPeriod().todos||[];
-  const total = leads.length;
-  const buckets = {
-    Premium:   leads.filter(l=>l.score>85).length,
-    Quentes:   leads.filter(l=>l.score>=71&&l.score<=85).length,
-    Engajados: leads.filter(l=>l.score>=51&&l.score<=70).length,
-    Mornos:    leads.filter(l=>l.score>=26&&l.score<=50).length,
-    Frios:     leads.filter(l=>l.score<=25).length
-  };
-  const totalEl=document.getElementById('pltTotalCount');
-  if(totalEl) totalEl.textContent=total;
-  Object.keys(buckets).forEach(k=>{
-    const n=buckets[k];
-    const pct = total>0 ? Math.round(n/total*100) : 0;
-    const cntEl=document.getElementById('cnt'+k);
-    const pctEl=document.getElementById('pct'+k);
-    const segEl=document.getElementById('ovSeg'+k);
-    const ovPctEl=document.getElementById('ovPct'+k);
-    if(cntEl) cntEl.textContent=n;
-    if(pctEl) pctEl.textContent=pct+'% do total';
-    if(segEl) segEl.style.width=pct+'%';
-    if(ovPctEl) ovPctEl.textContent=pct+'%';
-  });
-}
-
-function openLeadCategory(cat){
-  currentCategory=cat;
-  document.getElementById('pltCategories').style.display='none';
-  document.getElementById('pltLeadList').style.display='block';
-  renderLeadList(cat);
-}
-
-function backToCategories(){
-  document.getElementById('pltLeadList').style.display='none';
-  document.getElementById('pltCategories').style.display='block';
-  updateCategoryCount();
-}
-
 function getLeadState(nome){
   return localStorage.getItem('adtsa_lead_'+nome)||'aguardando';
 }
@@ -2758,68 +2745,11 @@ function setLeadState(nome,state){
 function leadAttend(nome){
   // Vendedor começou a atender — "aguardando" some, aparecem "cliente" e "não fechou"
   setLeadState(nome,'atendendo');
-  renderLeadList(currentCategory);
+  renderCILeadList();
 }
 function leadOutcome(nome,outcome){
   setLeadState(nome,outcome);
-  renderLeadList(currentCategory);
-}
-
-function renderLeadList(cat){
-  const labels={premium:'Leads Premium',quentes:'Leads Quentes',engajados:'Leads Engajados',mornos:'Leads Mornos',frios:'Leads Frios'};
-  const catColors={premium:'#EF4444',quentes:'#F97316',engajados:'#EAB308',mornos:'#22c55e',frios:'#38BDF8'};
-  const titleEl=document.getElementById('pltLeadListTitle');
-  if(titleEl){
-    titleEl.innerHTML=`<span style="color:${catColors[cat]}">${labels[cat]}</span>`;
-  }
-  const leads=(getLeadsForPeriod().todos)||[];
-  const filtered=leads.filter(l=>{
-    if(cat==='premium')  return l.score>85;
-    if(cat==='quentes')  return l.score>=71&&l.score<=85;
-    if(cat==='engajados')return l.score>=51&&l.score<=70;
-    if(cat==='mornos')   return l.score>=26&&l.score<=50;
-    return l.score<=25;
-  }).sort((a,b)=>b.score-a.score);
-
-  const content=document.getElementById('pltLeadListContent');
-  if(!content) return;
-  if(filtered.length===0){
-    content.innerHTML=`<div style="text-align:center;padding:60px 0;color:var(--tx3);font-size:13px">Nenhum lead nesta categoria no período selecionado.</div>`;
-    return;
-  }
-  const scC=sc=>sc>=81?'#EF4444':sc>=61?'#F97316':sc>=41?'#EAB308':sc>=21?'#22c55e':'#38BDF8';
-  content.innerHTML=filtered.map((lead,li)=>{
-    const col=scC(lead.score);
-    const isTransferred=lead.status==='Transferido';
-    const state=isTransferred?getLeadState(lead.nome):null;
-    let statusHtml='';
-    if(isTransferred){
-      if(state==='aguardando'){
-        statusHtml=`<button class="btn-aguardando" onclick="event.stopPropagation();leadAttend('${lead.nome.replace(/'/g,"\\'")}')">⏳ aguardando</button>`;
-      } else if(state==='atendendo'){
-        statusHtml=`
-          <button class="btn-cliente" onclick="event.stopPropagation();leadOutcome('${lead.nome.replace(/'/g,"\\'")}','cliente')">✓ cliente</button>
-          <button class="btn-nao-fechou" onclick="event.stopPropagation();leadOutcome('${lead.nome.replace(/'/g,"\\'")}','nao-fechou')">✗ não fechou</button>`;
-      } else if(state==='cliente'){
-        statusHtml=`<span class="badge-cliente">✓ Cliente</span>`;
-      } else if(state==='nao-fechou'){
-        statusHtml=`<span class="badge-nao-fechou">✗ Não fechou</span>`;
-      }
-    } else {
-      statusHtml=`<span class="badge-status">${lead.status}</span>`;
-    }
-    const chPill=(lead.canal||'').toLowerCase()==='presencial'?'<span class="ptag pr">Check-in</span>':'<span class="ptag wa">WhatsApp</span>';
-    return `<div class="ll-card" onclick="openLeadCard(filteredLeads[${li}])" id="llc-${li}">
-      <div class="ll-av" style="background:${avc(li)}">${ini(lead.nome)}</div>
-      <div class="ll-info">
-        <div class="ll-name">${lead.nome}</div>
-        <div class="ll-score" style="color:${col}">${lead.score}/100 · ${lead.temperatura} · ${lead.modelo||''}</div>
-      </div>
-      <div class="ll-status">${chPill}${statusHtml}</div>
-    </div>`;
-  }).join('');
-  // Expor leads filtrados para o onclick
-  window.filteredLeads=filtered;
+  renderCILeadList();
 }
 
 // ============================================================
@@ -3163,8 +3093,12 @@ function refreshPlataformasFiltered(){
   buildTable();
   updateOrbCount();
   updateCICount();
-  if(document.getElementById('pltCategories').style.display!=='none') updateCategoryCount();
-  if(document.getElementById('pltLeadList').style.display!=='none') renderLeadList(currentCategory);
+  refreshCentralDeLeadsNav();
+}
+
+// Reaplica o estado atual da Central de Leads unificada (setor/modelo/lista)
+// sem resetar a navegação — chamado ao trocar loja/modelo ou o período.
+function refreshCentralDeLeadsNav(){
   if(document.getElementById('ciPltCategories').style.display!=='none') renderCISectorCards();
   if(document.getElementById('ciPltModelCards').style.display!=='none' && currentCISetor) renderCIModelCardsForSector(currentCISetor);
   if(document.getElementById('ciPltModelList').style.display!=='none' && currentCISetor) renderCILeadList();
@@ -3773,38 +3707,25 @@ function getStatus(l){
   return 'Em andamento';
 }
 
-// Aproxima score/temperatura de um check-in presencial vindo direto do
-// Supabase quando o n8n ainda não grava score_final pra esse canal (o
-// workflow de check-in não calcula D1–D5 como o de qualificação do
-// WhatsApp) — mesma régua usada em ciCalcScore(), só que lendo os nomes
-// de coluna que o próprio check-in envia pro banco.
-function scorePresencialAproximado(l){
-  const INTENCAO_LABEL = {agora:'Comprar agora',ate_30d:'Em breve (até 30d)',pesquisando:'Pesquisando',curiosidade:'Só curiosidade'};
-  const DESFECHO_LABEL = {vai_pensar:'Vai pensar',pediu_retorno:'Pediu retorno',comprou:'Comprou',desistiu:'Desistiu',indefinido:'Saiu sem definição'};
-  return ciCalcScore({
-    intencao:      INTENCAO_LABEL[l.intencao_compra]||'',
-    modelos:       l.veiculo_interesse||l.modelo_interesse||'',
-    troca:         l.tem_veiculo_troca?'S':'N',
-    financiamento: l.financiamento_aprov?'S':'N',
-    test_drive:    l.fez_test_drive?'S':'N',
-    proposta:      l.pediu_proposta?'S':'N',
-    desfecho:      DESFECHO_LABEL[l.desfecho_visita]||''
-  });
-}
-
 // Mapeia um registro bruto (Supabase ou N8N) para o formato interno de ACTIVE_LEADS
 function mapLead(l){
   const isPresencial = (l.canal||'')==='presencial';
+  // WhatsApp é sempre qualificado pelo bot; check-in só quando o setor é
+  // Novos/Semi-novos e o vendedor já definiu a temperatura (score_final>0) —
+  // os demais setores ficam sem nota ("Não qualificado").
+  const qualificavel = !isPresencial || ciEhSetorQualificavel(l.setor||'');
   const scoreFinal = l.score_final||0;
-  const aprox = (isPresencial && !scoreFinal) ? scorePresencialAproximado(l) : null;
   return {
     nome:        l.nome||'',
     senderId:    l.sender_id||l.telefone||'',
     telefone:    l.telefone||l.sender_id||'',
     canal:       l.canal||'whatsapp',
     loja:        l.loja||l.loja_slug||l.unidade||'',
-    score:       aprox ? aprox.score : scoreFinal,
-    temperatura: aprox ? aprox.temperatura : calcTemperatura(scoreFinal),
+    // WhatsApp sempre tem um número (0 default, igual antes); check-in só tem
+    // nota quando é qualificável E o vendedor já definiu a temperatura.
+    score:       !isPresencial ? scoreFinal : (qualificavel && scoreFinal ? scoreFinal : null),
+    temperatura: !isPresencial ? calcTemperatura(scoreFinal) : (qualificavel && scoreFinal ? calcTemperatura(scoreFinal) : null),
+    justificativa: l.justificativa_temperatura||l.justificativa||'',
     status:      getStatus(l),
     hora:        l.atualizado_em?new Date(l.atualizado_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'',
     data:        l.atualizado_em?l.atualizado_em.split('T')[0]:'',
@@ -4003,10 +3924,9 @@ function localCheckinsAsLeads(){
   return ciLoad()
     .filter(r=>!jaSincronizados.has((r.wa||'').replace(/\D/g,'')))
     .map(r=>{
-      const pont = (r.score!=null) ? {score:r.score, temperatura:r.temperatura} : ciCalcScore(r);
       return {
         nome: r.nome||'', telefone: r.wa||'', canal:'presencial', loja: r.loja||'',
-        score: pont.score, temperatura: pont.temperatura,
+        score: r.score??null, temperatura: r.temperatura??null, justificativa: r.justificativa||'',
         status: ciGetStatus(r),
         hora: r.dt?new Date(r.dt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'',
         data: r.dt?r.dt.split('T')[0]:'',
@@ -4368,7 +4288,7 @@ function buildEstoqueSection(estoque, resumo){
 // FILTRO DE PERÍODO — barra de datas compartilhada entre abas
 // ============================================================
 let GLOBAL_RANGE={from:null,to:null,preset:'mes'};
-const DR_TABS=['dash','filaespera','funil','diagnostico','checkin','plataformas','plataformasci'];
+const DR_TABS=['dash','filaespera','funil','diagnostico','checkin','plataformas'];
 
 function _drISO(d){return d.toISOString().slice(0,10);}
 function _drStartDay(d=new Date()){const r=new Date(d);r.setHours(0,0,0,0);return r;}
@@ -4474,7 +4394,7 @@ async function drFetchLeads(tabId,from,to){
     drSetCount(tabId,ACTIVE_LEADS.length);
     if(tabId==='dash'){buildTable();buildDiagnostico();animateCounters();}
     else if(tabId==='funil') buildFunil();
-    else if(tabId==='plataformas'||tabId==='plataformasci') refreshPlataformasFiltered();
+    else if(tabId==='plataformas') refreshPlataformasFiltered();
     else if(tabId==='checkin') ciRenderHistory();
   }catch(e){console.warn('[RuiAI] drFetchLeads:',e);}
 }
