@@ -854,7 +854,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   <div class="sec">Indicadores da semana · gerados automaticamente pelo Agente Rui</div>
   <div class="kpi-grid">
     <div class="kpi c-premium">
-      <div class="kpi-top"><span class="kpi-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 1 0-16 0"/><circle cx="12" cy="7" r="4"/></svg></span><div class="kpi-tag">Rui atendeu</div></div>
+      <div class="kpi-top"><span class="kpi-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 1 0-16 0"/><circle cx="12" cy="7" r="4"/></svg></span><div class="kpi-tag">WhatsApp + Check-in</div></div>
       <div class="kpi-lbl">Leads recebidos</div>
       <div class="kpi-val" data-count="0" data-kpi="total">—</div>
       <svg class="kpi-spark" width="100%" height="26" viewBox="0 0 100 26" preserveAspectRatio="none"><polyline points="0,21 20,17 40,15 60,11 80,8 100,4" fill="none" stroke="#fff" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>
@@ -1150,7 +1150,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     </div>
     <div id="ci-search-results" style="margin-bottom:16px;"></div>
 
-    <!-- Categorias por modelo GWM — mesmo padrão visual da parte de WhatsApp acima -->
+    <!-- ESTADO 1: setores — bloco principal, todo check-in é de algum dos 5 setores -->
     <div id="ciPltCategories">
       <div class="plt-panorama-head">
         <div class="plt-panorama-id">
@@ -1159,16 +1159,26 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
           <span class="plt-panorama-cnt">· <strong id="ciTotalCount">—</strong> no período · Check-in</span>
         </div>
       </div>
-      <span class="plt-ov-t">Panorama por modelo</span>
+      <span class="plt-ov-t">Temperatura dos leads presenciais</span>
       <div class="plt-ov-bar" id="ciOvBar"></div>
       <div class="plt-ov-pcts" id="ciOvPcts"></div>
+      <span class="plt-ov-t" style="margin-top:22px;">Demanda por setor</span>
+      <div class="cat-grid" id="ciSectorCardsGrid"></div>
+    </div>
+
+    <!-- ESTADO 2: modelo de carro — só aparece dentro de Novos/Semi-novos -->
+    <div id="ciPltModelCards" style="display:none;">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;">
+        <button onclick="backToCISectors()" style="background:var(--s2);border:1px solid var(--bdr);color:var(--tx2);padding:7px 16px;border-radius:var(--rsm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;">&#8592; Setores</button>
+        <div id="ciModelCardsTitle" style="font-size:16px;font-weight:700;color:var(--tx)"></div>
+      </div>
       <div class="cat-grid" id="ciModelCardsGrid"></div>
     </div>
 
-    <!-- ESTADO 3: Lista de leads do modelo selecionado -->
+    <!-- ESTADO 3: lista final de leads -->
     <div id="ciPltModelList" style="display:none;">
       <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;">
-        <button onclick="backToCICategories()" style="background:var(--s2);border:1px solid var(--bdr);color:var(--tx2);padding:7px 16px;border-radius:var(--rsm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;">&#8592; Modelos</button>
+        <button onclick="backToCIFromList()" style="background:var(--s2);border:1px solid var(--bdr);color:var(--tx2);padding:7px 16px;border-radius:var(--rsm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;">&#8592; Voltar</button>
         <div id="ciModelListTitle" style="font-size:16px;font-weight:700;color:var(--tx)"></div>
       </div>
       <div id="ciModelListContent"></div>
@@ -2037,6 +2047,9 @@ async function ciSave(){
     desfecho:      desfech,
     observacoes:   document.getElementById('ci-obs').value.trim()
   };
+  const pont = ciCalcScore(reg);
+  reg.score = pont.score;
+  reg.temperatura = pont.temperatura;
 
   const saveBtn = document.querySelector('.btn-ci-save');
   saveBtn.disabled = true;
@@ -2059,6 +2072,10 @@ async function ciSave(){
     tem_veiculo_troca:   ciGetYN('ci-troca') === 'S',
     financiamento_aprov: ciGetYN('ci-finan') === 'S',
     desfecho_visita:     DESFECHO_MAP[desfech]  || desfech,
+    // score_final/temperatura calculados no dashboard a partir das respostas acima —
+    // pendente: o workflow n8n do check-in ainda não grava essas 2 colunas em `leads`.
+    score_final:         pont.score,
+    temperatura:         pont.temperatura,
     observacoes:         document.getElementById('ci-obs').value.trim()
   });
   let ok = false;
@@ -2116,23 +2133,79 @@ function ciPresencialLeadsRaw(){
   };
   const fromSupabase = ACTIVE_LEADS
     .filter(l => l.canal === 'presencial')
-    .map(l => ({
-      id:           l.telefone || l.nome,
-      nome:         l.nome,
-      wa:           l.telefone,
-      cpf:          l.cpf || '',
-      vend:         l.vendedor || '—',
-      loja:         l.loja || '',
-      dt:           l.atendimento_em || '',
-      intencao:     INTENCAO_LABEL[l.prazo] || l.prazo || '',
-      modelos:      l.modelo || '',
-      desfecho:     DESFECHO_LABEL[l.desfecho] || l.desfecho || '',
-      troca:        'N', test_drive: 'N', proposta: 'N', financiamento: 'N',
-      observacoes:  ''
-    }));
+    .map(l => {
+      const reg = {
+        id:           l.telefone || l.nome,
+        nome:         l.nome,
+        wa:           l.telefone,
+        cpf:          l.cpf || '',
+        vend:         l.vendedor || '—',
+        loja:         l.loja || '',
+        dt:           l.atendimento_em || '',
+        setor:        l.setor || '',
+        intencao:     INTENCAO_LABEL[l.prazo] || l.prazo || '',
+        modelos:      l.modelo || '',
+        desfecho:     DESFECHO_LABEL[l.desfecho] || l.desfecho || '',
+        troca:        'N', test_drive: 'N', proposta: 'N', financiamento: 'N',
+        observacoes:  ''
+      };
+      // score_final ainda não é calculado pelo n8n para check-in (l.score vem 0/vazio) —
+      // enquanto isso não mudar lá, aproxima com os mesmos campos usados no check-in local.
+      if(l.score>0){ reg.score=l.score; reg.temperatura=l.temperatura; }
+      else{ const c=ciCalcScore(reg); reg.score=c.score; reg.temperatura=c.temperatura; }
+      return reg;
+    });
   const supaWas = new Set(fromSupabase.map(l => (l.wa||'').replace(/\D/g,'')));
-  const localOnly = ciLoad().filter(r => !supaWas.has((r.wa||'').replace(/\D/g,'')));
+  const localOnly = ciLoad().filter(r => !supaWas.has((r.wa||'').replace(/\D/g,''))).map(r=>{
+    if(r.score==null){ const c=ciCalcScore(r); r.score=c.score; r.temperatura=c.temperatura; }
+    return r;
+  });
   return [...fromSupabase, ...localOnly];
+}
+
+// ============================================================
+// PONTUAÇÃO DO CHECK-IN (D1–D5) — mesma régua de 0 a 100 usada no
+// funil de qualificação do WhatsApp (D1 Intenção/modelo, D2 Capacidade
+// financeira, D3 Urgência, D4 Decisor, D5 Objeção), mas calculada a
+// partir dos campos que JÁ existem no formulário de check-in (ela
+// decidiu não adicionar novas perguntas). Como o check-in não pergunta
+// diretamente "quem decide" nem "qual objeção", D4/D5 são aproximados
+// pelo avanço do atendimento (proposta/test drive/desfecho) — é uma
+// estimativa, não uma pontuação exata como a do bot.
+function ciCalcScore(r){
+  const intencao = r.intencao||'';
+  const temModelo = !!(r.modelos||'').trim();
+  const troca = r.troca==='S', finan = r.financiamento==='S', td = r.test_drive==='S', prop = r.proposta==='S';
+  const desfecho = r.desfecho||'';
+
+  // D1 (máx 25) — Intenção e especificidade do modelo buscado
+  const d1base = {'Comprar agora':20,'Em breve (até 30d)':15,'Pesquisando':8,'Só curiosidade':3}[intencao] ?? 5;
+  const d1 = Math.min(25, d1base + (temModelo?5:0));
+
+  // D2 (máx 20) — capacidade financeira / recurso disponível
+  const d2 = finan?20 : troca?12 : prop?10 : 5;
+
+  // D3 (máx 25) — urgência / prazo de compra
+  const d3base = desfecho==='Comprou' ? 20
+    : ({'Comprar agora':20,'Em breve (até 30d)':14,'Pesquisando':6,'Só curiosidade':2}[intencao] ?? 4);
+  const d3 = Math.min(25, d3base + (td?5:0));
+
+  // D4 (máx 20) — decisor identificado (aproximado pelo avanço do atendimento)
+  const d4 = desfecho==='Comprou'?20 : prop?14 : td?11 : 8;
+
+  // D5 (máx 10) — objeção latente / disposição (aproximado pelo desfecho)
+  const d5 = ({'Comprou':10,'Pediu retorno':5,'Vai pensar':4,'Saiu sem definição':2,'Desistiu':0}[desfecho]) ?? 6;
+
+  const score = Math.round(d1+d2+d3+d4+d5);
+  return {score, temperatura: calcTemperatura(score), d1,d2,d3,d4,d5};
+}
+
+// Status de negócio do check-in — "comprou" vira cliente; os demais
+// desfechos mantêm o lead em andamento/encerrado.
+function ciGetStatus(r){
+  if(r.desfecho==='Comprou') return 'Cliente';
+  if(r.desfecho==='Desistiu'||r.desfecho==='Saiu sem definição') return 'Encerrado';
+  return 'Em andamento';
 }
 
 // Usada em Central de Leads (que mantém os filtros de loja/modelo compartilhados no topo).
@@ -2233,6 +2306,12 @@ function ciRenderHistory(){
     const dtFmt = r.dt ? new Date(r.dt).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
     const iCls = ciIntencaoBadgeClass(r.intencao);
     const dCls = ciDesfechoBadgeClass(r.desfecho);
+    const status = ciGetStatus(r);
+    const statusBadge = status==='Cliente'
+      ? `<span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;background:var(--grn-bg);color:var(--grn-l);border:1px solid rgba(0,160,101,.3);">🏆 Cliente</span>`
+      : r.desfecho==='Pediu retorno'
+      ? `<span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(96,144,255,.12);color:#6090FF;border:1px solid rgba(96,144,255,.3);">Aguardando retorno</span>`
+      : '';
     return `<div class="ci-hi">
       <div class="ci-hi-head">
         <div class="ci-hi-av" style="background:${clrAv}">${ini}</div>
@@ -2241,8 +2320,10 @@ function ciRenderHistory(){
           <div class="ci-hi-sub">${r.vend}${r.loja?' · '+r.loja:''} · ${dtFmt}</div>
         </div>
         <div style="display:flex;gap:6px;margin-left:auto;align-items:center;flex-wrap:wrap;">
+          <span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;color:${tempColor(r.temperatura)};border:1px solid ${tempColor(r.temperatura)}44;background:${tempColor(r.temperatura)}1a;">${r.score??0}/100 · ${r.temperatura||'—'}</span>
           <span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;${ciBadgeStyle(iCls)}">${r.intencao||'—'}</span>
           <span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;${ciBadgeStyle(dCls)}">${r.desfecho||'—'}</span>
+          ${statusBadge}
           <button class="btn-del-ci" onclick="ciDelete(${r.id})" title="Excluir">✕</button>
         </div>
       </div>
@@ -2264,18 +2345,30 @@ function ciRenderHistory(){
 // LEADS PRESENCIAIS — orb de check-in por modelo GWM
 // ============================================================
 function renderLeadsPresenciais(){
-  // Garante que a tela volte pra grade de modelos sempre que a aba é reaberta
+  // Garante que a tela volte pra grade de setores sempre que a aba é reaberta
   const cats = document.getElementById('ciPltCategories');
+  const cards = document.getElementById('ciPltModelCards');
   const list = document.getElementById('ciPltModelList');
   if(cats) cats.style.display='block';
+  if(cards) cards.style.display='none';
   if(list) list.style.display='none';
-  renderCIModelCards();
+  currentCISetor = null; currentCIModel = null;
+  renderCISectorCards();
 }
 
 // ============================================================
-// FLUXO CHECK-IN — 5 modelos GWM
+// FLUXO CHECK-IN — 5 setores (Novos/Semi-novos abrem por modelo GWM;
+// Oficina/Reclamações/Peças vão direto pra lista de leads)
 // ============================================================
-let currentCIModel = null; // último modelo aberto — usado pra atualizar a lista ao trocar o período
+let currentCISetor = null; // último setor aberto — usado pra atualizar a lista ao trocar o período
+let currentCIModel = null; // último modelo aberto (só dentro de Novos/Semi-novos)
+const CI_SETORES = [
+  {nome:'Novos',                         cor:'#38BDF8', temModelo:true},
+  {nome:'Semi-novos',                    cor:'#A78BFA', temModelo:true},
+  {nome:'Oficina',                       cor:'#FB923C', temModelo:false},
+  {nome:'Reclamações e elogios',         cor:'#FB7185', temModelo:false},
+  {nome:'Vendas de peças e acessórios',  cor:'#A3E635', temModelo:false},
+];
 const CI_GWM_MODELS = [
   {
     name:'Haval', color:'#D4AF37', bg:'rgba(212,175,55,.07)', bdr:'rgba(212,175,55,.25)',
@@ -2320,28 +2413,72 @@ const CI_GWM_MODELS = [
   },
 ];
 
-// Mesmo padrão da parte de WhatsApp (updateCategoryCount): total + painel de
-// panorama com % + cartões com % do total, sem clique extra pra chegar aqui.
-function renderCIModelCards(){
-  const container = document.getElementById('ciModelCardsGrid');
+// ESTADO 1 — cartões de setor (bloco principal). Mostra também a
+// distribuição de temperatura de todos os leads presenciais no período,
+// já que agora o check-in recebe pontuação (D1–D5) igual ao WhatsApp.
+function renderCISectorCards(){
+  const container = document.getElementById('ciSectorCardsGrid');
   if(!container) return;
   const arr = ciPresencialLeadsInRange();
   const total = arr.length;
   const totalEl=document.getElementById('ciTotalCount');
   if(totalEl) totalEl.textContent=total;
+
+  // Painel de temperatura (Premium/Quente/Engajado/Morno/Frio)
+  const tempOrder = ['Premium','Quente','Engajado','Morno','Frio'];
+  const tempCounts = tempOrder.map(t=>({t, n: arr.filter(r=>r.temperatura===t).length}));
+  const barEl=document.getElementById('ciOvBar');
+  const pctsEl=document.getElementById('ciOvPcts');
+  if(barEl) barEl.innerHTML = tempCounts.map(c=>{
+    const pct = total>0?Math.round(c.n/total*100):0;
+    return `<div class="plt-ov-seg" style="background:${tempColor(c.t)};width:${pct}%"></div>`;
+  }).join('');
+  if(pctsEl) pctsEl.innerHTML = tempCounts.map(c=>{
+    const pct = total>0?Math.round(c.n/total*100):0;
+    return `<span style="color:${tempColor(c.t)}">${c.t} ${pct}%</span>`;
+  }).join('');
+
+  // Cartões de setor
+  const counts = CI_SETORES.map(s=>({s, n: arr.filter(r=>r.setor===s.nome).length}));
+  container.innerHTML = counts.map(({s,n})=>{
+    const pct = total>0?Math.round(n/total*100):0;
+    return `<div class="cat-card" onclick="openCISector('${s.nome}')" style="border-color:${s.cor}44;background:${s.cor}14;">
+      <div class="cat-card-top"><span class="cat-card-chip" style="background:${s.cor};"></span><div class="cat-card-lbl" style="color:${s.cor};">${s.nome}</div></div>
+      <div class="cat-card-cnt" style="color:${s.cor};">${n}</div>
+      <div class="cat-card-pct" style="margin-bottom:2px;">${pct}% do total</div>
+      <div class="cat-card-sub">${s.temModelo?'leads com interesse':'atendimentos registrados'}</div>
+    </div>`;
+  }).join('');
+}
+
+// ESTADO 2 — só existe dentro de Novos/Semi-novos: abre o mesmo grid de
+// modelos GWM que já existia, agora filtrado pelo setor escolhido.
+function openCISector(setor){
+  currentCISetor = setor;
+  currentCIModel = null;
+  const info = CI_SETORES.find(s=>s.nome===setor);
+  if(info && info.temModelo){
+    document.getElementById('ciPltCategories').style.display='none';
+    document.getElementById('ciPltModelCards').style.display='block';
+    renderCIModelCardsForSector(setor);
+  } else {
+    document.getElementById('ciPltCategories').style.display='none';
+    document.getElementById('ciPltModelList').style.display='block';
+    renderCILeadList();
+  }
+}
+
+function renderCIModelCardsForSector(setor){
+  const container = document.getElementById('ciModelCardsGrid');
+  const titleEl = document.getElementById('ciModelCardsTitle');
+  if(!container) return;
+  const info = CI_SETORES.find(s=>s.nome===setor);
+  if(titleEl) titleEl.innerHTML = `<span style="color:${info?.cor}">${setor}</span> · modelo de interesse`;
+  const arr = ciPresencialLeadsInRange().filter(r=>r.setor===setor);
+  const total = arr.length;
   const counts = CI_GWM_MODELS.map(m=>({
     m, n: arr.filter(r=>(r.modelos||'').toLowerCase().includes(m.name.toLowerCase())).length
   }));
-  const barEl=document.getElementById('ciOvBar');
-  const pctsEl=document.getElementById('ciOvPcts');
-  if(barEl) barEl.innerHTML = counts.map(c=>{
-    const pct = total>0?Math.round(c.n/total*100):0;
-    return `<div class="plt-ov-seg" style="background:${c.m.color};width:${pct}%"></div>`;
-  }).join('');
-  if(pctsEl) pctsEl.innerHTML = counts.map(c=>{
-    const pct = total>0?Math.round(c.n/total*100):0;
-    return `<span style="color:${c.m.color}">${pct}%</span>`;
-  }).join('');
   container.innerHTML = counts.map(({m,n})=>{
     const pct = total>0?Math.round(n/total*100):0;
     return `<div class="cat-card" onclick="openCIModel('${m.name}')" style="border-color:${m.bdr};background:${m.bg};">
@@ -2355,25 +2492,45 @@ function renderCIModelCards(){
 
 function openCIModel(model){
   currentCIModel = model;
-  document.getElementById('ciPltCategories').style.display='none';
+  document.getElementById('ciPltModelCards').style.display='none';
   document.getElementById('ciPltModelList').style.display='block';
-  renderCILeadList(model);
+  renderCILeadList();
 }
 
-function backToCICategories(){
+// Volta pra grade de setores (de qualquer um dos outros 2 estados)
+function backToCISectors(){
+  document.getElementById('ciPltModelCards').style.display='none';
   document.getElementById('ciPltModelList').style.display='none';
   document.getElementById('ciPltCategories').style.display='block';
-  renderCIModelCards();
+  currentCISetor = null; currentCIModel = null;
+  renderCISectorCards();
 }
 
-function renderCILeadList(model){
+// Volta da lista final — pro grid de modelos se veio de lá, senão pros setores
+function backToCIFromList(){
+  document.getElementById('ciPltModelList').style.display='none';
+  if(currentCIModel!==null){
+    currentCIModel = null;
+    document.getElementById('ciPltModelCards').style.display='block';
+    renderCIModelCardsForSector(currentCISetor);
+  } else {
+    backToCISectors();
+  }
+}
+
+function renderCILeadList(){
+  const setor  = currentCISetor;
+  const model  = currentCIModel;
+  const sInfo  = CI_SETORES.find(s=>s.nome===setor);
   const gwm    = CI_GWM_MODELS.find(m=>m.name===model);
   const arr    = ciPresencialLeadsInRange();
-  const leads  = arr.filter(r=>(r.modelos||'').toLowerCase().includes(model.toLowerCase()));
+  const leads  = arr.filter(r=>r.setor===setor && (!model || (r.modelos||'').toLowerCase().includes(model.toLowerCase())));
 
   const titleEl = document.getElementById('ciModelListTitle');
-  if(titleEl && gwm)
-    titleEl.innerHTML = `<span style="color:${gwm.color}">${gwm.ico} ${gwm.name}</span>&ensp;<span style="font-size:13px;font-weight:500;color:var(--tx3);">${leads.length} lead${leads.length!==1?'s':''}</span>`;
+  if(titleEl){
+    const rotulo = gwm ? `<span style="color:${gwm.color}">${setor} · ${gwm.name}</span>` : `<span style="color:${sInfo?.cor}">${setor}</span>`;
+    titleEl.innerHTML = `${rotulo}&ensp;<span style="font-size:13px;font-weight:500;color:var(--tx3);">${leads.length} lead${leads.length!==1?'s':''}</span>`;
+  }
 
   const content = document.getElementById('ciModelListContent');
   if(!content) return;
@@ -2381,7 +2538,7 @@ function renderCILeadList(model){
   if(!leads.length){
     content.innerHTML = `<div style="text-align:center;padding:60px 0;color:var(--tx3);font-size:13px;">
       <div style="font-size:42px;margin-bottom:14px;">📋</div>
-      Nenhum lead com interesse em <strong style="color:var(--tx);">${model}</strong> registrado ainda.<br>
+      Nenhum atendimento registrado em <strong style="color:var(--tx);">${model?setor+' · '+model:setor}</strong> ainda.<br>
       <span style="font-size:11px;">Use a aba Check-in para registrar atendimentos.</span>
     </div>`;
     return;
@@ -2389,7 +2546,7 @@ function renderCILeadList(model){
 
   const desfechoStyle = {
     'Comprou':            'background:var(--grn-bg);color:var(--grn-l);border:1px solid rgba(0,160,101,.3);',
-    'Pediu retorno':      'background:var(--ac-faint);color:var(--ac);border:1px solid rgba(212,175,55,.3);',
+    'Pediu retorno':      'background:rgba(96,144,255,.12);color:#6090FF;border:1px solid rgba(96,144,255,.3);',
     'Vai pensar':         'background:var(--ac-faint);color:var(--ac);border:1px solid rgba(212,175,55,.3);',
     'Desistiu':           'background:var(--red-bg);color:var(--red);border:1px solid rgba(225,29,72,.3);',
     'Saiu sem definição': 'background:var(--red-bg);color:var(--red);border:1px solid rgba(225,29,72,.3);',
@@ -2408,6 +2565,9 @@ function renderCILeadList(model){
     const dSty   = desfechoStyle[r.desfecho]  || 'background:var(--s2);color:var(--tx2);border:1px solid var(--bdr);';
     const iSty   = intencaoStyle[r.intencao]  || 'background:var(--s2);color:var(--tx2);';
     const waLink = (r.wa||'').replace(/[^0-9]/g,'');
+    const status = ciGetStatus(r);
+    const statusBadge = status==='Cliente'
+      ? `<span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;background:var(--grn-bg);color:var(--grn-l);border:1px solid rgba(0,160,101,.3);">🏆 Cliente</span>` : '';
     return `<div class="ci-hi">
       <div class="ci-hi-head">
         <div class="ci-hi-av" style="background:${cor}">${ini}</div>
@@ -2416,8 +2576,10 @@ function renderCILeadList(model){
           <div class="ci-hi-sub">${r.vend||'—'} &middot; ${dtFmt}</div>
         </div>
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex-shrink:0;">
+          <span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;color:${tempColor(r.temperatura)};border:1px solid ${tempColor(r.temperatura)}44;background:${tempColor(r.temperatura)}1a;">${r.score??0}/100 · ${r.temperatura||'—'}</span>
           <span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;${iSty}">${r.intencao||'—'}</span>
           <span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;${dSty}">${r.desfecho||'—'}</span>
+          ${statusBadge}
           ${waLink?`<a href="https://wa.me/55${waLink}" target="_blank" rel="noopener" class="diag-wa-btn">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.116 1.527 5.847L.057 23.882a.5.5 0 0 0 .612.612l6.035-1.47A11.942 11.942 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.65-.523-5.15-1.43l-.369-.218-3.827.932.933-3.827-.22-.371A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
             WhatsApp
@@ -2806,7 +2968,7 @@ function cobBuildRelatorio(){
 function buildTable(){
   const tb=document.getElementById('ltbody');
   if(!tb) return;
-  const stM={'Transferido':'st-t','Qualificado':'st-q','Em andamento':'st-a','Encerrado':'st-i'};
+  const stM={'Transferido':'st-t','Qualificado':'st-q','Cliente':'st-q','Em andamento':'st-a','Encerrado':'st-i'};
   const scC=s=>s>=70?'sh':s>=45?'sm':'sl';
   const setorM={'Novos':'setor-novo','Semi-novos':'setor-seminovo','Oficina':'setor-oficina','Reclamações e elogios':'setor-reclamacao','Vendas de peças e acessórios':'setor-pecas'};
   const setorPill=s=>s&&setorM[s]?`<span class="setor-pill ${setorM[s]}">${s}</span>`:'<span style="color:var(--tx3)">—</span>';
@@ -2864,7 +3026,9 @@ function buildFunil(){
   const TEST_IDS = new Set(['5511999990002']);
 
   // Classificação por etapa com dados reais (sem leads de teste)
-  const todos     = ACTIVE_LEADS.filter(l => !TEST_IDS.has(l.telefone) && matchLoja(l.loja) && matchModelo(l.modelo));
+  // Funil é só do fluxo automático do Rui via WhatsApp — check-in presencial
+  // tem seu próprio ciclo (setor/desfecho), não passa por esse funil.
+  const todos     = ACTIVE_LEADS.filter(l => !TEST_IDS.has(l.telefone) && (l.canal||'').toLowerCase()!=='presencial' && matchLoja(l.loja) && matchModelo(l.modelo));
   // Iniciaram: leads com score > 0 (bot atribuiu pontuação, houve interação real)
   const iniciaram = todos.filter(l => l.score > 0);
   // Qualificação completa: bot marcou explicitamente como qualificado (qualificado_em preenchido)
@@ -2983,8 +3147,9 @@ function refreshPlataformasFiltered(){
   updateCICount();
   if(document.getElementById('pltCategories').style.display!=='none') updateCategoryCount();
   if(document.getElementById('pltLeadList').style.display!=='none') renderLeadList(currentCategory);
-  if(document.getElementById('ciPltCategories').style.display!=='none') renderCIModelCards();
-  if(document.getElementById('ciPltModelList').style.display!=='none' && currentCIModel) renderCILeadList(currentCIModel);
+  if(document.getElementById('ciPltCategories').style.display!=='none') renderCISectorCards();
+  if(document.getElementById('ciPltModelCards').style.display!=='none' && currentCISetor) renderCIModelCardsForSector(currentCISetor);
+  if(document.getElementById('ciPltModelList').style.display!=='none' && currentCISetor) renderCILeadList();
 }
 
 function initNetwork(){
@@ -3289,7 +3454,7 @@ async function refresh(){
 
 // Ponto 10: atualiza contador de leads presenciais no orb Check-in
 function updateCICount(){
-  renderCIModelCards();
+  renderCISectorCards();
 }
 
 // ============================================================
@@ -3485,20 +3650,49 @@ function buildPerguntas(l){
 }
 
 function getStatus(l){
+  // Check-in presencial tem seu próprio ciclo de status: comprou vira cliente,
+  // não passa pelo funil de qualificação/transferência do WhatsApp.
+  if((l.canal||'')==='presencial'){
+    if(l.desfecho_visita==='comprou') return 'Cliente';
+    if(l.desfecho_visita==='desistiu'||l.desfecho_visita==='indefinido') return 'Encerrado';
+    return 'Em andamento';
+  }
   if(l.qualificado_em) return 'Transferido';
   if(l.followup_status==='encerrado') return 'Encerrado';
   return 'Em andamento';
 }
 
+// Aproxima score/temperatura de um check-in presencial vindo direto do
+// Supabase quando o n8n ainda não grava score_final pra esse canal (o
+// workflow de check-in não calcula D1–D5 como o de qualificação do
+// WhatsApp) — mesma régua usada em ciCalcScore(), só que lendo os nomes
+// de coluna que o próprio check-in envia pro banco.
+function scorePresencialAproximado(l){
+  const INTENCAO_LABEL = {agora:'Comprar agora',ate_30d:'Em breve (até 30d)',pesquisando:'Pesquisando',curiosidade:'Só curiosidade'};
+  const DESFECHO_LABEL = {vai_pensar:'Vai pensar',pediu_retorno:'Pediu retorno',comprou:'Comprou',desistiu:'Desistiu',indefinido:'Saiu sem definição'};
+  return ciCalcScore({
+    intencao:      INTENCAO_LABEL[l.intencao_compra]||'',
+    modelos:       l.veiculo_interesse||l.modelo_interesse||'',
+    troca:         l.tem_veiculo_troca?'S':'N',
+    financiamento: l.financiamento_aprov?'S':'N',
+    test_drive:    l.fez_test_drive?'S':'N',
+    proposta:      l.pediu_proposta?'S':'N',
+    desfecho:      DESFECHO_LABEL[l.desfecho_visita]||''
+  });
+}
+
 // Mapeia um registro bruto (Supabase ou N8N) para o formato interno de ACTIVE_LEADS
 function mapLead(l){
+  const isPresencial = (l.canal||'')==='presencial';
+  const scoreFinal = l.score_final||0;
+  const aprox = (isPresencial && !scoreFinal) ? scorePresencialAproximado(l) : null;
   return {
     nome:        l.nome||'',
     telefone:    l.telefone||l.sender_id||'',
     canal:       l.canal||'whatsapp',
     loja:        l.loja||l.loja_slug||l.unidade||'',
-    score:       l.score_final||0,
-    temperatura: calcTemperatura(l.score_final||0),
+    score:       aprox ? aprox.score : scoreFinal,
+    temperatura: aprox ? aprox.temperatura : calcTemperatura(scoreFinal),
     status:      getStatus(l),
     hora:        l.atualizado_em?new Date(l.atualizado_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'',
     data:        l.atualizado_em?l.atualizado_em.split('T')[0]:'',
@@ -3658,10 +3852,44 @@ async function fetchAllData(){
   }
   // Fallback: tenta Supabase diretamente se N8N falhou OU se não retornou leads
   if(!dadosOk || ACTIVE_LEADS.length===0) await fetchFromSupabase();
+  // Inclui check-ins registrados neste navegador que ainda não voltaram pelo
+  // N8N/Supabase (envio falhou ou o backend ainda não devolve esse lead) —
+  // sem isso, esses atendimentos só apareciam em Central de Leads/Check-in,
+  // nunca no Dashboard principal (que hoje só contava quem passou pelo Rui).
+  ACTIVE_LEADS = ACTIVE_LEADS.concat(localCheckinsAsLeads());
   // Deriva KPIs principais de ACTIVE_LEADS quando N8N não forneceu stats
   calcMainKPIsFromLeads();
   // Calcula KPIs da Cobertura localmente (preenche apenas os que ainda estão em "—")
   calcCoberturaFromLeads();
+}
+
+// Converte check-ins salvos só no localStorage (ainda não sincronizados) pro
+// mesmo formato de mapLead(), pra entrarem nos KPIs/tabela do Dashboard,
+// no Funil e em Central de Leads igual a qualquer outro lead.
+function localCheckinsAsLeads(){
+  const jaSincronizados = new Set(
+    ACTIVE_LEADS.filter(l=>(l.canal||'')==='presencial').map(l=>(l.telefone||'').replace(/\D/g,''))
+  );
+  return ciLoad()
+    .filter(r=>!jaSincronizados.has((r.wa||'').replace(/\D/g,'')))
+    .map(r=>{
+      const pont = (r.score!=null) ? {score:r.score, temperatura:r.temperatura} : ciCalcScore(r);
+      return {
+        nome: r.nome||'', telefone: r.wa||'', canal:'presencial', loja: r.loja||'',
+        score: pont.score, temperatura: pont.temperatura,
+        status: ciGetStatus(r),
+        hora: r.dt?new Date(r.dt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'',
+        data: r.dt?r.dt.split('T')[0]:'',
+        modelo: r.modelos||'', setor: r.setor||'', pagamento:'', carteiraRaw:0,
+        prazo:'', intencao: r.intencao||'',
+        veicAtual: r.troca==='S'?'Possui veículo para troca':'Sem troca',
+        decisao:'', codDetalhe:'', localizacao:'', causa:'', submotivo:'',
+        motivo_categoria:'', area_responsavel:'', data_esfriamento:'',
+        desfecho: r.desfecho||'', vendedor: r.vend||'', atendimento_em: r.dt||'',
+        cpf: r.cpf||'', qualificadoEm:null, blocoParou:null, inicouFluxo:false,
+        perguntas:[]
+      };
+    });
 }
 
 // Filtra os leads pelo período selecionado no filtro de datas compartilhado
