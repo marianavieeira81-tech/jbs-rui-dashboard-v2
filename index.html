@@ -4060,7 +4060,11 @@ async function atualizarDashboard(){
   document.getElementById('tsVal').textContent=new Date().toLocaleString('pt-BR');
   if(document.getElementById('p-funil')&&document.getElementById('p-funil').style.display!=='none') buildFunil();
   const kpiQ=document.querySelector('[data-kpi="qualificados"]');
-  if(kpiQ) kpiQ.textContent=ACTIVE_LEADS.filter(l=>l.qualificadoEm).length;
+  // Mesma regra do Funil: check-in presencial sempre tem "qualificado_em"
+  // preenchido (processo manual do vendedor), então não conta aqui — senão
+  // esse card destoaria da etapa "Qualificação completa" do Funil, que já
+  // exclui esses leads.
+  if(kpiQ) kpiQ.textContent=ACTIVE_LEADS.filter(l=>l.qualificadoEm && (l.canal||'').toLowerCase()!=='presencial').length;
   const kpiF=document.querySelector('[data-kpi="filaEspera"]');
   if(kpiF) kpiF.textContent=ACTIVE_FILA.length;
 }
