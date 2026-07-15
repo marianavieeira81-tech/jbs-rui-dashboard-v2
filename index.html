@@ -249,8 +249,6 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 .diag-lead-info{flex:1;}
 .diag-lead-name{font-size:13px;font-weight:600;color:var(--tx);margin-bottom:2px;}
 .diag-lead-meta{font-size:11px;color:var(--tx3);}
-.diag-wa-btn{display:flex;align-items:center;gap:6px;background:rgba(37,211,102,.12);border:1px solid rgba(37,211,102,.25);color:#25D366;padding:6px 13px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;text-decoration:none;transition:all .2s;flex-shrink:0;}
-.diag-wa-btn:hover{background:rgba(37,211,102,.22);transform:scale(1.04);}
 /* Botão de contato "chamar no WhatsApp" — só ícone, sem texto, pra nunca ser
    confundido com a etiqueta de origem do lead (Presencial/WhatsApp), que
    sempre é uma pílula com texto. */
@@ -3057,12 +3055,16 @@ function buildFunil(){
   // Funil é só do fluxo automático do Rui via WhatsApp — check-in presencial
   // tem seu próprio ciclo (setor/desfecho), não passa por esse funil.
   const todos     = ACTIVE_LEADS.filter(l => !TEST_IDS.has(l.telefone) && (l.canal||'').toLowerCase()!=='presencial' && matchLoja(l.loja) && matchModelo(l.modelo));
+  // Cada etapa é um subconjunto da anterior (nunca filtrada de "todos" direto)
+  // para garantir que o funil só decresce — um lead não pode aparecer numa
+  // etapa mais avançada sem ter passado pelas etapas anteriores.
   // Iniciaram: leads com score > 0 (bot atribuiu pontuação, houve interação real)
   const iniciaram = todos.filter(l => l.score > 0);
   // Qualificação completa: bot marcou explicitamente como qualificado (qualificado_em preenchido)
-  const completos = todos.filter(l => l.qualificadoEm);
-  // Quentes: todos os leads com score >= 60, independente de terem concluído a qualificação
-  const quentes   = todos.filter(l => l.score >= 60);
+  const completos = iniciaram.filter(l => l.qualificadoEm);
+  // Quentes: score >= 60 ENTRE QUEM JÁ CONCLUIU a qualificação — um lead não
+  // pode ser "quente" sem ter completado a qualificação primeiro.
+  const quentes   = completos.filter(l => l.score >= 60);
 
   const maxN = todos.length || 1;
 
@@ -4224,7 +4226,7 @@ function buildFilaEspera(){
         ${perfsHtml}
       </div>`:'';
     const filaTel=(c.telefone||'').replace(/\D/g,'');
-    const filaWaBtn=filaTel?`<a href="https://wa.me/55${filaTel}" target="_blank" rel="noopener" class="diag-wa-btn" style="justify-content:center;margin-top:6px;font-size:11px;padding:5px 10px;" onclick="event.stopPropagation()"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.116 1.527 5.847L.057 23.882a.5.5 0 0 0 .612.612l6.035-1.47A11.942 11.942 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.65-.523-5.15-1.43l-.369-.218-3.827.932.933-3.827-.22-.371A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>WhatsApp</a>`:'';
+    const filaWaBtn=filaTel?`<a href="https://wa.me/55${filaTel}" target="_blank" rel="noopener" class="wa-icon-btn" style="margin-top:6px;" title="Chamar no WhatsApp" onclick="event.stopPropagation()"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.116 1.527 5.847L.057 23.882a.5.5 0 0 0 .612.612l6.035-1.47A11.942 11.942 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.65-.523-5.15-1.43l-.369-.218-3.827.932.933-3.827-.22-.371A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg></a>`:'';
     return `<div class="fila-card ${i===0?'first-in-line':''}" data-score="${c.score||0}" data-model="${(c.modelo||'').replace(/"/g,'')}" data-temp="${c.temperatura||''}" data-status="${(c.motivo_fila||'').replace(/"/g,'')}" data-causa="${(c.motivo_fila||'').toLowerCase()}" data-notificado="${c.notificado_em?'sim':'nao'}">
       <div class="fila-pos ${i===0?'gold':''}">${i+1}</div>
       <div class="fila-av" style="background:${avc(i)}">${ini(c.nome)}</div>
@@ -4811,7 +4813,7 @@ function openDiagModal(id, tipo){
           <div class="diag-lead-meta">Score ${l.score||0} · ${l.temperatura||'—'} · ${l.modelo||'—'} · ${l.canal||'—'} · Esfriou em ${dataEsf}</div>
           ${submotivoTxt}
         </div>
-        <a class="diag-wa-btn" href="${href}" target="_blank" rel="noopener">${waIcon} WhatsApp</a>
+        <a class="wa-icon-btn" href="${href}" target="_blank" rel="noopener" title="Chamar no WhatsApp">${waIcon}</a>
       </div>`;
     }).join('');
   }
