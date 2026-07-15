@@ -251,6 +251,11 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 .diag-lead-meta{font-size:11px;color:var(--tx3);}
 .diag-wa-btn{display:flex;align-items:center;gap:6px;background:rgba(37,211,102,.12);border:1px solid rgba(37,211,102,.25);color:#25D366;padding:6px 13px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;text-decoration:none;transition:all .2s;flex-shrink:0;}
 .diag-wa-btn:hover{background:rgba(37,211,102,.22);transform:scale(1.04);}
+/* Botão de contato "chamar no WhatsApp" — só ícone, sem texto, pra nunca ser
+   confundido com a etiqueta de origem do lead (Presencial/WhatsApp), que
+   sempre é uma pílula com texto. */
+.wa-icon-btn{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:rgba(37,211,102,.12);border:1px solid rgba(37,211,102,.25);color:#25D366;cursor:pointer;text-decoration:none;transition:all .2s;flex-shrink:0;}
+.wa-icon-btn:hover{background:rgba(37,211,102,.22);transform:scale(1.08);}
 .diag-modal-more{font-size:11px;color:var(--tx3);text-align:center;padding:12px 0 4px;font-style:italic;}
 
 /* ============================================================
@@ -2606,9 +2611,8 @@ function ciHiCardHTML(r){
         <span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;${iSty}">${r.intencao||'—'}</span>
         <span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;${dSty}">${r.desfecho||'—'}</span>
         ${statusBadge}
-        ${waLink?`<a href="https://wa.me/55${waLink}" target="_blank" rel="noopener" class="diag-wa-btn">
+        ${waLink?`<a href="https://wa.me/55${waLink}" target="_blank" rel="noopener" class="wa-icon-btn" title="Chamar no WhatsApp">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.116 1.527 5.847L.057 23.882a.5.5 0 0 0 .612.612l6.035-1.47A11.942 11.942 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.65-.523-5.15-1.43l-.369-.218-3.827.932.933-3.827-.22-.371A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
-          WhatsApp
         </a>`:''}
       </div>
     </div>
@@ -2661,7 +2665,7 @@ function waHiCardHTML(l, idx){
         <div class="ci-hi-sub">${l.loja||'—'} &middot; ${dtFmt}</div>
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex-shrink:0;" onclick="event.stopPropagation()">
-        <span class="ptag wa" style="margin-top:0;">WhatsApp</span>
+        ${(l.telefone||'').replace(/\D/g,'')?`<a href="https://wa.me/55${(l.telefone||'').replace(/\D/g,'')}" target="_blank" rel="noopener" class="ptag wa" style="margin-top:0;text-decoration:none;">WhatsApp</a>`:`<span class="ptag wa" style="margin-top:0;">WhatsApp</span>`}
         <span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;color:${tempColor(l.temperatura)};border:1px solid ${tempColor(l.temperatura)}44;background:${tempColor(l.temperatura)}1a;">${l.score}/100 · ${l.temperatura}</span>
         ${statusHtml}
       </div>
@@ -2990,7 +2994,13 @@ function buildTable(){
   const scC=s=>s>=70?'sh':s>=45?'sm':'sl';
   const setorM={'Novos':'setor-novo','Semi-novos':'setor-seminovo','Oficina':'setor-oficina','Reclamações e elogios':'setor-reclamacao','Vendas de peças e acessórios':'setor-pecas'};
   const setorPill=s=>s&&setorM[s]?`<span class="setor-pill ${setorM[s]}">${s}</span>`:'<span style="color:var(--tx3)">—</span>';
-  const canalPill=l=>(l.canal||'').toLowerCase()==='presencial'?'<span class="ptag pr">Check-in</span>':'<span class="ptag wa">WhatsApp</span>';
+  const canalPill=l=>{
+    const tel=(l.telefone||'').replace(/\D/g,'');
+    const waBtn=tel?`<a href="https://wa.me/55${tel}" target="_blank" rel="noopener" class="wa-icon-btn" style="width:20px;height:20px;margin-left:6px;vertical-align:middle;" title="Chamar no WhatsApp" onclick="event.stopPropagation()"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.116 1.527 5.847L.057 23.882a.5.5 0 0 0 .612.612l6.035-1.47A11.942 11.942 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.65-.523-5.15-1.43l-.369-.218-3.827.932.933-3.827-.22-.371A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg></a>`:'';
+    return (l.canal||'').toLowerCase()==='presencial'
+      ? `<span class="ptag pr">Check-in</span>${waBtn}`
+      : (tel?`<a href="https://wa.me/55${tel}" target="_blank" rel="noopener" class="ptag wa" style="text-decoration:none;" onclick="event.stopPropagation()">WhatsApp</a>`:'<span class="ptag wa">WhatsApp</span>');
+  };
   // Em produção usa ACTIVE_LEADS; em demo usa o array LEADS (formato curto)
   if(DATA_MODE==='production'&&ACTIVE_LEADS.length>0){
     tb.innerHTML=ACTIVE_LEADS.filter(l=>matchLoja(l.loja)&&matchModelo(l.modelo)).slice(0,15).map(l=>`<tr>
@@ -3239,8 +3249,9 @@ function openLeadCard(lead){
   const stCol=lead.status==='Transferido'?'var(--ac)':lead.status==='Encerrado'?'var(--red)':'var(--tx2)';
   const hrH=parseInt((lead.hora||'').split(':')[0]);
   const isHuman=(()=>{if(isNaN(hrH))return false;const _d=new Date((lead.data||'')+'T12:00:00');const _w=_d.getDay();if(_w===0)return false;if(_w===6)return hrH>=8&&hrH<14;return hrH>=8&&hrH<19;})();
+  const lcTel=(lead.telefone||'').replace(/\D/g,'');
   document.getElementById('lc-meta').innerHTML=`
-    <span class="ptag wa">WhatsApp</span>
+    ${lcTel?`<a href="https://wa.me/55${lcTel}" target="_blank" rel="noopener" class="ptag wa" style="text-decoration:none;">WhatsApp</a>`:`<span class="ptag wa">WhatsApp</span>`}
     <span style="font-size:11px;font-weight:700;padding:2px 9px;border-radius:4px;background:${lead.status==='Transferido'?'rgba(212,175,55,.12)':lead.status==='Encerrado'?'var(--red-bg)':'rgba(30,80,200,.12)'};color:${stCol}">${lead.status}</span>
     <span style="font-size:11px;padding:2px 9px;border-radius:4px;background:${isHuman?'var(--grn-bg)':'rgba(212,175,55,.08)'};color:${isHuman?'var(--grn-l)':'var(--ac)'};font-weight:600">${isHuman?'Horário humano':'Fora do horário'}</span>
   `;
@@ -3498,9 +3509,10 @@ function generateReport(){
     const scCol=scoreColor(sc);
     const human=isHT(l.hora,l.data);
     const pm={};(l.perguntas||[]).forEach(p=>{pm[p.num]=p.resposta;});
+    const rpTel=(l.telefone||'').replace(/\D/g,'');
     return `<tr>
       <td>${l.nome}</td>
-      <td><span class="ptag wa" style="display:inline-block">WhatsApp</span></td>
+      <td>${rpTel?`<a href="https://wa.me/55${rpTel}" target="_blank" rel="noopener" class="ptag wa" style="display:inline-block;text-decoration:none;">WhatsApp</a>`:'<span class="ptag wa" style="display:inline-block">WhatsApp</span>'}</td>
       <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--tx3)">${nd(l.telefone)}</td>
       <td style="font-family:'DM Mono',monospace;font-size:11px">${l.data}</td>
       <td style="font-family:'DM Mono',monospace;font-size:11px">${l.hora}</td>
@@ -4211,6 +4223,8 @@ function buildFilaEspera(){
         <div style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx3);font-weight:700;margin-bottom:8px">Perfilação pelo Rui · ${perfs.length} pergunta${perfs.length!==1?'s':''}</div>
         ${perfsHtml}
       </div>`:'';
+    const filaTel=(c.telefone||'').replace(/\D/g,'');
+    const filaWaBtn=filaTel?`<a href="https://wa.me/55${filaTel}" target="_blank" rel="noopener" class="diag-wa-btn" style="justify-content:center;margin-top:6px;font-size:11px;padding:5px 10px;" onclick="event.stopPropagation()"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.116 1.527 5.847L.057 23.882a.5.5 0 0 0 .612.612l6.035-1.47A11.942 11.942 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.65-.523-5.15-1.43l-.369-.218-3.827.932.933-3.827-.22-.371A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>WhatsApp</a>`:'';
     return `<div class="fila-card ${i===0?'first-in-line':''}" data-score="${c.score||0}" data-model="${(c.modelo||'').replace(/"/g,'')}" data-temp="${c.temperatura||''}" data-status="${(c.motivo_fila||'').replace(/"/g,'')}" data-causa="${(c.motivo_fila||'').toLowerCase()}" data-notificado="${c.notificado_em?'sim':'nao'}">
       <div class="fila-pos ${i===0?'gold':''}">${i+1}</div>
       <div class="fila-av" style="background:${avc(i)}">${ini(c.nome)}</div>
@@ -4227,6 +4241,7 @@ function buildFilaEspera(){
         <div><span class="fila-time-badge">${tempoEspera(c.entradaISO)}</span></div>
         <div class="fila-date">${fmtDataHoraFila(c.entradaISO)}</div>
         <div class="fila-phone">${c.telefone||'—'}</div>
+        ${filaWaBtn}
       </div>
     </div>`;
   }).join('');
