@@ -2078,6 +2078,14 @@ async function ciSave(){
     temperatura:         pont.temperatura,
     observacoes:         document.getElementById('ci-obs').value.trim()
   });
+  // IMPORTANTE: em modo no-cors o navegador NÃO permite Content-Type
+  // application/json — ele reescreve sozinho pra text/plain, e o n8n recebe
+  // o corpo como texto solto (não consegue ler token/nome/etc.). Por isso a
+  // tentativa 1 (JSON de verdade) precisa ser a via principal; a 2 (no-cors)
+  // é só um último recurso pra garantir que o clique não se perca de vez,
+  // mesmo sabendo que o n8n não vai conseguir aproveitar os dados dela.
+  // A causa real do "envio duplicado" visto em produção é o n8n ainda não
+  // devolver cabeçalhos de CORS na resposta — pendente lá, não aqui.
   let ok = false;
 
   // tentativa 1 — fetch padrão com JSON (funciona se n8n tem CORS configurado)
@@ -2086,7 +2094,9 @@ async function ciSave(){
     if(res.ok) ok = true;
   }catch(_){}
 
-  // tentativa 2 — no-cors: bypassa preflight CORS, chega sempre ao servidor
+  // tentativa 2 — no-cors: bypassa preflight CORS, chega ao servidor, mas só
+  // como texto puro (n8n só consegue aproveitar de verdade se a tentativa 1
+  // já não tiver funcionado E o n8n tratar isso — hoje ainda não trata).
   if(!ok){
     try{
       await fetch(WH,{method:'POST',mode:'no-cors',body:payload});
