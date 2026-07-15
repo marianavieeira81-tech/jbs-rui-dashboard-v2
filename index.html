@@ -2078,36 +2078,30 @@ async function ciSave(){
     temperatura:         pont.temperatura,
     observacoes:         document.getElementById('ci-obs').value.trim()
   });
-  // IMPORTANTE: em modo no-cors o navegador NÃO permite Content-Type
-  // application/json — ele reescreve sozinho pra text/plain, e o n8n recebe
-  // o corpo como texto solto (não consegue ler token/nome/etc.). Por isso a
-  // tentativa 1 (JSON de verdade) precisa ser a via principal; a 2 (no-cors)
-  // é só um último recurso pra garantir que o clique não se perca de vez,
-  // mesmo sabendo que o n8n não vai conseguir aproveitar os dados dela.
-  // A causa real do "envio duplicado" visto em produção é o n8n ainda não
-  // devolver cabeçalhos de CORS na resposta — pendente lá, não aqui.
+  // ATENÇÃO — Decisão (2026-07-15): uma única tentativa, sempre em modo JSON
+  // normal, SEM fallback em no-cors. Antes havia uma 2ª tentativa em no-cors
+  // como rede de segurança, mas: (1) no-cors força Content-Type text/plain,
+  // o que corrompia o corpo do check-in no n8n; e (2) mesmo já corrigido do
+  // lado do n8n, ter as duas tentativas ativas ao mesmo tempo arriscava
+  // GRAVAR O MESMO CHECK-IN DUAS VEZES no Supabase sempre que a tentativa 1
+  // desse erro só porque o n8n ainda não devolve cabeçalho de CORS na
+  // resposta (o pedido pode ter sido salvo mesmo assim, só a confirmação
+  // que não volta pro navegador). Ela preferiu esse risco (mensagem de erro
+  // falsa quando na real funcionou) a arriscar duplicar leads reais.
+  // Corrigir CORS nos nodes de resposta do workflow do check-in no n8n
+  // elimina esse falso-erro; até lá, o texto abaixo avisa o vendedor.
   let ok = false;
-
-  // tentativa 1 — fetch padrão com JSON (funciona se n8n tem CORS configurado)
   try{
     const res = await fetch(WH,{method:'POST',headers:{'Content-Type':'application/json'},body:payload});
     if(res.ok) ok = true;
   }catch(_){}
 
-  // tentativa 2 — no-cors: bypassa preflight CORS, chega ao servidor, mas só
-  // como texto puro (n8n só consegue aproveitar de verdade se a tentativa 1
-  // já não tiver funcionado E o n8n tratar isso — hoje ainda não trata).
   if(!ok){
-    try{
-      await fetch(WH,{method:'POST',mode:'no-cors',body:payload});
-      ok = true;
-    }catch(netErr){
-      err.textContent = '⚠ Sem conexão com o servidor.';
-      err.style.display='inline';
-      saveBtn.disabled = false;
-      saveBtn.textContent = '✔ Salvar Check-in';
-      return;
-    }
+    err.textContent = '⚠ Não foi possível confirmar o envio. Pode ter sido salvo mesmo assim — confira em Central de Leads antes de tentar de novo.';
+    err.style.display='inline';
+    saveBtn.disabled = false;
+    saveBtn.textContent = '✔ Salvar Check-in';
+    return;
   }
 
   const arr = ciLoad();
