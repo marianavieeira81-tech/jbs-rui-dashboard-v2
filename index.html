@@ -754,6 +754,19 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   </div>
 </div>
 
+<!-- modal SQL de junção de duplicatas -->
+<div class="modal-bg" id="dupSqlOverlay">
+  <div class="modal-box">
+    <div class="modal-title">SQL para juntar os leads duplicados</div>
+    <div class="modal-sub">Copie e cole no SQL Editor do Supabase. O lead com maior score foi mantido como principal — se preferir manter o outro, me avise.</div>
+    <textarea id="dupSqlBox" readonly style="width:100%;height:160px;margin-top:12px;background:var(--s2);border:1px solid var(--bdr);border-radius:var(--rsm);color:var(--tx1);font-family:'DM Mono',monospace;font-size:12px;padding:12px;resize:vertical"></textarea>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="fecharDupSql()">Fechar</button>
+      <button class="btn-generate" id="dupSqlCopyBtn" onclick="copiarDupSql()">Copiar SQL</button>
+    </div>
+  </div>
+</div>
+
 <!-- report view -->
 <div class="report-view" id="reportView">
   <div class="report-header">
@@ -3084,7 +3097,8 @@ function buildFunil(){
   function chipHtml(lead, li, extraClass){
     const ph = lead.telefone || null;
     const scoreCol = lead.score>=80?'#EF4444':lead.score>=60?'#F97316':lead.score>=40?'#EAB308':'var(--tx3)';
-    return `<div class="lchip ${extraClass||''}" data-tip="${lead.nome}" onclick="openLeadCard(ACTIVE_LEADS.find(l=>l.nome==='${lead.nome.replace(/'/g,"\\'")}'))">
+    const chipKey = (lead.telefone||lead.nome).replace(/'/g,"\\'");
+    return `<div class="lchip ${extraClass||''}" data-tip="${lead.nome}" onclick="openLeadCard(ACTIVE_LEADS.find(l=>(l.telefone||l.nome)==='${chipKey}'))">
       <div class="lav" style="background:${avc(li)};cursor:pointer">${ini(lead.nome)}</div>
       <div>
         <div class="lname">${lead.nome}</div>
@@ -3164,6 +3178,54 @@ function initNetwork(){
 // ============================================================
 // CARD COMPLETO DO LEAD — 7 perguntas + todos os campos
 // ============================================================
+// Leads com mesmo nome mas telefone/sender diferente — provável mesmo lead
+// duplicado por causa do @lid do WhatsApp (ver nota do dashboard). Usado no
+// popup de detalhe do lead pra avisar e gerar o SQL de junção pra ela.
+function encontrarProvaveisDuplicatas(lead){
+  const norm = s => (s||'').trim().toLowerCase();
+  if(!norm(lead.nome)) return [];
+  return ACTIVE_LEADS.filter(l =>
+    l !== lead &&
+    norm(l.nome) === norm(lead.nome) &&
+    (l.telefone||l.senderId) !== (lead.telefone||lead.senderId)
+  );
+}
+
+function gerarSqlMergeIdx(idxA, idxB){
+  const cand = window._dupMergeCandidates||[];
+  const a = cand[idxA], b = cand[idxB];
+  if(!a || !b) return;
+  const [principal, secundario] = a.score>=b.score ? [a,b] : [b,a];
+  gerarSqlMerge(principal, secundario);
+}
+
+function gerarSqlMerge(principal, secundario){
+  const esc = s => (s||'').replace(/'/g,"''");
+  const nome = esc(principal.nome);
+  const senderPrincipal = esc(principal.senderId||principal.telefone);
+  const telSecundario   = esc(secundario.telefone||secundario.senderId);
+  const sql = `-- Guardar o histórico do lead secundário antes de juntar\nINSERT INTO leads_historico (lead_sender_id, nome, score, modelo_interesse, etapa)\nSELECT '${senderPrincipal}', nome, score_final, veiculo_interesse, etapa\nFROM leads WHERE telefone = '${telSecundario}' AND nome = '${nome}';\n\n-- Apagar a linha duplicada\nDELETE FROM leads WHERE telefone = '${telSecundario}' AND nome = '${nome}';`;
+  const box = document.getElementById('dupSqlBox');
+  const overlay = document.getElementById('dupSqlOverlay');
+  if(box) box.value = sql;
+  if(overlay) overlay.classList.add('show');
+}
+
+function fecharDupSql(){
+  const overlay = document.getElementById('dupSqlOverlay');
+  if(overlay) overlay.classList.remove('show');
+}
+
+function copiarDupSql(){
+  const box = document.getElementById('dupSqlBox');
+  if(!box) return;
+  box.select();
+  navigator.clipboard.writeText(box.value).then(()=>{
+    const btn = document.getElementById('dupSqlCopyBtn');
+    if(btn){ const orig = btn.textContent; btn.textContent = 'Copiado!'; setTimeout(()=>btn.textContent = orig, 1500); }
+  }).catch(()=>{});
+}
+
 function openLeadCard(lead){
   document.getElementById('lc-name').textContent = lead.nome;
   const sc=lead.score;
@@ -3177,7 +3239,25 @@ function openLeadCard(lead){
     <span style="font-size:11px;font-weight:700;padding:2px 9px;border-radius:4px;background:${lead.status==='Transferido'?'rgba(212,175,55,.12)':lead.status==='Encerrado'?'var(--red-bg)':'rgba(30,80,200,.12)'};color:${stCol}">${lead.status}</span>
     <span style="font-size:11px;padding:2px 9px;border-radius:4px;background:${isHuman?'var(--grn-bg)':'rgba(212,175,55,.08)'};color:${isHuman?'var(--grn-l)':'var(--ac)'};font-weight:600">${isHuman?'Horário humano':'Fora do horário'}</span>
   `;
+  const duplicatas = encontrarProvaveisDuplicatas(lead);
+  window._dupMergeCandidates = [lead, ...duplicatas];
+  const dupHtml = duplicatas.length ? `
+    <div class="lcard-section" style="border:1px solid var(--red);background:var(--red-bg)">
+      <div class="lcard-section-title" style="color:var(--red)">⚠ Provável duplicata</div>
+      <div style="font-size:12px;color:var(--tx2);margin-bottom:10px;line-height:1.5">Encontramos ${duplicatas.length===1?'outro card':duplicatas.length+' outros cards'} com o nome "${lead.nome}" e telefone diferente — pode ser a mesma pessoa entrando em contato de novo (o WhatsApp às vezes esconde o número real). Confira antes de juntar.</div>
+      ${duplicatas.map((d,di)=>`
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--bdr)">
+          <div style="font-size:12px">
+            <div style="font-family:'DM Mono',monospace;color:var(--tx2)">${d.telefone||d.senderId||'sem telefone'}</div>
+            <div style="color:var(--tx3);font-size:11px">Score ${d.score} · ${d.data||'—'} ${d.hora||''}</div>
+          </div>
+          <button onclick="gerarSqlMergeIdx(0,${di+1})" style="font-size:11px;font-weight:700;padding:6px 12px;border-radius:6px;border:1px solid var(--red);background:transparent;color:var(--red);cursor:pointer;white-space:nowrap">Gerar SQL p/ juntar</button>
+        </div>
+      `).join('')}
+    </div>
+  ` : '';
   document.getElementById('lc-body').innerHTML=`
+    ${dupHtml}
     <!-- SCORE -->
     <div class="lcard-section">
       <div class="lcard-section-title">Score & Temperatura</div>
@@ -3692,6 +3772,7 @@ function mapLead(l){
   const aprox = (isPresencial && !scoreFinal) ? scorePresencialAproximado(l) : null;
   return {
     nome:        l.nome||'',
+    senderId:    l.sender_id||l.telefone||'',
     telefone:    l.telefone||l.sender_id||'',
     canal:       l.canal||'whatsapp',
     loja:        l.loja||l.loja_slug||l.unidade||'',
