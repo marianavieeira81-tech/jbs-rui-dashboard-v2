@@ -4004,7 +4004,19 @@ function calcMainKPIsFromLeads(){
 // Com force (ou filtro de loja específico ativo): sempre recalcula, usado quando o filtro muda.
 function calcCoberturaFromLeads(force){
   const leadsDaLoja=ACTIVE_LEADS.filter(l=>matchLoja(l.loja)&&matchSetor(l.setor));
-  if(!leadsDaLoja.length) return;
+  const forceNow=force||selectedLoja!=='todas'||selectedSetor!=='todos';
+  if(!leadsDaLoja.length){
+    // Sem forceNow (carregamento inicial, sem filtro ativo): mantém "—" esperando o N8N.
+    // Com forceNow (filtro ativo sem nenhum lead correspondente): zera os cards em vez de
+    // deixar o valor antigo (de antes do filtro) travado na tela.
+    if(forceNow){
+      const trySetZero=(sel,v)=>{const el=document.querySelector(sel);if(el)el.textContent=v;};
+      trySetZero('[data-kpi="cobLeads"]', 0);
+      trySetZero('[data-kpi="cobPct"]', '0%');
+      trySetZero('[data-kpi="cobCarteira"]', '—');
+    }
+    return;
+  }
   function isForaHorario(dataStr,horaStr){
     if(!dataStr||!horaStr) return false;
     const d=new Date(dataStr+'T12:00:00');
@@ -4020,7 +4032,6 @@ function calcCoberturaFromLeads(force){
   const cobPct=Math.round((cobLeads/leadsDaLoja.length)*100);
   const soma=fora.reduce((s,l)=>s+(l.carteiraRaw||0),0);
   const cobCarteira=soma>=1000000?'R$ '+(soma/1000000).toFixed(1)+'M':soma>=1000?'R$ '+Math.round(soma/1000)+'k':soma>0?'R$ '+soma:'—';
-  const forceNow=force||selectedLoja!=='todas'||selectedSetor!=='todos';
   const trySet=(sel,v)=>{const el=document.querySelector(sel);if(el&&(forceNow||el.textContent==='—'||el.textContent==='0'))el.textContent=v;};
   trySet('[data-kpi="cobLeads"]', cobLeads);
   trySet('[data-kpi="cobPct"]',   cobPct+'%');
