@@ -2394,6 +2394,10 @@ function renderLeadsPresenciais(){
 // ============================================================
 let currentCISetor = null; // último setor aberto — usado pra atualizar a lista ao trocar o período
 let currentCIModel = null; // último modelo aberto (só dentro de Novos/Semi-novos)
+// Sentinela pro card "Outro / não informado" — pega leads cujo modelo ainda não
+// bate com nenhum dos 5 nomes fixos (ex: n8n ainda não capturou, ou texto fora do catálogo),
+// pra garantir que a soma dos cards de modelo sempre feche com o total do setor.
+const CI_OUTRO_MODELO = '__outro__';
 const CI_SETORES = [
   {nome:'Novos',                         cor:'#38BDF8', temModelo:true},
   {nome:'Semi-novos',                    cor:'#A78BFA', temModelo:true},
@@ -2521,9 +2525,14 @@ function renderCIModelCardsForSector(setor){
   if(titleEl) titleEl.innerHTML = `<span style="color:${info?.cor}">${setor}</span> · modelo de interesse`;
   const arr = [...waLeadsComSetor(), ...ciPresencialLeadsInRange()].filter(r=>r.setor===setor);
   const total = arr.length;
+  const matchesAlgumModelo = r => CI_GWM_MODELS.some(m=>((r.modelos||r.modelo||'')).toLowerCase().includes(m.name.toLowerCase()));
   const counts = CI_GWM_MODELS.map(m=>({
     m, n: arr.filter(r=>((r.modelos||r.modelo||'')).toLowerCase().includes(m.name.toLowerCase())).length
   }));
+  // Leads sem modelo capturado ainda (comum logo no início da conversa) ou com texto
+  // fora dos 5 nomes fixos — sem esse card eles somem da tela por modelo mas continuam
+  // contados no total do setor, fazendo a soma dos cards nunca bater com o total.
+  const semModelo = arr.filter(r=>!matchesAlgumModelo(r)).length;
   container.innerHTML = counts.map(({m,n})=>{
     const pct = total>0?Math.round(n/total*100):0;
     return `<div class="cat-card" onclick="openCIModel('${m.name}')" style="border-color:${m.bdr};background:${m.bg};">
@@ -2532,7 +2541,12 @@ function renderCIModelCardsForSector(setor){
       <div class="cat-card-pct" style="margin-bottom:2px;">${pct}% do total</div>
       <div class="cat-card-sub">leads com interesse</div>
     </div>`;
-  }).join('');
+  }).join('') + (semModelo>0 ? `<div class="cat-card" onclick="openCIModel('${CI_OUTRO_MODELO}')" style="border-color:var(--bdr);background:var(--s2);">
+      <div class="cat-card-top"><span class="cat-card-chip" style="background:var(--tx3);"></span><div class="cat-card-lbl" style="color:var(--tx3);">Outro / não informado</div></div>
+      <div class="cat-card-cnt" style="color:var(--tx3);">${semModelo}</div>
+      <div class="cat-card-pct" style="margin-bottom:2px;">${total>0?Math.round(semModelo/total*100):0}% do total</div>
+      <div class="cat-card-sub">modelo ainda não capturado</div>
+    </div>` : '');
 }
 
 function openCIModel(model){
@@ -2680,8 +2694,12 @@ function renderCILeadList(){
   const setor  = currentCISetor;
   const model  = currentCIModel;
   const sInfo  = CI_SETORES.find(s=>s.nome===setor);
-  const gwm    = CI_GWM_MODELS.find(m=>m.name===model);
-  const matchesModel = m => !model || (m||'').toLowerCase().includes(model.toLowerCase());
+  const gwm    = model===CI_OUTRO_MODELO ? null : CI_GWM_MODELS.find(m=>m.name===model);
+  const matchesModel = m => {
+    if(!model) return true;
+    if(model===CI_OUTRO_MODELO) return !CI_GWM_MODELS.some(gm=>(m||'').toLowerCase().includes(gm.name.toLowerCase()));
+    return (m||'').toLowerCase().includes(model.toLowerCase());
+  };
 
   const waLeads = waLeadsComSetor()
     .filter(l=>l.setor===setor && matchesModel(l.modelo))
@@ -2700,7 +2718,9 @@ function renderCILeadList(){
 
   const titleEl = document.getElementById('ciModelListTitle');
   if(titleEl){
-    const rotulo = gwm ? `<span style="color:${gwm.color}">${setor} · ${gwm.name}</span>` : `<span style="color:${sInfo?.cor}">${setor}</span>`;
+    const rotulo = model===CI_OUTRO_MODELO
+      ? `<span style="color:var(--tx3)">${setor} · Outro / não informado</span>`
+      : (gwm ? `<span style="color:${gwm.color}">${setor} · ${gwm.name}</span>` : `<span style="color:${sInfo?.cor}">${setor}</span>`);
     titleEl.innerHTML = `${rotulo}&ensp;<span style="font-size:13px;font-weight:500;color:var(--tx3);">${leads.length} lead${leads.length!==1?'s':''}</span>`;
   }
 
@@ -2708,9 +2728,10 @@ function renderCILeadList(){
   if(!content) return;
 
   if(!leads.length){
+    const modelLabel = model===CI_OUTRO_MODELO ? 'Outro / não informado' : model;
     content.innerHTML = `<div style="text-align:center;padding:60px 0;color:var(--tx3);font-size:13px;">
       <div style="font-size:42px;margin-bottom:14px;">📋</div>
-      Nenhum lead em <strong style="color:var(--tx);">${model?setor+' · '+model:setor}</strong> no período selecionado.
+      Nenhum lead em <strong style="color:var(--tx);">${model?setor+' · '+modelLabel:setor}</strong> no período selecionado.
     </div>`;
     return;
   }
