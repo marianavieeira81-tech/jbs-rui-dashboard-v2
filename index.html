@@ -63,6 +63,21 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 .btn-ref:hover{background:linear-gradient(135deg,var(--ac-l),var(--ac));transform:translateY(-2px);box-shadow:0 6px 24px rgba(212,175,55,.45);}
 .loja-select,.modelo-select,.setor-select{background:var(--s2);color:var(--tx);border:1px solid var(--bdr);border-radius:var(--rsm);padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
 .loja-select:hover{border-color:rgba(212,175,55,.35);}
+.filtro-cl-wrap{position:relative;}
+.filtro-cl-btn{display:flex;align-items:center;gap:8px;background:var(--s2);color:var(--tx);border:1px solid var(--bdr);border-radius:var(--rsm);padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:border .2s,color .2s;}
+.filtro-cl-btn:hover{border-color:rgba(212,175,55,.35);}
+.filtro-cl-btn.active{border-color:rgba(212,175,55,.5);color:var(--ac-l);}
+.filtro-cl-badge{background:var(--ac);color:#000;font-size:10px;font-weight:700;border-radius:20px;padding:1px 7px;line-height:1.5;}
+.filtro-cl-panel{position:absolute;top:calc(100% + 8px);right:0;background:var(--surface);border:1px solid rgba(212,175,55,.2);border-radius:var(--r);padding:18px;width:280px;z-index:120;box-shadow:0 20px 60px rgba(0,0,0,.8);}
+.filtro-cl-group{margin-bottom:16px;}
+.filtro-cl-group:last-of-type{margin-bottom:18px;}
+.filtro-cl-title{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--tx3);margin-bottom:8px;font-weight:700;}
+.filtro-cl-opts{display:flex;flex-wrap:wrap;gap:6px;}
+.filtro-cl-opt{background:var(--s2);color:var(--tx2);border:1px solid var(--bdr);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;}
+.filtro-cl-opt:hover{border-color:rgba(212,175,55,.35);color:var(--tx);}
+.filtro-cl-opt.sel{background:var(--ac-faint);border-color:rgba(212,175,55,.5);color:var(--ac-l);}
+.filtro-cl-clear{width:100%;background:none;border:1px solid var(--bdr);color:var(--tx3);padding:8px 0;border-radius:var(--rsm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;}
+.filtro-cl-clear:hover{border-color:rgba(225,29,72,.4);color:#E11D48;}
 .loja-hint{display:none;font-size:11px;color:var(--tx3);max-width:170px;line-height:1.4;}
 .sec{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--tx3);margin:30px 0 16px;display:flex;align-items:center;gap:12px;font-weight:600;}
 .sec::before{content:'';width:20px;height:2px;background:linear-gradient(90deg,var(--ac),transparent);}
@@ -1036,20 +1051,27 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     <div><div class="eye">Principal</div><h1>Central de Leads</h1></div>
     <div class="topbar-r">
       <span class="loja-hint">⚠ leads ainda sem loja marcada no n8n</span>
-      <select class="loja-select" onchange="setLojaFilter(this.value)">
-        <option value="todas">Todas as lojas</option>
-        <option value="Boa Viagem">Boa Viagem</option>
-        <option value="Parnamirim">Parnamirim</option>
-        <option value="Caruaru">Caruaru</option>
-      </select>
-      <select class="modelo-select" onchange="setModeloFilter(this.value)">
-        <option value="todos">Todos os modelos</option>
-        <option value="Haval">Haval</option>
-        <option value="ORA">ORA</option>
-        <option value="Tank">Tank</option>
-        <option value="Poer">Poer</option>
-        <option value="WEY">WEY</option>
-      </select>
+      <div class="filtro-cl-wrap" id="filtroCLWrap">
+        <button class="filtro-cl-btn" id="filtroCLBtn" type="button" onclick="toggleFiltroCL(event)">
+          <span>Filtro</span><span class="filtro-cl-badge" id="filtroCLBadge" style="display:none;">0</span>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div class="filtro-cl-panel" id="filtroCLPanel" style="display:none;">
+          <div class="filtro-cl-group">
+            <div class="filtro-cl-title">Modelos</div>
+            <div class="filtro-cl-opts" id="filtroCLModelos"></div>
+          </div>
+          <div class="filtro-cl-group">
+            <div class="filtro-cl-title">Unidades</div>
+            <div class="filtro-cl-opts" id="filtroCLUnidades"></div>
+          </div>
+          <div class="filtro-cl-group">
+            <div class="filtro-cl-title">Setor</div>
+            <div class="filtro-cl-opts" id="filtroCLSetor"></div>
+          </div>
+          <button class="filtro-cl-clear" type="button" onclick="limparFiltroCL()">Limpar filtros</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1718,6 +1740,7 @@ function setLojaFilter(v){
   localStorage.setItem('rui_loja_filtro', v);
   document.querySelectorAll('.loja-select').forEach(s=>{ if(s.value!==v) s.value=v; });
   refreshAllTabsForFilters();
+  syncFiltroCLUI();
 }
 
 // Reaplica loja + modelo em tudo que usa esses filtros — chamado tanto por
@@ -1778,6 +1801,33 @@ function setModeloFilter(v){
   localStorage.setItem('rui_modelo_filtro', v);
   document.querySelectorAll('.modelo-select').forEach(s=>{ if(s.value!==v) s.value=v; });
   refreshAllTabsForFilters();
+  syncFiltroCLUI();
+}
+
+// ============================================================
+// FILTRO POR ORIGEM — só dentro do filtro unificado "Filtro" da Central de
+// Leads (categoria "Setor": Presencial ou WhatsApp). É um conceito diferente
+// do filtro de Setor da Cobertura 24/7 acima (esse é departamento: Novos/
+// Semi-novos/Oficina/...) — por isso um estado próprio (selectedOrigemCL),
+// pra não colidir com selectedSetor/matchSetor da Cobertura.
+// ============================================================
+let selectedOrigemCL = localStorage.getItem('rui_origem_cl_filtro') || 'todos';
+
+function setOrigemFilterCL(v){
+  selectedOrigemCL = v;
+  localStorage.setItem('rui_origem_cl_filtro', v);
+  refreshCentralDeLeadsNav();
+  syncFiltroCLUI();
+}
+
+// waLeadsComSetor()/ciPresencialLeadsInRange() já separam os leads por canal
+// na origem (WhatsApp vs Check-in presencial) — essas duas funções só
+// precisam "zerar" o lado que não bate com o filtro escolhido.
+function waLeadsCL(){
+  return selectedOrigemCL==='presencial' ? [] : waLeadsComSetor();
+}
+function ciLeadsCL(){
+  return selectedOrigemCL==='whatsapp' ? [] : ciPresencialLeadsInRange();
 }
 
 // ============================================================
@@ -2540,7 +2590,7 @@ function waLeadsComSetor(){
 function renderCISectorCards(){
   const container = document.getElementById('ciSectorCardsGrid');
   if(!container) return;
-  const arr = [...waLeadsComSetor(), ...ciPresencialLeadsInRange()];
+  const arr = [...waLeadsCL(), ...ciLeadsCL()];
   const total = arr.length;
   const totalEl=document.getElementById('ciTotalCount');
   if(totalEl) totalEl.textContent=total;
@@ -2597,7 +2647,7 @@ function renderCIModelCardsForSector(setor){
   if(!container) return;
   const info = CI_SETORES.find(s=>s.nome===setor);
   if(titleEl) titleEl.innerHTML = `<span style="color:${info?.cor}">${setor}</span> · modelo de interesse`;
-  const arr = [...waLeadsComSetor(), ...ciPresencialLeadsInRange()].filter(r=>r.setor===setor);
+  const arr = [...waLeadsCL(), ...ciLeadsCL()].filter(r=>r.setor===setor);
   const total = arr.length;
   const matchesAlgumModelo = r => CI_GWM_MODELS.some(m=>((r.modelos||r.modelo||'')).toLowerCase().includes(m.name.toLowerCase()));
   const counts = CI_GWM_MODELS.map(m=>({
@@ -2775,10 +2825,10 @@ function renderCILeadList(){
     return (m||'').toLowerCase().includes(model.toLowerCase());
   };
 
-  const waLeads = waLeadsComSetor()
+  const waLeads = waLeadsCL()
     .filter(l=>l.setor===setor && matchesModel(l.modelo))
     .map(l=>({...l, _origem:'whatsapp'}));
-  const ciLeads = ciPresencialLeadsInRange()
+  const ciLeads = ciLeadsCL()
     .filter(r=>r.setor===setor && matchesModel(r.modelos))
     .map(r=>({...r, _origem:'presencial'}));
   const leads = [...waLeads, ...ciLeads].sort((a,b)=>{
@@ -3368,6 +3418,63 @@ function refreshCentralDeLeadsNav(){
   if(document.getElementById('ciPltModelCards').style.display!=='none' && currentCISetor) renderCIModelCardsForSector(currentCISetor);
   if(document.getElementById('ciPltModelList').style.display!=='none' && currentCISetor) renderCILeadList();
 }
+
+// ============================================================
+// FILTRO UNIFICADO "FILTRO" — Central de Leads (Modelos + Unidades + Setor,
+// substitui os antigos selects .loja-select/.modelo-select dessa aba).
+// Monta as 3 listas de opções a partir das mesmas constantes que já
+// alimentam os selects das outras abas (GWM_MODELOS/LOJAS), pra não haver
+// 2 fontes de verdade pros mesmos nomes.
+// ============================================================
+function initFiltroCL(){
+  const elModelos = document.getElementById('filtroCLModelos');
+  const elUnidades = document.getElementById('filtroCLUnidades');
+  const elSetor = document.getElementById('filtroCLSetor');
+  if(!elModelos || !elUnidades || !elSetor) return;
+  elModelos.innerHTML = [['Todos os modelos','todos'], ...GWM_MODELOS.map(m=>[m,m])]
+    .map(([label,v])=>`<span class="filtro-cl-opt" data-v="${v}" onclick="setModeloFilter('${v}')">${label}</span>`).join('');
+  elUnidades.innerHTML = [['Todas as unidades','todas'], ...LOJAS.map(l=>[l,l])]
+    .map(([label,v])=>`<span class="filtro-cl-opt" data-v="${v}" onclick="setLojaFilter('${v}')">${label}</span>`).join('');
+  elSetor.innerHTML = [['Todos','todos'],['Presencial','presencial'],['WhatsApp','whatsapp']]
+    .map(([label,v])=>`<span class="filtro-cl-opt" data-v="${v}" onclick="setOrigemFilterCL('${v}')">${label}</span>`).join('');
+  syncFiltroCLUI();
+}
+
+// Marca a opção ativa em cada grupo e atualiza o badge de contagem no botão.
+function syncFiltroCLUI(){
+  const grupos = [['filtroCLModelos',selectedModelo],['filtroCLUnidades',selectedLoja],['filtroCLSetor',selectedOrigemCL]];
+  grupos.forEach(([id,val])=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.querySelectorAll('.filtro-cl-opt').forEach(o=>o.classList.toggle('sel', o.dataset.v===val));
+  });
+  const ativos = [selectedModelo!=='todos', selectedLoja!=='todas', selectedOrigemCL!=='todos'].filter(Boolean).length;
+  const btn = document.getElementById('filtroCLBtn');
+  const badge = document.getElementById('filtroCLBadge');
+  if(btn) btn.classList.toggle('active', ativos>0);
+  if(badge){ badge.style.display = ativos>0 ? 'inline-block' : 'none'; badge.textContent = ativos; }
+}
+
+function toggleFiltroCL(ev){
+  if(ev) ev.stopPropagation();
+  const panel = document.getElementById('filtroCLPanel');
+  if(!panel) return;
+  panel.style.display = panel.style.display==='none' ? 'block' : 'none';
+}
+
+function limparFiltroCL(){
+  setModeloFilter('todos');
+  setLojaFilter('todas');
+  setOrigemFilterCL('todos');
+}
+
+// Fecha o painel ao clicar fora dele.
+document.addEventListener('click', (e)=>{
+  const wrap = document.getElementById('filtroCLWrap');
+  const panel = document.getElementById('filtroCLPanel');
+  if(!wrap || !panel || panel.style.display==='none') return;
+  if(!wrap.contains(e.target)) panel.style.display='none';
+});
 
 function initNetwork(){
   // função mantida para compatibilidade mas não utilizada
@@ -4775,6 +4882,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.querySelectorAll('.loja-select').forEach(s=>{ s.value = selectedLoja; });
   document.querySelectorAll('.modelo-select').forEach(s=>{ s.value = selectedModelo; });
   document.querySelectorAll('.setor-select').forEach(s=>{ s.value = selectedSetor; });
+  initFiltroCL();
   if(authToken()){ hideLogin(); startDashboard(); }
   else{ showLogin(); }
 });
