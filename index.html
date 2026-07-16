@@ -1531,12 +1531,24 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
         <div class="ci-field">
           <div class="ci-label">Como o atendimento terminou?</div>
           <div class="ci-chips" id="ci-desfecho">
-            <div class="ci-chip" data-val="Vai pensar"       onclick="ciChip(this,'ci-desfecho','sel-gold')">Vai pensar</div>
-            <div class="ci-chip" data-val="Pediu retorno"    onclick="ciChip(this,'ci-desfecho','sel-gold')">Pediu retorno</div>
-            <div class="ci-chip" data-val="Comprou"          onclick="ciChip(this,'ci-desfecho','sel-green')">🏆 Comprou</div>
-            <div class="ci-chip" data-val="Desistiu"         onclick="ciChip(this,'ci-desfecho','sel-red')">Desistiu</div>
-            <div class="ci-chip" data-val="Saiu sem definição" onclick="ciChip(this,'ci-desfecho','sel-red')">Saiu sem definição</div>
+            <div class="ci-chip" data-val="Vai pensar"       onclick="ciChip(this,'ci-desfecho','sel-gold');ciAtualizarCamposPorDesfecho()">Vai pensar</div>
+            <div class="ci-chip" data-val="Pediu retorno"    onclick="ciChip(this,'ci-desfecho','sel-gold');ciAtualizarCamposPorDesfecho()">Pediu retorno</div>
+            <div class="ci-chip" data-val="Comprou"          onclick="ciChip(this,'ci-desfecho','sel-green');ciAtualizarCamposPorDesfecho()">🏆 Comprou</div>
+            <div class="ci-chip" data-val="Desistiu"         onclick="ciChip(this,'ci-desfecho','sel-red');ciAtualizarCamposPorDesfecho()">Desistiu</div>
+            <div class="ci-chip" data-val="Saiu sem definição" onclick="ciChip(this,'ci-desfecho','sel-red');ciAtualizarCamposPorDesfecho()">Saiu sem definição</div>
           </div>
+        </div>
+
+        <!-- DATA PREVISTA DE RETORNO — só aparece quando Desfecho = Vai pensar ou Pediu retorno -->
+        <div class="ci-field" id="ci-data-retorno-field" style="display:none;">
+          <div class="ci-label">Data prevista de retorno <span class="ci-opt">(opcional)</span></div>
+          <input class="ci-input" id="ci-data-retorno" type="date"/>
+        </div>
+
+        <!-- MOTIVO DA DESISTÊNCIA — só aparece quando Desfecho = Desistiu ou Saiu sem definição -->
+        <div class="ci-field" id="ci-motivo-desistencia-field" style="display:none;">
+          <div class="ci-label">Motivo da desistência <span class="ci-opt">(opcional)</span></div>
+          <textarea class="ci-textarea" id="ci-motivo-desistencia" placeholder="Ex: preço acima do orçamento, não gostou do modelo, comprou em outro lugar, prazo de entrega longo..."></textarea>
         </div>
 
         <!-- QUALIFICAÇÃO DO LEAD — só aparece para Novos/Semi-novos, quem quer -->
@@ -2024,6 +2036,20 @@ function ciAtualizarCamposPorSetor(){
   if(descPecas) descPecas.style.display = isPecas ? 'block' : 'none';
 }
 
+// Mostra/esconde os campos condicionais ao Desfecho: data de retorno
+// (Vai pensar/Pediu retorno) e motivo da desistência (Desistiu/Saiu sem definição).
+function ciAtualizarCamposPorDesfecho(){
+  const desfecho = ciGetChip('ci-desfecho');
+  const precisaRetorno = desfecho==='Vai pensar' || desfecho==='Pediu retorno';
+  const desistiu = desfecho==='Desistiu' || desfecho==='Saiu sem definição';
+
+  const campoRetorno = document.getElementById('ci-data-retorno-field');
+  if(campoRetorno) campoRetorno.style.display = precisaRetorno ? 'block' : 'none';
+
+  const campoMotivo = document.getElementById('ci-motivo-desistencia-field');
+  if(campoMotivo) campoMotivo.style.display = desistiu ? 'block' : 'none';
+}
+
 // Converte a temperatura escolhida pelo vendedor numa nota de 0 a 100, usando
 // o ponto médio da mesma faixa que calcTemperatura() usa pro WhatsApp — assim
 // as notas dos dois canais continuam na mesma régua e comparáveis entre si.
@@ -2037,7 +2063,7 @@ function ciGetYN(groupId){
 }
 
 function ciClear(){
-  ['ci-nome','ci-wa','ci-cpf','ci-vendedor','ci-loja','ci-modelo','ci-obs','ci-justificativa','ci-servico-oficina','ci-reclamacoes-elogios'].forEach(id=>{
+  ['ci-nome','ci-wa','ci-cpf','ci-vendedor','ci-loja','ci-modelo','ci-obs','ci-justificativa','ci-servico-oficina','ci-reclamacoes-elogios','ci-data-retorno','ci-motivo-desistencia'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.value='';
   });
   const dtEl=document.getElementById('ci-dt');
@@ -2052,6 +2078,7 @@ function ciClear(){
     if(el){el.querySelectorAll('.ci-yn').forEach(b=>b.classList.remove('sel'));delete el.dataset.val;}
   });
   ciAtualizarCamposPorSetor();
+  ciAtualizarCamposPorDesfecho();
   const err=document.getElementById('ci-err');if(err)err.style.display='none';
 }
 
@@ -2073,6 +2100,10 @@ async function ciSave(){
   const justificativa = qualifica ? document.getElementById('ci-justificativa').value.trim() : '';
   const servicoOficina      = isOficina ? document.getElementById('ci-servico-oficina').value.trim() : '';
   const reclamacoesElogios  = isPecas ? document.getElementById('ci-reclamacoes-elogios').value.trim() : '';
+  const precisaRetorno      = desfech==='Vai pensar' || desfech==='Pediu retorno';
+  const desistiu            = desfech==='Desistiu' || desfech==='Saiu sem definição';
+  const dataRetorno          = precisaRetorno ? document.getElementById('ci-data-retorno').value : '';
+  const motivoDesistencia    = desistiu ? document.getElementById('ci-motivo-desistencia').value.trim() : '';
 
   const missing = [];
   if(!nome)    missing.push('Nome');
@@ -2124,7 +2155,9 @@ async function ciSave(){
     observacoes:   document.getElementById('ci-obs').value.trim(),
     justificativa: justificativa,
     servico_oficina:      servicoOficina,
-    reclamacoes_elogios:  reclamacoesElogios
+    reclamacoes_elogios:  reclamacoesElogios,
+    data_retorno:         dataRetorno,
+    motivo_desistencia:   motivoDesistencia
   };
   // Nota e temperatura vêm sempre do que o vendedor escolheu (não são mais
   // calculadas automaticamente) — só existem quando o setor é qualificável.
@@ -2159,9 +2192,12 @@ async function ciSave(){
     temperatura:         reg.temperatura || '',
     justificativa_temperatura: justificativa,
     // pendente: colunas novas, o workflow n8n do check-in ainda não grava
-    // descricao_servico_oficina/reclamacoes_elogios em `leads`.
+    // descricao_servico_oficina/reclamacoes_elogios/data_retorno_prevista/
+    // motivo_desistencia em `leads`.
     descricao_servico_oficina: servicoOficina,
     reclamacoes_elogios:       reclamacoesElogios,
+    data_retorno_prevista:     dataRetorno,
+    motivo_desistencia:        motivoDesistencia,
     observacoes:         document.getElementById('ci-obs').value.trim()
   });
   // ATENÇÃO — Decisão (2026-07-15): uma única tentativa, sempre em modo JSON
@@ -2242,7 +2278,11 @@ function ciPresencialLeadsRaw(){
         observacoes:  '',
         justificativa: l.justificativa || '',
         servico_oficina:     l.descricao_servico_oficina || '',
-        reclamacoes_elogios: l.reclamacoes_elogios || ''
+        reclamacoes_elogios: l.reclamacoes_elogios || '',
+        // pendente: colunas ainda não gravadas pelo n8n (ver ciSave) — já lendo
+        // aqui pra funcionar sozinho assim que existirem no Supabase.
+        data_retorno:        l.data_retorno_prevista || '',
+        motivo_desistencia:  l.motivo_desistencia || ''
       };
       // A nota é sempre a temperatura que o vendedor escolheu no formulário —
       // só existe quando o setor é qualificável (Novos/Semi-novos). Os demais
@@ -2384,6 +2424,7 @@ function ciRenderHistory(){
           <span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;${ciBadgeStyle(iCls)}">${r.intencao||'—'}</span>
           <span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;${ciBadgeStyle(dCls)}">${r.desfecho||'—'}</span>
           ${statusBadge}
+          ${r.data_retorno ? `<span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;background:var(--ac-faint);color:var(--ac);border:1px solid rgba(212,175,55,.3);">📅 Retorno ${new Date(r.data_retorno+'T12:00:00').toLocaleDateString('pt-BR')}</span>` : ''}
           ${r.desfecho!=='Comprou' ? `<button class="btn-fila-ci" id="btn-fila-ci-${ri}" onclick="filaAddFromCheckin(${ri})" title="Adicionar este lead à Fila de Espera">⏳ Fila de Espera</button>` : ''}
           <button class="btn-del-ci" onclick="ciDelete(${r.id})" title="Excluir">✕</button>
         </div>
@@ -2400,6 +2441,7 @@ function ciRenderHistory(){
       ${r.justificativa?`<div class="ci-hi-obs"><strong>Justificativa da temperatura:</strong> ${r.justificativa}</div>`:''}
       ${r.servico_oficina?`<div class="ci-hi-obs"><strong>Serviço de oficina:</strong> ${r.servico_oficina}</div>`:''}
       ${r.reclamacoes_elogios?`<div class="ci-hi-obs"><strong>Reclamações/elogios:</strong> ${r.reclamacoes_elogios}</div>`:''}
+      ${r.motivo_desistencia?`<div class="ci-hi-obs"><strong>Motivo da desistência:</strong> ${r.motivo_desistencia}</div>`:''}
       ${r.observacoes?`<div class="ci-hi-obs">${r.observacoes}</div>`:''}
     </div>`;
   }).join('');
@@ -4268,6 +4310,7 @@ function filaAddFromCheckin(ri){
     score: r.score || 0,
     temperatura: r.temperatura || calcTemperatura(r.score||0),
     entradaISO: new Date().toISOString(),
+    retorno_previsto: r.data_retorno || '',
     motivo_fila: r.justificativa || (r.desfecho==='Pediu retorno' ? 'Pediu retorno no check-in presencial' : 'Vai pensar — registrado no check-in presencial'),
     perfil: {
       canal: 'Presencial',
@@ -4394,6 +4437,7 @@ function buildFilaEspera(){
       <div class="fila-meta">
         <div><span class="fila-time-badge">${tempoEspera(c.entradaISO)}</span></div>
         <div class="fila-date">${fmtDataHoraFila(c.entradaISO)}</div>
+        ${c.retorno_previsto?`<div class="fila-date" style="color:var(--ac)">📅 Retorno: ${new Date(c.retorno_previsto+'T12:00:00').toLocaleDateString('pt-BR')}</div>`:''}
         <div class="fila-phone">${c.telefone||'—'}</div>
         ${filaWaBtn}
       </div>
