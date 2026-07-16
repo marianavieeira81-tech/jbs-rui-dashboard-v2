@@ -3757,6 +3757,10 @@ const N8N_LOGOUT        = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/rui-log
 const N8N_LEADS_QUERY   = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/rui-leads-query';
 const N8N_FILA_QUERY    = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/rui-fila-query';
 const N8N_HISTORICO_QUERY = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/rui-leads-historico-query';
+// Fluxo "rui-fila-adicionar" (16/07) — grava de verdade na fila_espera do Supabase.
+// Enquanto ela não importar/ativar esse fluxo no n8n, a chamada abaixo falha
+// silenciosamente e o botão cai no fallback local (ver filaAddFromCheckin).
+const N8N_FILA_ADICIONAR = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/adicionar-fila-espera';
 const REFRESH_INTERVAL_MS = 30000;
 
 // ============================================================
@@ -4292,7 +4296,7 @@ function filaSaveLocal(arr){
 
 // Chamado pelo botão "⏳ Fila de Espera" de cada card do histórico de check-in
 // (ver ciRenderHistory) — ri é o índice dentro de window._ciHistoryArr.
-function filaAddFromCheckin(ri){
+async function filaAddFromCheckin(ri){
   const r = (window._ciHistoryArr||[])[ri];
   if(!r) return;
   const tel = (r.wa||'').replace(/\D/g,'');
@@ -4301,6 +4305,38 @@ function filaAddFromCheckin(ri){
     const t=document.getElementById('toast');t.querySelector('span').textContent='Esse lead já está na Fila de Espera.';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);
     return;
   }
+
+  const btn=document.getElementById('btn-fila-ci-'+ri);
+  if(btn){ btn.disabled=true; btn.textContent='Enviando...'; }
+
+  const motivo = r.justificativa || (r.desfecho==='Pediu retorno' ? 'Pediu retorno no check-in presencial' : 'Vai pensar — registrado no check-in presencial');
+
+  // Tenta gravar direto na fila_espera do Supabase via n8n (fluxo rui-fila-adicionar).
+  // Se esse fluxo ainda não foi importado/ativado no n8n, a chamada falha e cai
+  // no fallback local abaixo — mesmo padrão de resiliência do check-in (ciSave).
+  let ok = false;
+  try{
+    const res = await fetch(N8N_FILA_ADICIONAR, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        token: authToken(),
+        nome: r.nome,
+        telefone: r.wa,
+        modelo: r.modelos || '',
+        score_final: r.score || 0,
+        motivo: motivo
+      })
+    });
+    if(res.ok) ok = true;
+  }catch(_){}
+
+  if(ok){
+    await fetchFilaData();
+    if(btn){ btn.disabled=true; btn.textContent='✔ Na Fila de Espera'; }
+    const t=document.getElementById('toast');t.querySelector('span').textContent='Lead adicionado à Fila de Espera!';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);
+    return;
+  }
+
   arr.unshift({
     id: Date.now(),
     nome: r.nome,
@@ -4311,7 +4347,7 @@ function filaAddFromCheckin(ri){
     temperatura: r.temperatura || calcTemperatura(r.score||0),
     entradaISO: new Date().toISOString(),
     retorno_previsto: r.data_retorno || '',
-    motivo_fila: r.justificativa || (r.desfecho==='Pediu retorno' ? 'Pediu retorno no check-in presencial' : 'Vai pensar — registrado no check-in presencial'),
+    motivo_fila: motivo,
     perfil: {
       canal: 'Presencial',
       pagamento: r.financiamento==='S' ? 'Financiamento aprovado' : '',
@@ -4323,9 +4359,8 @@ function filaAddFromCheckin(ri){
   });
   filaSaveLocal(arr);
   buildFilaEspera();
-  const btn=document.getElementById('btn-fila-ci-'+ri);
-  if(btn){ btn.disabled=true; btn.textContent='✔ Na Fila de Espera'; }
-  const t=document.getElementById('toast');t.querySelector('span').textContent='Lead adicionado à Fila de Espera!';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);
+  if(btn){ btn.disabled=true; btn.textContent='✔ Na Fila (só aqui)'; }
+  const t=document.getElementById('toast');t.querySelector('span').textContent='Adicionado só neste navegador — o fluxo de gravação no banco ainda não está ativo no n8n.';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3400);
 }
 
 // Prioridade da fila: score do lead + 2 pontos pra cada dia de espera —
