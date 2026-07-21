@@ -95,6 +95,8 @@ pre.detalhe-pre{background:var(--bg);border:1px solid var(--bdr);border-radius:6
 .login-box input{width:100%;background:var(--s2);border:1px solid var(--bdr);color:var(--tx);border-radius:var(--rsm);padding:11px 14px;font-size:13px;font-family:inherit;margin-bottom:14px;}
 .login-box .btn-ref{width:100%;margin-left:0;}
 .login-err{color:var(--red);font-size:12px;margin-top:12px;}
+.btn-sair{background:var(--s2);border:1px solid var(--bdr);color:var(--tx2);padding:10px 18px;border-radius:var(--rsm);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-left:10px;transition:all .2s;}
+.btn-sair:hover{border-color:var(--red);color:var(--red);}
 </style>
 </head>
 <body>
@@ -120,6 +122,7 @@ pre.detalhe-pre{background:var(--bg);border:1px solid var(--bdr);border-radius:6
     <div style="display:flex;align-items:center;">
       <div class="ts">Atualizado em<strong id="ts-atualizado">—</strong></div>
       <button class="btn-ref" id="btn-refresh" onclick="carregarTudo()">Atualizar</button>
+      <button class="btn-sair" id="btn-sair" onclick="sair()">Sair</button>
     </div>
   </div>
 
@@ -340,6 +343,10 @@ function mostrarLogin(msg){
 }
 function esconderLogin(){
   document.getElementById('login-overlay').style.display = 'none';
+}
+function sair(){
+  sessionStorage.removeItem(SECRET_STORAGE_KEY);
+  mostrarLogin();
 }
 function tentarLogin(){
   const val = document.getElementById('login-input').value.trim();
