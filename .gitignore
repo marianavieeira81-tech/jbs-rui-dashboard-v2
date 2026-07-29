@@ -1,0 +1,14 @@
+# Segredos e configuracao local - nunca versionar
+.env
+.env.*
+*.pem
+*.key
+secrets.json
+config.local.*
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Dependencias (caso algum dia use Node.js)
+node_modules/
