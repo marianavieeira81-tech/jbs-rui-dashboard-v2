@@ -1,5 +1,3 @@
-# RUI
-
 Painel administrativo do agente de inteligência artificial Rui o qual tem o intuito de qualificar leads, montar fila de
 espera de veículos fora de estoque, fazer checkin presencial, diagnosticar leads esfriados... Esse agente de IA faz a 
 pré-venda completa. 
