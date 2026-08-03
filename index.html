@@ -3090,8 +3090,17 @@ function cobBuildRelatorio(){
   const el=document.getElementById('cobRelatorioContent');
   if(!el) return;
   const byMonth={};
+  const hourByMonth={};
   const cobSrcRel=(DATA_MODE==='production'&&ACTIVE_LEADS.length>0)?ACTIVE_LEADS:(DATA_MODE==='production'?[]:NETWORK_LEADS_MES);
-  cobSrcRel.forEach(l=>{ if(l.data&&matchSetor(l.setor)){const ym=l.data.slice(0,7);byMonth[ym]=(byMonth[ym]||0)+1;} });
+  cobSrcRel.forEach(l=>{
+    if(l.data&&matchSetor(l.setor)){
+      const ym=l.data.slice(0,7);
+      byMonth[ym]=(byMonth[ym]||0)+1;
+      if(!hourByMonth[ym]) hourByMonth[ym]=Array(24).fill(0);
+      const h=parseInt((l.hora||'').split(':')[0]);
+      if(!isNaN(h)&&h>=0&&h<24) hourByMonth[ym][h]++;
+    }
+  });
   const todos={...byMonth};
   const months=Object.keys(todos).sort();
   if(!months.length){
@@ -3108,23 +3117,29 @@ function cobBuildRelatorio(){
       <div style="font-size:52px;font-weight:800;font-family:'DM Mono',monospace;color:var(--ac-l);line-height:1">${total}</div>
       <div style="font-size:12px;color:var(--tx3);margin-top:6px">leads atendidos pelo Rui desde o início do contrato</div>
     </div>
-    <div style="display:grid;gap:14px;max-width:480px">
+    <div style="display:grid;gap:32px">
       ${months.map(ym=>{
         const cnt=todos[ym];
         const pct=Math.round((cnt/maxM)*100);
         return`<div>
-          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px">
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;max-width:480px">
             <span style="color:var(--tx2);font-weight:600">${fmtM(ym)}</span>
             <span style="color:var(--ac-l);font-family:'DM Mono',monospace;font-weight:700">${cnt} leads</span>
           </div>
-          <div style="height:8px;background:var(--s3);border-radius:4px">
+          <div style="height:8px;background:var(--s3);border-radius:4px;max-width:480px">
             <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,var(--ac-d),var(--ac-l));border-radius:4px;transition:width .5s ease"></div>
           </div>
+          <div style="font-size:10px;color:var(--tx3);margin-top:12px">Todos os horários atendidos em ${fmtM(ym)}:</div>
+          <div class="cob-hour-grid" id="cobRelHourGrid-${ym}" style="margin-top:6px"></div>
+          <div class="cob-hour-grid" id="cobRelHourLbl-${ym}" style="margin-top:0"></div>
         </div>`;
       }).join('')}
     </div>
     <div style="margin-top:18px;font-size:11px;color:var(--tx3)">Histórico real gerado a partir dos leads processados pelo agente Rui.</div>
   `;
+  months.forEach(ym=>{
+    cobRenderHourChart('cobRelHourGrid-'+ym,'cobRelHourLbl-'+ym,hourByMonth[ym]||Array(24).fill(0),null);
+  });
 }
 
 // ============================================================
@@ -4758,6 +4773,8 @@ function buildEstoqueSection(estoque, resumo){
 // ============================================================
 let GLOBAL_RANGE={from:null,to:null,preset:'mes'};
 const DR_TABS=['dash','funil','diagnostico','checkin','plataformas'];
+// Abas que mostram só o período selecionável, sem os atalhos Hoje/Esta Semana/Este Mês.
+const DR_TABS_SO_PERIODO=['dash','funil','checkin','plataformas'];
 
 function _drISO(d){return d.toISOString().slice(0,10);}
 function _drStartDay(d=new Date()){const r=new Date(d);r.setHours(0,0,0,0);return r;}
@@ -4770,7 +4787,7 @@ function drBuild(tabId){
   if(!el) return;
   if(!GLOBAL_RANGE.from) GLOBAL_RANGE={from:_drStartMonth(),to:_drEndDay(),preset:'mes'};
   const f=_drISO(GLOBAL_RANGE.from),t=_drISO(GLOBAL_RANGE.to),p=GLOBAL_RANGE.preset;
-  const presetsHtml = `
+  const presetsHtml = DR_TABS_SO_PERIODO.includes(tabId) ? '' : `
     <button id="drb-btn-hoje-${tabId}" class="drb-preset${p==='hoje'?' active':''}" onclick="drSetPreset('hoje','${tabId}')">Hoje</button>
     <button id="drb-btn-semana-${tabId}" class="drb-preset${p==='semana'?' active':''}" onclick="drSetPreset('semana','${tabId}')">Esta Semana</button>
     <button id="drb-btn-mes-${tabId}" class="drb-preset${p==='mes'?' active':''}" onclick="drSetPreset('mes','${tabId}')">Este Mês</button>
