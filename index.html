@@ -61,8 +61,8 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 .ts strong{display:block;font-size:13px;font-weight:600;color:var(--tx2);font-family:'DM Mono',monospace;}
 .btn-ref{background:linear-gradient(135deg,var(--ac),var(--ac-d));color:#000;border:none;padding:10px 22px;border-radius:var(--rsm);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;box-shadow:0 4px 16px rgba(212,175,55,.25);}
 .btn-ref:hover{background:linear-gradient(135deg,var(--ac-l),var(--ac));transform:translateY(-2px);box-shadow:0 6px 24px rgba(212,175,55,.45);}
-.loja-select,.modelo-select,.setor-select{background:var(--s2);color:var(--tx);border:1px solid var(--bdr);border-radius:var(--rsm);padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
-.loja-select:hover{border-color:rgba(212,175,55,.35);}
+.loja-select,.modelo-select,.setor-select,.loja-select-fila{background:var(--s2);color:var(--tx);border:1px solid var(--bdr);border-radius:var(--rsm);padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
+.loja-select:hover,.loja-select-fila:hover{border-color:rgba(212,175,55,.35);}
 .filtro-cl-wrap{position:relative;margin-left:auto;}
 .filtro-cl-btn{display:flex;align-items:center;gap:8px;background:var(--s2);color:var(--tx);border:1px solid var(--bdr);border-radius:var(--rsm);padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:border .2s,color .2s;}
 .filtro-cl-btn:hover{border-color:rgba(212,175,55,.35);}
@@ -917,11 +917,12 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     <div><div class="eye">Pipeline do Agente</div><h1>Fila de Leads</h1></div>
     <div class="topbar-r">
       <span class="loja-hint">⚠ leads ainda sem loja marcada no n8n</span>
-      <select class="loja-select" onchange="setLojaFilter(this.value)">
+      <select class="loja-select-fila" onchange="setLojaFilterFila(this.value)">
         <option value="todas">Todas as lojas</option>
         <option value="Boa Viagem">Boa Viagem</option>
         <option value="Parnamirim">Parnamirim</option>
         <option value="Caruaru">Caruaru</option>
+        <option value="Presencial">Presencial</option>
       </select>
       <select class="modelo-select" onchange="setModeloFilter(this.value)">
         <option value="todos">Todos os modelos</option>
@@ -935,7 +936,6 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       <button class="btn-ref" onclick="fetchFilaData()">&#8629; Atualizar</button>
     </div>
   </div>
-  <div id="drb-filaespera"></div>
 
   <!-- BUSCA POR TELEFONE -->
   <div style="margin-bottom:22px;display:flex;gap:10px;align-items:center;">
@@ -985,7 +985,6 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       <div style="display:flex;gap:8px;padding:14px 24px 0;flex-wrap:wrap;">
         <button class="ftab active" onclick="filterFila(this,'todos')">Todos</button>
         <button class="ftab" onclick="filterFila(this,'alta')">Prioridade alta</button>
-        <button class="ftab" onclick="filterFila(this,'estoque')">Aguardando estoque</button>
         <button class="ftab" onclick="filterFila(this,'frio')">Sem resposta</button>
       </div>
       <!-- LISTA -->
@@ -1758,6 +1757,7 @@ function refreshAllTabsForFilters(){
   ciRenderHistory();
   agRender();
   updateLojaHints();
+  refreshDashKpis();
 }
 
 // ============================================================
@@ -4289,6 +4289,33 @@ function getLeadsForPeriod(){
   return {wa:NETWORK_LEADS_MES, todos:NETWORK_LEADS_MES};
 }
 
+// Recalcula os 4 indicadores do Painel de Controle (Leads recebidos, Qualificação
+// completa, Fila de espera, Score médio) a partir de ACTIVE_LEADS/ACTIVE_FILA já
+// carregados, aplicando loja + modelo + período (GLOBAL_RANGE) juntos — os 3
+// filtros combinados (E lógico), igual ao resto do dashboard. Chamada sempre que
+// os filtros mudam ou novos dados chegam, pra nunca ficar travado no total sem filtro.
+function refreshDashKpis(){
+  const inPeriodo = iso => {
+    if(!GLOBAL_RANGE.from||!GLOBAL_RANGE.to) return true;
+    if(!iso) return false;
+    const d = new Date(iso);
+    return d>=GLOBAL_RANGE.from && d<=GLOBAL_RANGE.to;
+  };
+  const leads = ACTIVE_LEADS.filter(l=>matchLoja(l.loja)&&matchModelo(l.modelo)&&inPeriodo(l.data?l.data+'T12:00:00':''));
+  const fila  = ACTIVE_FILA.filter(f=>matchLoja(f.loja)&&matchModelo(f.modelo)&&inPeriodo(f.entradaISO));
+  // Mesma regra do Funil: check-in presencial sempre tem "qualificado_em" preenchido
+  // (processo manual do vendedor), então não conta aqui — senão esse card destoaria
+  // da etapa "Qualificação completa" do Funil, que já exclui esses leads.
+  const qualificados = leads.filter(l=>l.qualificadoEm && (l.canal||'').toLowerCase()!=='presencial').length;
+  const scores = leads.map(l=>l.score||0);
+  const scoreMedio = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : 0;
+  const set=(sel,v)=>{const el=document.querySelector(sel);if(el)el.textContent=v;};
+  set('[data-kpi="total"]', leads.length);
+  set('[data-kpi="qualificados"]', qualificados);
+  set('[data-kpi="filaEspera"]', fila.length);
+  set('[data-kpi="scoreMedio"]', scoreMedio);
+}
+
 async function atualizarDashboard(){
   await fetchAllData();
   await fetchFilaData();
@@ -4297,14 +4324,7 @@ async function atualizarDashboard(){
   updateCICount(); // Ponto 10: mantém contador CI sincronizado no ciclo automático
   document.getElementById('tsVal').textContent=new Date().toLocaleString('pt-BR');
   if(document.getElementById('p-funil')&&document.getElementById('p-funil').style.display!=='none'){ buildFunil(); buildFunilPresencial(); }
-  const kpiQ=document.querySelector('[data-kpi="qualificados"]');
-  // Mesma regra do Funil: check-in presencial sempre tem "qualificado_em"
-  // preenchido (processo manual do vendedor), então não conta aqui — senão
-  // esse card destoaria da etapa "Qualificação completa" do Funil, que já
-  // exclui esses leads.
-  if(kpiQ) kpiQ.textContent=ACTIVE_LEADS.filter(l=>l.qualificadoEm && (l.canal||'').toLowerCase()!=='presencial').length;
-  const kpiF=document.querySelector('[data-kpi="filaEspera"]');
-  if(kpiF) kpiF.textContent=ACTIVE_FILA.length;
+  refreshDashKpis();
 }
 
 // ============================================================
@@ -4478,6 +4498,29 @@ function prioridadeFila(f){
   return (f.score||0) + dias*PESO_DIA_ESPERA;
 }
 
+// ============================================================
+// FILTRO DE LOJA — só na Fila de Espera (inclui "Presencial")
+// ============================================================
+// Estado próprio, independente do selectedLoja global usado nas outras abas:
+// "Presencial" filtra por CANAL (perfil.canal), não por loja de verdade, e
+// nenhum lead das outras abas (Dashboard, Funil, Diagnóstico, Check-in,
+// Cobertura) teria loja==="Presencial" — por isso não dá pra usar o mesmo
+// selectedLoja/matchLoja compartilhado sem zerar as outras telas.
+let selectedLojaFila = localStorage.getItem('rui_loja_fila_filtro') || 'todas';
+
+function matchLojaFila(f){
+  if(selectedLojaFila==='todas') return true;
+  if(selectedLojaFila==='Presencial') return !!(f.perfil && f.perfil.canal==='Presencial');
+  return (f.loja||'')===selectedLojaFila;
+}
+
+function setLojaFilterFila(v){
+  selectedLojaFila = v;
+  localStorage.setItem('rui_loja_fila_filtro', v);
+  buildFilaEspera();
+  fetchFilaEsperaSupabase();
+}
+
 function buildFilaEspera(){
   // Leads adicionados manualmente pelo check-in (localStorage) entram junto —
   // exceto os que o n8n já trouxe pelo mesmo telefone, pra não duplicar.
@@ -4487,7 +4530,7 @@ function buildFilaEspera(){
     return !t || !activeTels.has(t);
   });
   const source = (DATA_MODE==='production') ? [...ACTIVE_FILA, ...localFila] : DEMO_FILA;
-  const fila = source.filter(f=>matchLoja(f.loja)&&matchModelo(f.modelo)).sort((a,b)=>prioridadeFila(b)-prioridadeFila(a));
+  const fila = source.filter(f=>matchLojaFila(f)&&matchModelo(f.modelo)).sort((a,b)=>prioridadeFila(b)-prioridadeFila(a));
 
   const wrap=document.getElementById('filaList');
   if(!wrap) return;
@@ -4599,7 +4642,7 @@ async function fetchFilaEsperaSupabase(){
       return;
     }
     const rowsRaw=await res.json();
-    const rows=(Array.isArray(rowsRaw)?rowsRaw:[]).filter(r=>matchLoja(r.loja||r.loja_slug||'')&&matchModelo(r.modelo));
+    const rows=(Array.isArray(rowsRaw)?rowsRaw:[]).filter(r=>(selectedLojaFila==='todas'||(r.loja||r.loja_slug||'')===selectedLojaFila)&&matchModelo(r.modelo));
     if(rows.length===0){
       wrap.innerHTML='<div style="padding:40px 24px;text-align:center;color:var(--tx3);font-size:13px">Nenhum lead aguardando no momento.</div>';
       return;
@@ -4714,7 +4757,7 @@ function buildEstoqueSection(estoque, resumo){
 // FILTRO DE PERÍODO — barra de datas compartilhada entre abas
 // ============================================================
 let GLOBAL_RANGE={from:null,to:null,preset:'mes'};
-const DR_TABS=['dash','filaespera','funil','diagnostico','checkin','plataformas'];
+const DR_TABS=['dash','funil','diagnostico','checkin','plataformas'];
 
 function _drISO(d){return d.toISOString().slice(0,10);}
 function _drStartDay(d=new Date()){const r=new Date(d);r.setHours(0,0,0,0);return r;}
@@ -4785,11 +4828,7 @@ function drSetCount(tabId,n){
 async function drApplyToTab(tabId){
   const from=GLOBAL_RANGE.from.toISOString();
   const to=GLOBAL_RANGE.to.toISOString();
-  if(tabId==='filaespera'){
-    await drFetchFilaEspera(from,to);
-  } else {
-    await drFetchLeads(tabId,from,to);
-  }
+  await drFetchLeads(tabId,from,to);
 }
 
 async function drFetchLeads(tabId,from,to){
@@ -4818,46 +4857,11 @@ async function drFetchLeads(tabId,from,to){
     if(!Array.isArray(rows)) return;
     ACTIVE_LEADS=rows.map(mapLead);
     drSetCount(tabId,ACTIVE_LEADS.length);
-    if(tabId==='dash'){buildTable();buildDiagnostico();animateCounters();}
+    if(tabId==='dash'){buildTable();buildDiagnostico();animateCounters();refreshDashKpis();}
     else if(tabId==='funil'){ buildFunil(); buildFunilPresencial(); }
     else if(tabId==='plataformas') refreshPlataformasFiltered();
     else if(tabId==='checkin') ciRenderHistory();
   }catch(e){console.warn('[RuiAI] drFetchLeads:',e);}
-}
-
-async function drFetchFilaEspera(from,to){
-  const wrap=document.getElementById('filaEsperaSupaWrap');
-  if(!wrap) return;
-  wrap.innerHTML='<div style="padding:40px 24px;text-align:center;color:var(--tx3);font-size:13px">Carregando...</div>';
-  try{
-    const res=await authFetch(
-      `${N8N_FILA_QUERY}?since=${encodeURIComponent(from)}&until=${encodeURIComponent(to)}`,
-      {method:'GET'}
-    );
-    if(!res.ok){
-      wrap.innerHTML='<div style="padding:40px 24px;text-align:center;color:var(--tx3);font-size:13px">Erro ao carregar fila de espera.</div>';
-      return;
-    }
-    const rowsRaw=await res.json();
-    const rows=(Array.isArray(rowsRaw)?rowsRaw:[]).filter(r=>matchLoja(r.loja||r.loja_slug||'')&&matchModelo(r.modelo));
-    drSetCount('filaespera',rows.length);
-    if(rows.length===0){
-      wrap.innerHTML='<div style="padding:40px 24px;text-align:center;color:var(--tx3);font-size:13px">Nenhum lead aguardando no momento.</div>';
-      return;
-    }
-    wrap.innerHTML=`<table class="ltbl" style="display:table;width:calc(100% - 48px);margin:16px 24px;">
-      <thead><tr><th>Nome</th><th>Modelo de Interesse</th><th>Especificações</th><th>Entrada</th></tr></thead>
-      <tbody>${rows.map(r=>`<tr>
-        <td style="font-weight:600;color:var(--tx)">${r.nome||'—'}</td>
-        <td>${r.modelo||'—'}</td>
-        <td style="color:var(--tx3);font-size:12px">${r.especificacoes||'—'}</td>
-        <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--tx3)">${fmtDataHoraFila(r.registrado_em)}</td>
-      </tr>`).join('')}</tbody>
-    </table>`;
-  }catch(e){
-    if(wrap) wrap.innerHTML='<div style="padding:40px 24px;text-align:center;color:var(--tx3);font-size:13px">Erro ao carregar fila de espera.</div>';
-    console.warn('[RuiAI] drFetchFilaEspera:',e);
-  }
 }
 
 function startDashboard(){
@@ -4882,6 +4886,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.querySelectorAll('.loja-select').forEach(s=>{ s.value = selectedLoja; });
   document.querySelectorAll('.modelo-select').forEach(s=>{ s.value = selectedModelo; });
   document.querySelectorAll('.setor-select').forEach(s=>{ s.value = selectedSetor; });
+  document.querySelectorAll('.loja-select-fila').forEach(s=>{ s.value = selectedLojaFila; });
   initFiltroCL();
   if(authToken()){ hideLogin(); startDashboard(); }
   else{ showLogin(); }
@@ -4895,8 +4900,6 @@ function filterFila(btn, filter) {
     var show = true;
     if (filter === 'alta') {
       show = parseInt(row.dataset.score) >= 60;
-    } else if (filter === 'estoque') {
-      show = row.dataset.notificado === 'nao'; // notificado_em null = ainda aguardando estoque
     } else if (filter === 'frio') {
       show = row.dataset.notificado === 'sim'; // notificado_em set = foi avisado mas sem resposta
     }
