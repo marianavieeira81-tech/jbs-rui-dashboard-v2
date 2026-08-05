@@ -97,6 +97,82 @@ pre.detalhe-pre{background:var(--bg);border:1px solid var(--bdr);border-radius:6
 .login-err{color:var(--red);font-size:12px;margin-top:12px;}
 .btn-sair{background:var(--s2);border:1px solid var(--bdr);color:var(--tx2);padding:10px 18px;border-radius:var(--rsm);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-left:10px;transition:all .2s;}
 .btn-sair:hover{border-color:var(--red);color:var(--red);}
+
+/* ===== Abas (Monitor / Configuração / Gastos) ===== */
+.tabs{display:flex;gap:4px;margin-bottom:26px;border-bottom:1px solid var(--bdr);}
+.tab-btn{background:none;border:none;color:var(--tx3);font:600 13px 'DM Sans',sans-serif;padding:12px 18px;cursor:pointer;position:relative;top:1px;border-bottom:2px solid transparent;transition:color .2s,border-color .2s;}
+.tab-btn:hover{color:var(--tx2);}
+.tab-btn.active{color:var(--ac);border-bottom-color:var(--ac);}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+/* ===== Campos de formulário (Configuração / Gastos) ===== */
+.field-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:18px;}
+.field{display:flex;flex-direction:column;gap:6px;}
+.field label{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--tx3);font-weight:600;}
+.field input[type=text],.field input[type=number],.field input[type=url],.field input[type=time],.field textarea{
+  background:var(--s2);border:1px solid var(--bdr);color:var(--tx);border-radius:var(--rsm);padding:9px 12px;font-size:13px;font-family:'DM Mono',monospace;width:100%;
+}
+.field textarea{font-family:'DM Sans',sans-serif;resize:vertical;min-height:70px;}
+.field input:focus-visible,.field textarea:focus-visible{outline:2px solid var(--ac);outline-offset:1px;}
+.hint{font-size:11px;color:var(--tx3);line-height:1.5;margin:-8px 0 14px;}
+.hint.warn{color:var(--ac);}
+.subsec{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);font-weight:600;margin:22px 0 12px;}
+.subsec:first-child{margin-top:0;}
+
+.checks{display:flex;flex-wrap:wrap;gap:8px 20px;margin-bottom:10px;}
+.check{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--tx2);cursor:pointer;}
+.check input{width:15px;height:15px;accent-color:var(--ac);cursor:pointer;}
+
+.sqlbox{margin-top:14px;}
+.sqlbox-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.sqlbox-head .subsec{margin:0;}
+textarea.sql{font-family:'DM Mono',monospace;font-size:11.5px;line-height:1.55;background:var(--bg);border:1px solid var(--bdr);color:var(--tx2);border-radius:var(--rsm);padding:12px;width:100%;min-height:110px;white-space:pre;resize:vertical;}
+.copy-btn{background:var(--s2);border:1px solid var(--bdr);color:var(--tx2);border-radius:6px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;}
+.copy-btn:hover{border-color:var(--ac);color:var(--ac);}
+.copy-status{font-size:11px;color:var(--grn-l);opacity:0;transition:opacity .2s;margin-left:8px;}
+.copy-status.show{opacity:1;}
+.okbox{background:var(--grn-bg);border:1px solid rgba(0,160,101,.3);color:var(--tx2);border-radius:var(--rsm);padding:12px 16px;font-size:12.5px;line-height:1.6;margin-bottom:16px;}
+.okbox b{color:var(--grn-l);}
+.callout{background:var(--ac-faint);border:1px solid rgba(212,175,55,.25);color:var(--tx2);border-radius:var(--rsm);padding:12px 16px;font-size:12.5px;line-height:1.6;margin-top:16px;}
+.callout b{color:var(--ac);}
+.warnbox{background:var(--red-bg);border:1px solid rgba(225,29,72,.3);color:var(--tx2);border-radius:var(--rsm);padding:12px 16px;font-size:12.5px;line-height:1.6;margin-top:16px;}
+.warnbox b{color:var(--red);}
+
+.row-table{width:100%;border-collapse:collapse;margin-bottom:10px;}
+.row-table th{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--tx3);text-align:left;padding:0 8px 10px 0;}
+.row-table td{padding:6px 8px 6px 0;vertical-align:top;}
+.row-table input{width:100%;}
+.rm-btn{background:none;border:1px solid var(--red);color:var(--red);border-radius:6px;padding:6px 10px;font-size:11px;cursor:pointer;font-family:inherit;}
+.rm-btn:hover{background:var(--red-bg);}
+.add-btn{background:none;border:1px dashed var(--bdr);color:var(--tx3);border-radius:var(--rsm);padding:9px 16px;font-size:12.5px;cursor:pointer;font-family:inherit;margin-top:4px;}
+.add-btn:hover{border-color:var(--ac);color:var(--ac);}
+
+.models{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:16px 0;}
+.model{border:1px solid var(--bdr);border-radius:var(--rsm);padding:16px;background:var(--s2);}
+.model.chosen{border-color:var(--ac);box-shadow:0 0 0 1px var(--ac) inset;}
+.model .mradio{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:var(--tx);margin-bottom:10px;cursor:pointer;}
+.model .mradio input{accent-color:var(--ac);}
+.model .mline{display:flex;justify-content:space-between;font-size:12px;color:var(--tx3);padding:3px 0;}
+.model .mline b{color:var(--tx2);font-family:'DM Mono',monospace;}
+.dados-reais{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:12px;color:var(--tx3);margin-bottom:18px;}
+.dados-reais b{color:var(--ac-l);font-family:'DM Mono',monospace;}
+
+/* ===== Contrato ===== */
+.ctr-textarea{width:100%;min-height:420px;background:var(--s2);border:1px solid var(--bdr);color:var(--tx);border-radius:var(--rsm);padding:14px;font-size:12.5px;font-family:'DM Mono',monospace;line-height:1.6;resize:vertical;}
+.ctr-preview{width:100%;background:var(--s2);border:1px solid var(--bdr);border-radius:var(--rsm);padding:20px;font-family:'DM Sans',sans-serif;font-size:13px;line-height:1.7;white-space:pre-wrap;word-break:break-word;color:var(--tx);max-height:600px;overflow:auto;margin-bottom:16px;}
+.btn-danger{background:var(--s2);border:1px solid var(--bdr);color:var(--tx2);border-radius:var(--rsm);padding:9px 16px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:600;}
+.btn-danger:hover{border-color:var(--red);color:var(--red);}
+.msg-ok{font-size:12px;color:var(--grn-l);font-weight:600;margin-left:12px;}
+
+@media print{
+  body *{visibility:hidden;}
+  #ctr-preview-card,#ctr-preview-card *{visibility:visible;}
+  #ctr-preview-card{position:absolute;top:0;left:0;width:100%;border:none;box-shadow:none;padding:0;background:#fff;}
+  #ctr-preview-card .card-title,#ctr-preview-card button{display:none;}
+  .ctr-preview{background:#fff;color:#000;border:none;padding:0;max-height:none;overflow:visible;font-size:12px;}
+  body::before{display:none;}
+}
 </style>
 </head>
 <body>
@@ -125,6 +201,15 @@ pre.detalhe-pre{background:var(--bg);border:1px solid var(--bdr);border-radius:6
       <button class="btn-sair" id="btn-sair" onclick="sair()">Sair</button>
     </div>
   </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="monitor" onclick="trocarAba('monitor')">Monitor</button>
+    <button class="tab-btn" data-tab="config" onclick="trocarAba('config')">Configuração</button>
+    <button class="tab-btn" data-tab="gastos" onclick="trocarAba('gastos')">Gastos</button>
+    <button class="tab-btn" data-tab="contrato" onclick="trocarAba('contrato')">Contrato</button>
+  </div>
+
+  <div class="tab-panel active" id="tab-panel-monitor">
 
   <div class="err-banner" id="err-banner"></div>
 
@@ -309,6 +394,260 @@ pre.detalhe-pre{background:var(--bg);border:1px solid var(--bdr);border-radius:6
     <div class="kpi-sub" id="diag-data" style="margin-top:14px;">—</div>
   </div>
 
+  </div><!-- /tab-panel-monitor -->
+
+  <div class="tab-panel" id="tab-panel-config">
+
+    <div class="sec">Marcas e Modelos</div>
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-title">Marcas atendidas</div>
+      <table class="row-table" id="cfgMarcasTable">
+        <thead><tr><th style="width:30%">Marca</th><th>Modelos (separados por vírgula)</th><th></th></tr></thead>
+        <tbody id="cfgMarcasBody"></tbody>
+      </table>
+      <button class="add-btn" type="button" id="cfgBtnAddMarca">+ Adicionar marca</button>
+    </div>
+
+    <div class="sec">Horário, Unidades, Tom e Setores</div>
+    <div class="card" style="margin-bottom:16px;">
+      <div class="subsec">Horário de atendimento</div>
+      <div class="field-grid">
+        <div class="field"><label>Seg–sex abre</label><input type="time" id="cfg_ssabre"></div>
+        <div class="field"><label>Seg–sex fecha</label><input type="time" id="cfg_ssfecha"></div>
+        <div class="field"><label>Sábado abre</label><input type="time" id="cfg_sababre"></div>
+        <div class="field"><label>Sábado fecha</label><input type="time" id="cfg_sabfecha"></div>
+      </div>
+      <label class="check" style="margin-bottom:16px;"><input type="checkbox" id="cfg_domfunciona"> Funciona aos domingos</label>
+      <div class="field-grid" id="cfg_domgrid" style="display:none;margin-top:-8px;">
+        <div class="field"><label>Domingo abre</label><input type="time" id="cfg_domabre"></div>
+        <div class="field"><label>Domingo fecha</label><input type="time" id="cfg_domfecha"></div>
+      </div>
+
+      <div class="subsec">Unidades / endereços</div>
+      <div class="field" style="margin-bottom:18px;">
+        <label>Uma unidade por linha</label>
+        <textarea id="cfg_unidades" rows="3"></textarea>
+      </div>
+
+      <div class="subsec">Tom / identidade do agente</div>
+      <div class="field" style="margin-bottom:6px;">
+        <label>Como o Rui se apresenta pra esse cliente</label>
+        <textarea id="cfg_tom" rows="3" placeholder="Ex.: Sou o Rui, atendente virtual da [nome do cliente]..."></textarea>
+      </div>
+      <p class="hint">Isto é um exemplo pra editar — enquanto ficar vazio, o Rui continua usando o texto padrão que já está em produção.</p>
+
+      <div class="subsec">Setores de atendimento</div>
+      <div class="checks" id="cfgSetoresPadraoBox"></div>
+      <div class="field">
+        <label>Setores extras (um por linha)</label>
+        <textarea id="cfg_setoresCustom" rows="2"></textarea>
+      </div>
+    </div>
+
+    <div class="sec">Gerar SQL — cole no Supabase, projeto GWM</div>
+    <div class="card" style="margin-bottom:16px;">
+      <div class="okbox"><b>Cliente já existe (ex.: GWM-PE)?</b> Use só o Passo 3. O Passo 2 é exclusivo pra cliente novo — exige a anon key preenchida.</div>
+
+      <div class="field-grid" style="grid-template-columns:2fr 1fr;">
+        <div class="field"><label>Nome do cliente</label><input type="text" id="cfg_nome" placeholder="Ex.: GWM-PE"></div>
+        <div class="field"><label>loja_slug</label><input type="text" id="cfg_slug" placeholder="Ex.: adtsa"></div>
+      </div>
+      <div class="field-grid">
+        <div class="field"><label>Supabase URL</label><input type="text" id="cfg_url" placeholder="https://xxxx.supabase.co"></div>
+        <div class="field"><label>Supabase anon key *</label><input type="text" id="cfg_key" placeholder="Settings → API"></div>
+      </div>
+
+      <div class="sqlbox">
+        <div class="sqlbox-head"><div class="subsec">Passo 1 — rodar 1 vez (cria as colunas)</div>
+          <div><span class="copy-status" id="cfgCp1">copiado ✓</span> <button class="copy-btn" type="button" data-copy="cfgSqlAlter" data-status="cfgCp1">Copiar</button></div>
+        </div>
+        <textarea class="sql" id="cfgSqlAlter" readonly rows="9"></textarea>
+      </div>
+      <div class="sqlbox">
+        <div class="sqlbox-head"><div class="subsec">Passo 2 — cliente NOVO (insere a linha)</div>
+          <div><span class="copy-status" id="cfgCp2">copiado ✓</span> <button class="copy-btn" type="button" data-copy="cfgSqlInsert" data-status="cfgCp2">Copiar</button></div>
+        </div>
+        <textarea class="sql" id="cfgSqlInsert" readonly rows="13"></textarea>
+      </div>
+      <div class="sqlbox">
+        <div class="sqlbox-head"><div class="subsec">Passo 3 — cliente EXISTENTE (atualiza)</div>
+          <div><span class="copy-status" id="cfgCp3">copiado ✓</span> <button class="copy-btn" type="button" data-copy="cfgSqlUpdate" data-status="cfgCp3">Copiar</button></div>
+        </div>
+        <textarea class="sql" id="cfgSqlUpdate" readonly rows="10"></textarea>
+      </div>
+      <p class="hint">Preenchido automaticamente com os dados atuais da GWM-PE — edite os campos acima pra outro cliente antes de gerar o SQL dele.</p>
+    </div>
+
+  </div><!-- /tab-panel-config -->
+
+  <div class="tab-panel" id="tab-panel-gastos">
+
+    <div class="sec">Dados reais deste mês</div>
+    <div class="dados-reais">
+      Vindo do Monitor (aba anterior): <b id="gReal_custo">—</b> gastos com IA já registrados · <b id="gReal_exec">—</b> execuções.
+    </div>
+
+    <div class="sec">Custo Real por Lead</div>
+    <div class="card" style="margin-bottom:16px;">
+      <div class="subsec">Custos fixos <span style="font-weight:400;text-transform:none;color:var(--tx3);">— não mudam com o volume</span></div>
+      <div class="field-grid">
+        <div class="field"><label>EasyPanel R$/mês</label><input type="number" id="g_ep" min="0" step="0.01" value="0"></div>
+        <div class="field"><label>Supabase R$/mês</label><input type="number" id="g_sb" min="0" step="0.01" value="0"></div>
+        <div class="field"><label>GitHub Pages R$/mês</label><input type="number" id="g_gh" min="0" step="0.01" value="0"></div>
+        <div class="field"><label>Redis R$/mês</label><input type="number" id="g_rd" min="0" step="0.01" value="0"></div>
+        <div class="field"><label>WhatsApp R$/mês</label><input type="number" id="g_wa" min="0" step="0.01" value="0"></div>
+        <div class="field"><label>Outros R$/mês</label><input type="number" id="g_ou" min="0" step="0.01" value="0"></div>
+      </div>
+
+      <div class="subsec">Custo variável de IA <span style="font-weight:400;text-transform:none;color:var(--tx3);">— conforme o fluxo de mensagens</span></div>
+      <div class="field-grid">
+        <div class="field"><label>Preço entrada (US$/1M tok)</label><input type="number" id="g_iaentrada" min="0" step="0.01" value="1.00"></div>
+        <div class="field"><label>Preço saída (US$/1M tok)</label><input type="number" id="g_iasaida" min="0" step="0.01" value="5.00"></div>
+        <div class="field"><label>Preço cache-leitura (US$/1M)</label><input type="number" id="g_iacache" min="0" step="0.01" value="0.10"></div>
+        <div class="field"><label>% da entrada vindo de cache</label><input type="number" id="g_iapctcache" min="0" max="100" step="1" value="0"></div>
+        <div class="field"><label>Câmbio USD → BRL</label><input type="number" id="g_iacambio" min="0" step="0.01" value="5.07"></div>
+        <div class="field"><label>Tokens entrada / mensagem</label><input type="number" id="g_iatokin" min="0" step="1" value="0"></div>
+        <div class="field"><label>Tokens saída / mensagem</label><input type="number" id="g_iatokout" min="0" step="1" value="0"></div>
+        <div class="field"><label>Mensagens / lead</label><input type="number" id="g_iamsgs" min="0" step="1" value="8"></div>
+        <div class="field"><label>Leads no mês</label><input type="number" id="g_leads" min="0" step="1" value="0"></div>
+      </div>
+      <p class="hint">Preços padrão = tabela oficial da API da Anthropic. Câmbio é referência — confira o valor atual. Tokens por mensagem: pegue o real rodando a consulta abaixo.</p>
+
+      <div class="callout">
+        <b>Pra pegar tokens/custo reais</b> (em vez de estimar), rode isto no SQL Editor do Supabase, projeto GWM, tabela <code style="font-family:'DM Mono',monospace;background:var(--s2);padding:1px 5px;border-radius:4px;">rui_eventos</code>:
+        <textarea class="sql" readonly rows="4" style="margin-top:8px;">select count(*) as execucoes, sum(tokens_input) as tokens_in, sum(tokens_output) as tokens_out,
+  round(sum(custo_estimado_usd)::numeric,4) as custo_usd
+from rui_eventos
+where tipo_evento = 'execucao_ok' and criado_em >= date_trunc('month', now());</textarea>
+        Divida tokens_in / execuções e tokens_out / execuções pra preencher os 2 campos "por mensagem" acima.
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--bdr);margin:20px 0;">
+
+      <div class="kpi-grid-3">
+        <div class="kpi"><div class="kpi-lbl">Custo total mensal</div><div class="kpi-val" id="g_total" style="font-size:26px;">—</div></div>
+        <div class="kpi"><div class="kpi-lbl">Custo real por lead</div><div class="kpi-val" id="g_porlead" style="font-size:26px;">—</div></div>
+        <div class="kpi"><div class="kpi-lbl">↳ parte IA / parte infra</div><div class="kpi-val" id="g_split" style="font-size:16px;">—</div></div>
+      </div>
+    </div>
+
+    <div class="sec">Modelo de Cobrança</div>
+    <div class="card">
+      <div class="field-grid">
+        <div class="field"><label>Margem alvo (%)</label><input type="number" id="g_margem" min="0" step="1" value="30"></div>
+        <div class="field"><label>Leads esperados / cliente / mês</label><input type="number" id="g_pleads" min="1" step="1" value="50"></div>
+        <div class="field"><label>Leads inclusos no plano misto</label><input type="number" id="g_pincl" min="1" step="1" value="40"></div>
+      </div>
+
+      <div class="models">
+        <div class="model" id="gmodel1">
+          <label class="mradio"><input type="radio" name="gmodelo" value="1"> Mensalidade fixa</label>
+          <div class="mline"><span>Preço sugerido/mês</span><b id="gm1preco">—</b></div>
+          <div class="mline"><span>Margem</span><b id="gm1margem">—</b></div>
+        </div>
+        <div class="model" id="gmodel2">
+          <label class="mradio"><input type="radio" name="gmodelo" value="2"> Por lead</label>
+          <div class="mline"><span>Preço por lead</span><b id="gm2preco">—</b></div>
+          <div class="mline"><span>Margem</span><b id="gm2margem">—</b></div>
+        </div>
+        <div class="model" id="gmodel3">
+          <label class="mradio"><input type="radio" name="gmodelo" value="3"> Por mensagem</label>
+          <div class="mline"><span>Preço por mensagem</span><b id="gm3preco">—</b></div>
+          <div class="mline"><span>Margem</span><b id="gm3margem">—</b></div>
+        </div>
+        <div class="model" id="gmodel4">
+          <label class="mradio"><input type="radio" name="gmodelo" value="4"> Misto (base + excedente)</label>
+          <div class="mline"><span>Base fixa/mês</span><b id="gm4base">—</b></div>
+          <div class="mline"><span>Excedente/lead extra</span><b id="gm4excedente">—</b></div>
+        </div>
+      </div>
+      <p class="nota">Os 4 modelos são calibrados pra gerar a MESMA margem — a diferença é só como o preço é cobrado e explicado pro cliente.</p>
+    </div>
+
+  </div><!-- /tab-panel-gastos -->
+
+  <div class="tab-panel" id="tab-panel-contrato">
+
+    <div class="sec">Contrato</div>
+    <div class="callout" style="margin-top:0;">
+      <b>Base:</b> o texto abaixo é o seu contrato real (Contrato_Agente_RUI_v4), com os campos que mudam de cliente para cliente transformados em espaços de preenchimento — nenhuma cláusula foi reescrita. Testemunhas, rubricas e "Local e data" continuam em branco pra preencher à mão na assinatura.
+    </div>
+
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-title">Meus dados (Fornecedora) — preencha uma vez só</div>
+      <div class="field-grid">
+        <div class="field"><label>Nome / Razão social</label><input type="text" id="ctrEmp_nome"></div>
+        <div class="field"><label>CPF / CNPJ (MEI)</label><input type="text" id="ctrEmp_cpfCnpj"></div>
+        <div class="field"><label>Endereço</label><input type="text" id="ctrEmp_endereco"></div>
+        <div class="field"><label>E-mail</label><input type="text" id="ctrEmp_email"></div>
+        <div class="field"><label>Telefone / WhatsApp</label><input type="text" id="ctrEmp_telefone"></div>
+      </div>
+      <button class="btn-ref" style="margin-left:0;" type="button" onclick="ctrSalvarEmpresa()">Salvar meus dados</button>
+      <span class="msg-ok" id="ctrEmp-msg" style="display:none;">Salvo ✓</span>
+    </div>
+
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-title">Clientes (concessionárias que contrataram o Rui)</div>
+      <div class="filters">
+        <select id="ctrCliSelect" onchange="ctrSelecionarCliente(this.value)">
+          <option value="">— Novo cliente —</option>
+        </select>
+        <button type="button" onclick="ctrNovoCliente()">+ Novo cliente</button>
+        <button type="button" class="btn-danger" onclick="ctrExcluirCliente()">Excluir cliente selecionado</button>
+      </div>
+
+      <div class="subsec">Identificação (CONTRATANTE)</div>
+      <div class="field-grid">
+        <div class="field"><label>Razão social</label><input type="text" id="ctrCli_razaoSocial"></div>
+        <div class="field"><label>CNPJ</label><input type="text" id="ctrCli_cnpj"></div>
+        <div class="field"><label>Endereço</label><input type="text" id="ctrCli_endereco"></div>
+        <div class="field"><label>E-mail</label><input type="text" id="ctrCli_email"></div>
+        <div class="field"><label>Telefone</label><input type="text" id="ctrCli_telefone"></div>
+        <div class="field"><label>Representante legal</label><input type="text" id="ctrCli_representante"></div>
+        <div class="field"><label>CPF do representante</label><input type="text" id="ctrCli_cpfRepresentante"></div>
+      </div>
+
+      <div class="subsec">Valores comerciais (Cláusula 4.1 e Anexo de Proposta Comercial)</div>
+      <div class="field-grid">
+        <div class="field"><label>Taxa de Setup (R$)</label><input type="text" id="ctrCli_valorSetup" placeholder="Ex.: 1.500,00"></div>
+        <div class="field"><label>Mensalidade (R$)</label><input type="text" id="ctrCli_valorMensalidade" placeholder="Ex.: 890,00"></div>
+        <div class="field"><label>Valor por Alteração, do 2º mês (R$)</label><input type="text" id="ctrCli_valorAlteracao" placeholder="Ex.: 250,00"></div>
+        <div class="field"><label>Data de assinatura do Anexo</label><input type="date" id="ctrCli_dataAssinaturaAnexo"></div>
+        <div class="field"><label>Data de ativação do Agente</label><input type="date" id="ctrCli_dataAtivacao"></div>
+      </div>
+
+      <div class="subsec">Escopo técnico (Anexo Técnico de Escopo)</div>
+      <div class="field-grid">
+        <div class="field"><label>Canais habilitados</label><input type="text" id="ctrCli_canaisHabilitados" placeholder="Ex.: WhatsApp Business e Instagram Direct"></div>
+        <div class="field"><label>Volume mensal de interações incluído</label><input type="text" id="ctrCli_volumeMensalInteracoes"></div>
+        <div class="field"><label>Funcionalidades padrão incluídas</label><input type="text" id="ctrCli_funcionalidadesPadrao" placeholder="Ex.: qualificação de leads, roteamento, dashboard"></div>
+        <div class="field"><label>Integrações adicionais incluídas</label><input type="text" id="ctrCli_integracoesAdicionais"></div>
+        <div class="field"><label>Idioma(s) de atendimento</label><input type="text" id="ctrCli_idiomasAtendimento" placeholder="Ex.: Português"></div>
+      </div>
+
+      <button class="btn-ref" style="margin-left:0;" type="button" onclick="ctrSalvarCliente()">Salvar cliente</button>
+      <span class="msg-ok" id="ctrCli-msg" style="display:none;">Salvo ✓</span>
+    </div>
+
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-title">Modelo do contrato (editável)</div>
+      <p class="hint">Os textos entre colchetes, como [CONTRATANTE_RAZAO_SOCIAL], são preenchidos sozinhos com os dados de cima. Pra mudar alguma cláusula (é o seu texto real, v4), edite direto aqui.</p>
+      <textarea id="ctrModelo" class="ctr-textarea"></textarea>
+      <button class="btn-ref" style="margin-left:0;margin-top:14px;" type="button" onclick="ctrSalvarModelo()">Salvar modelo</button>
+      <button type="button" onclick="ctrRestaurarModelo()">Restaurar modelo padrão (v4 original)</button>
+      <span class="msg-ok" id="ctrModelo-msg" style="display:none;">Salvo ✓</span>
+    </div>
+
+    <div class="card" id="ctr-preview-card">
+      <div class="card-title">Pré-visualização do contrato preenchido</div>
+      <pre class="ctr-preview" id="ctrPreview"></pre>
+      <button class="btn-ref" style="margin-left:0;" type="button" onclick="ctrCopiar()">Copiar texto</button>
+      <button type="button" onclick="ctrImprimir()">Imprimir / Salvar PDF</button>
+      <span class="msg-ok" id="ctrCopia-msg" style="display:none;">Copiado ✓</span>
+    </div>
+
+  </div><!-- /tab-panel-contrato -->
+
 </div>
 
 <script>
@@ -400,6 +739,9 @@ async function carregarResumo(){
   const res = await fetchAutenticado(ENDPOINT_RESUMO, { method: 'GET', headers: headersAuth() });
   if (!res.ok) throw new Error('Resumo: HTTP ' + res.status);
   const data = await res.json();
+
+  window._ultimoResumo = data; // usado pela aba Gastos pra mostrar dado real sem refazer a chamada
+  atualizarDadosReaisGastos();
 
   document.getElementById('kpi-execucoes').textContent = data.total_execucoes ?? '—';
   document.getElementById('kpi-custo').textContent = fmtUsd(data.custo_total_estimado_usd);
@@ -665,6 +1007,771 @@ async function carregarTudo(){
   } finally {
     btn.disabled = false;
   }
+}
+
+// ============================================================
+// ABAS
+// ============================================================
+function trocarAba(nome){
+  document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.toggle('active', b.dataset.tab === nome); });
+  document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
+  document.getElementById('tab-panel-' + nome).classList.add('active');
+  if (nome === 'config' && !cfgInitDone) initConfigTab();
+  if (nome === 'gastos') { if (!gInitDone) initGastosTab(); atualizarDadosReaisGastos(); }
+  if (nome === 'contrato' && !ctrInitDone) initContratoTab();
+}
+
+// ============================================================
+// ABA CONFIGURAÇÃO — gera SQL pra tabela concessionarias.
+// Não grava nada sozinha: só monta o SQL, você cola no Supabase
+// (mesmo padrão de segurança do resto do site — sem credencial
+// do Supabase exposta aqui no navegador).
+// ============================================================
+const CFG_KEY = 'rui_config_cliente_v1';
+const CFG_SETORES_PADRAO = ['Novos','Semi-novos','Oficina','Reclamações e elogios','Vendas de peças e acessórios'];
+
+function cfgAdtsaState(){
+  return {
+    cliente:{ nome:'GWM-PE', slug:'adtsa', url:'https://yyqgoytuudpvacawjqaw.supabase.co', key:'' },
+    marcas:[ { marca:'GWM', modelos:'H6, H6 Hybrid, H9, Haval Jolion, Tank 300, Tank 400, Tank 500, Ora 03, Wey, Poer' } ],
+    horario:{ ssabre:'08:00', ssfecha:'18:00', sababre:'08:00', sabfecha:'13:00', domfunciona:false, domabre:'', domfecha:'' },
+    unidades:'Boa Viagem\nParnamirim\nCaruaru',
+    tom:'',
+    setoresPadrao:{ 'Novos':true,'Semi-novos':true,'Oficina':true,'Reclamações e elogios':true,'Vendas de peças e acessórios':true },
+    setoresCustom:''
+  };
+}
+function cfgLoad(){
+  try{ const raw = localStorage.getItem(CFG_KEY); if(raw) return JSON.parse(raw); }catch(e){}
+  return cfgAdtsaState();
+}
+let cfgState = cfgLoad();
+function cfgSave(){ localStorage.setItem(CFG_KEY, JSON.stringify(cfgState)); }
+function cfgEscapeHtml(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]; }); }
+
+function cfgRenderMarcas(){
+  const body = document.getElementById('cfgMarcasBody');
+  body.innerHTML = '';
+  cfgState.marcas.forEach(function(row, idx){
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td><input type="text" class="cfg-mk-marca" value="'+cfgEscapeHtml(row.marca)+'" placeholder="Ex.: GWM"></td>'+
+      '<td><input type="text" class="cfg-mk-modelos" value="'+cfgEscapeHtml(row.modelos)+'" placeholder="Ex.: H6, Tank 300"></td>'+
+      '<td><button class="rm-btn" type="button">×</button></td>';
+    tr.querySelector('.cfg-mk-marca').addEventListener('input', function(e){ cfgState.marcas[idx].marca = e.target.value; cfgSave(); cfgGerarTudo(); });
+    tr.querySelector('.cfg-mk-modelos').addEventListener('input', function(e){ cfgState.marcas[idx].modelos = e.target.value; cfgSave(); cfgGerarTudo(); });
+    tr.querySelector('.rm-btn').addEventListener('click', function(){ cfgState.marcas.splice(idx,1); if(cfgState.marcas.length===0) cfgState.marcas.push({marca:'',modelos:''}); cfgSave(); cfgRenderMarcas(); cfgGerarTudo(); });
+    body.appendChild(tr);
+  });
+}
+
+let cfgFieldsWired = false;
+function cfgWireFields(){
+  if (cfgFieldsWired) return;
+  cfgFieldsWired = true;
+
+  document.getElementById('cfgBtnAddMarca').addEventListener('click', function(){ cfgState.marcas.push({marca:'',modelos:''}); cfgSave(); cfgRenderMarcas(); });
+
+  ['cfg_ssabre','cfg_ssfecha','cfg_sababre','cfg_sabfecha','cfg_domabre','cfg_domfecha'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', function(){
+      cfgState.horario.ssabre = document.getElementById('cfg_ssabre').value;
+      cfgState.horario.ssfecha = document.getElementById('cfg_ssfecha').value;
+      cfgState.horario.sababre = document.getElementById('cfg_sababre').value;
+      cfgState.horario.sabfecha = document.getElementById('cfg_sabfecha').value;
+      cfgState.horario.domabre = document.getElementById('cfg_domabre').value;
+      cfgState.horario.domfecha = document.getElementById('cfg_domfecha').value;
+      cfgSave(); cfgGerarTudo();
+    });
+  });
+  document.getElementById('cfg_domfunciona').addEventListener('change', function(e){
+    cfgState.horario.domfunciona = e.target.checked;
+    document.getElementById('cfg_domgrid').style.display = e.target.checked ? '' : 'none';
+    cfgSave(); cfgGerarTudo();
+  });
+
+  document.getElementById('cfg_unidades').addEventListener('input', function(e){ cfgState.unidades = e.target.value; cfgSave(); cfgGerarTudo(); });
+  document.getElementById('cfg_tom').addEventListener('input', function(e){ cfgState.tom = e.target.value; cfgSave(); cfgGerarTudo(); });
+  document.getElementById('cfg_setoresCustom').addEventListener('input', function(e){ cfgState.setoresCustom = e.target.value; cfgSave(); cfgGerarTudo(); });
+
+  [['cfg_nome','nome'],['cfg_slug','slug'],['cfg_url','url'],['cfg_key','key']].forEach(function(pair){
+    document.getElementById(pair[0]).addEventListener('input', function(e){ cfgState.cliente[pair[1]] = e.target.value; cfgSave(); cfgGerarTudo(); });
+  });
+}
+
+function cfgRenderSetoresPadrao(){
+  const box = document.getElementById('cfgSetoresPadraoBox');
+  box.innerHTML = '';
+  CFG_SETORES_PADRAO.forEach(function(s){
+    const id = 'cfg_sp_'+s.replace(/[^a-zA-Z0-9]/g,'');
+    const label = document.createElement('label');
+    label.className = 'check';
+    label.innerHTML = '<input type="checkbox" id="'+id+'"> '+cfgEscapeHtml(s);
+    const input = label.querySelector('input');
+    input.checked = !!cfgState.setoresPadrao[s];
+    input.addEventListener('change', function(){ cfgState.setoresPadrao[s] = input.checked; cfgSave(); cfgGerarTudo(); });
+    box.appendChild(label);
+  });
+}
+
+function cfgJsonbLit(v){ return "'" + JSON.stringify(v).replace(/'/g,"''") + "'::jsonb"; }
+function cfgTextLit(v){
+  if(v===null||v===undefined||String(v).trim()==='') return 'null';
+  return "'" + String(v).replace(/'/g,"''") + "'";
+}
+function cfgLinesFrom(text){ return (text||'').split('\n').map(function(s){return s.trim();}).filter(Boolean); }
+function cfgBuildMarcasArr(){
+  return cfgState.marcas.map(function(r){
+    return { marca:(r.marca||'').trim(), modelos:(r.modelos||'').split(',').map(function(s){return s.trim();}).filter(Boolean) };
+  }).filter(function(r){ return r.marca; });
+}
+function cfgBuildHorarioObj(){
+  const h = cfgState.horario;
+  return {
+    seg_sex: { abre:h.ssabre||null, fecha:h.ssfecha||null },
+    sabado: (h.sababre||h.sabfecha) ? { abre:h.sababre||null, fecha:h.sabfecha||null } : null,
+    domingo: h.domfunciona ? { abre:h.domabre||null, fecha:h.domfecha||null } : null
+  };
+}
+function cfgBuildSetoresArr(){
+  const arr = [];
+  CFG_SETORES_PADRAO.forEach(function(s){ if(cfgState.setoresPadrao[s]) arr.push(s); });
+  cfgLinesFrom(cfgState.setoresCustom).forEach(function(s){ arr.push(s); });
+  return arr;
+}
+
+const CFG_SQL_ALTER =
+'alter table public.concessionarias\n'+
+'  add column if not exists marcas_modelos jsonb,\n'+
+'  add column if not exists horario_atendimento jsonb,\n'+
+'  add column if not exists unidades jsonb,\n'+
+'  add column if not exists tom_agente text,\n'+
+'  add column if not exists setores_atendimento jsonb,\n'+
+'  add column if not exists logo_url text,\n'+
+'  add column if not exists cor_primaria text;';
+
+function cfgGerarInsert(){
+  if(!cfgState.cliente.nome.trim() || !cfgState.cliente.slug.trim() || !cfgState.cliente.key.trim()) return null;
+  return [
+    'insert into public.concessionarias',
+    '  (nome, loja_slug, supabase_url, supabase_anon_key, ativo,',
+    '   marcas_modelos, horario_atendimento, unidades, tom_agente, setores_atendimento)',
+    'values (',
+    '  '+cfgTextLit(cfgState.cliente.nome)+',',
+    '  '+cfgTextLit(cfgState.cliente.slug)+',',
+    '  '+cfgTextLit(cfgState.cliente.url)+',',
+    '  '+cfgTextLit(cfgState.cliente.key)+',',
+    '  true,',
+    '  '+cfgJsonbLit(cfgBuildMarcasArr())+',',
+    '  '+cfgJsonbLit(cfgBuildHorarioObj())+',',
+    '  '+cfgJsonbLit(cfgLinesFrom(cfgState.unidades))+',',
+    '  '+cfgTextLit(cfgState.tom)+',',
+    '  '+cfgJsonbLit(cfgBuildSetoresArr()),
+    ');'
+  ].join('\n');
+}
+function cfgGerarUpdate(){
+  if(!cfgState.cliente.slug.trim()) return null;
+  return [
+    'update public.concessionarias set',
+    '  marcas_modelos = '+cfgJsonbLit(cfgBuildMarcasArr())+',',
+    '  horario_atendimento = '+cfgJsonbLit(cfgBuildHorarioObj())+',',
+    '  unidades = '+cfgJsonbLit(cfgLinesFrom(cfgState.unidades))+',',
+    '  tom_agente = '+cfgTextLit(cfgState.tom)+',',
+    '  setores_atendimento = '+cfgJsonbLit(cfgBuildSetoresArr()),
+    'where loja_slug = '+cfgTextLit(cfgState.cliente.slug)+';'
+  ].join('\n');
+}
+function cfgGerarTudo(){
+  document.getElementById('cfgSqlAlter').value = CFG_SQL_ALTER;
+  document.getElementById('cfgSqlInsert').value = cfgGerarInsert() || '(preencha nome, loja_slug e a anon key acima)';
+  document.getElementById('cfgSqlUpdate').value = cfgGerarUpdate() || '(preencha loja_slug acima)';
+}
+
+function cfgFillAll(){
+  document.getElementById('cfg_nome').value = cfgState.cliente.nome;
+  document.getElementById('cfg_slug').value = cfgState.cliente.slug;
+  document.getElementById('cfg_url').value = cfgState.cliente.url;
+  document.getElementById('cfg_key').value = cfgState.cliente.key;
+  const h = cfgState.horario;
+  document.getElementById('cfg_ssabre').value = h.ssabre;
+  document.getElementById('cfg_ssfecha').value = h.ssfecha;
+  document.getElementById('cfg_sababre').value = h.sababre;
+  document.getElementById('cfg_sabfecha').value = h.sabfecha;
+  document.getElementById('cfg_domfunciona').checked = !!h.domfunciona;
+  document.getElementById('cfg_domabre').value = h.domabre || '';
+  document.getElementById('cfg_domfecha').value = h.domfecha || '';
+  document.getElementById('cfg_domgrid').style.display = h.domfunciona ? '' : 'none';
+  document.getElementById('cfg_unidades').value = cfgState.unidades;
+  document.getElementById('cfg_tom').value = cfgState.tom;
+  document.getElementById('cfg_setoresCustom').value = cfgState.setoresCustom;
+  cfgRenderMarcas();
+  cfgRenderSetoresPadrao();
+  cfgGerarTudo();
+}
+
+let cfgInitDone = false;
+function initConfigTab(){
+  cfgWireFields();
+  cfgFillAll();
+  cfgInitDone = true;
+}
+
+// ============================================================
+// ABA GASTOS — calculadora de custo real + modelo de cobrança
+// (mesmas fórmulas da calculadora M05 já usada antes, só reskinada)
+// ============================================================
+const G_KEY = 'rui_gastos_v1';
+function gDefaultState(){
+  return {
+    custos:{ep:0,sb:0,gh:0,rd:0,wa:0,ou:0,leads:0,
+      iaEntrada:1.00,iaSaida:5.00,iaCache:0.10,iaPctCache:0,iaCambio:5.07,iaTokIn:0,iaTokOut:0,iaMsgs:8},
+    preco:{margem:30,leads:50,incl:40,modelo:null}
+  };
+}
+function gLoad(){
+  try{ const raw = localStorage.getItem(G_KEY); if(raw) return JSON.parse(raw); }catch(e){}
+  return gDefaultState();
+}
+let gState = gLoad();
+function gSave(){ localStorage.setItem(G_KEY, JSON.stringify(gState)); }
+function gNum(v){ const n = parseFloat(v); return isFinite(n) ? n : 0; }
+function gFmtBRL(n){ return (isFinite(n)?n:0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
+function gFmtPct(n){ return isFinite(n) ? n.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%' : '—'; }
+
+function gCustoInfraFixa(){ const c=gState.custos; return c.ep+c.sb+c.gh+c.rd+c.wa+c.ou; }
+function gCustoIAporMensagemBRL(){
+  const c = gState.custos;
+  if(c.iaTokIn<=0 && c.iaTokOut<=0) return 0;
+  if(!(c.iaCambio>0)) return null;
+  const pct = Math.min(Math.max(c.iaPctCache,0),100)/100;
+  const tokInCache = c.iaTokIn*pct;
+  const tokInPadrao = c.iaTokIn*(1-pct);
+  const custoEntradaUSD = (tokInPadrao/1e6)*c.iaEntrada + (tokInCache/1e6)*c.iaCache;
+  const custoSaidaUSD = (c.iaTokOut/1e6)*c.iaSaida;
+  return (custoEntradaUSD+custoSaidaUSD)*c.iaCambio;
+}
+function gCustoIAporLead(){ const msg = gCustoIAporMensagemBRL(); return msg===null ? null : msg*gState.custos.iaMsgs; }
+function gCustoIATotalMensal(){ const perLead = gCustoIAporLead(); return perLead===null ? null : perLead*gState.custos.leads; }
+function gCustoTotalMensal(){ const ia = gCustoIATotalMensal(); return ia===null ? null : gCustoInfraFixa()+ia; }
+function gCustoPorLead(){ const leads=gState.custos.leads; if(leads<=0) return null; const total=gCustoTotalMensal(); return total===null ? null : total/leads; }
+
+function gRenderCusto(){
+  const total = gCustoTotalMensal();
+  document.getElementById('g_total').textContent = total===null ? '—' : gFmtBRL(total);
+  const cpl = gCustoPorLead();
+  document.getElementById('g_porlead').textContent = cpl===null ? '—' : gFmtBRL(cpl);
+  const iaTotal = gCustoIATotalMensal();
+  document.getElementById('g_split').textContent = (iaTotal===null ? '—' : gFmtBRL(iaTotal)) + ' IA · ' + gFmtBRL(gCustoInfraFixa()) + ' infra';
+}
+
+function gRenderModelos(){
+  const cpl = gCustoPorLead();
+  const margem = gState.preco.margem/100;
+  const leads = gState.preco.leads;
+  const msg = gState.custos.iaMsgs || 1;
+  const incl = gState.preco.incl;
+
+  ['gm1preco','gm1margem','gm2preco','gm2margem','gm3preco','gm3margem','gm4base','gm4excedente'].forEach(function(id){ document.getElementById(id).textContent='—'; });
+
+  if(cpl!==null){
+    const custoCliente = cpl*leads;
+    document.getElementById('gm1preco').textContent = gFmtBRL(custoCliente*(1+margem));
+    document.getElementById('gm1margem').textContent = gFmtPct(margem*100);
+
+    document.getElementById('gm2preco').textContent = gFmtBRL(cpl*(1+margem));
+    document.getElementById('gm2margem').textContent = gFmtPct(margem*100);
+
+    const custoMsg = cpl/msg;
+    document.getElementById('gm3preco').textContent = gFmtBRL(custoMsg*(1+margem));
+    document.getElementById('gm3margem').textContent = gFmtPct(margem*100);
+
+    document.getElementById('gm4base').textContent = gFmtBRL(cpl*incl*(1+margem));
+    document.getElementById('gm4excedente').textContent = gFmtBRL(cpl*(1+margem)) + ' /lead extra';
+  }
+  for(let i=1;i<=4;i++){
+    document.getElementById('gmodel'+i).classList.toggle('chosen', gState.preco.modelo===i);
+    const radio = document.querySelector('#gmodel'+i+' input[type=radio]');
+    if (radio) radio.checked = gState.preco.modelo===i;
+  }
+}
+
+function gFillAll(){
+  const c = gState.custos;
+  document.getElementById('g_ep').value=c.ep; document.getElementById('g_sb').value=c.sb;
+  document.getElementById('g_gh').value=c.gh; document.getElementById('g_rd').value=c.rd;
+  document.getElementById('g_wa').value=c.wa; document.getElementById('g_ou').value=c.ou;
+  document.getElementById('g_leads').value=c.leads;
+  document.getElementById('g_iaentrada').value=c.iaEntrada; document.getElementById('g_iasaida').value=c.iaSaida;
+  document.getElementById('g_iacache').value=c.iaCache; document.getElementById('g_iapctcache').value=c.iaPctCache;
+  document.getElementById('g_iacambio').value=c.iaCambio; document.getElementById('g_iatokin').value=c.iaTokIn;
+  document.getElementById('g_iatokout').value=c.iaTokOut; document.getElementById('g_iamsgs').value=c.iaMsgs;
+  document.getElementById('g_margem').value=gState.preco.margem;
+  document.getElementById('g_pleads').value=gState.preco.leads;
+  document.getElementById('g_pincl').value=gState.preco.incl;
+  gRenderCusto(); gRenderModelos();
+}
+
+let gFieldsWired = false;
+function gWireFields(){
+  if (gFieldsWired) return;
+  gFieldsWired = true;
+  const mapaCustos = {g_ep:'ep',g_sb:'sb',g_gh:'gh',g_rd:'rd',g_wa:'wa',g_ou:'ou',g_leads:'leads',
+    g_iaentrada:'iaEntrada',g_iasaida:'iaSaida',g_iacache:'iaCache',g_iapctcache:'iaPctCache',
+    g_iacambio:'iaCambio',g_iatokin:'iaTokIn',g_iatokout:'iaTokOut',g_iamsgs:'iaMsgs'};
+  Object.keys(mapaCustos).forEach(function(id){
+    document.getElementById(id).addEventListener('input', function(e){
+      gState.custos[mapaCustos[id]] = gNum(e.target.value);
+      gSave(); gRenderCusto(); gRenderModelos();
+    });
+  });
+  const mapaPreco = {g_margem:'margem',g_pleads:'leads',g_pincl:'incl'};
+  Object.keys(mapaPreco).forEach(function(id){
+    document.getElementById(id).addEventListener('input', function(e){
+      gState.preco[mapaPreco[id]] = gNum(e.target.value);
+      gSave(); gRenderModelos();
+    });
+  });
+  document.querySelectorAll('input[name=gmodelo]').forEach(function(radio){
+    radio.addEventListener('change', function(){
+      gState.preco.modelo = parseInt(radio.value, 10);
+      gSave(); gRenderModelos();
+    });
+  });
+}
+
+let gInitDone = false;
+function initGastosTab(){
+  gWireFields();
+  gFillAll();
+  gInitDone = true;
+}
+
+function atualizarDadosReaisGastos(){
+  const d = window._ultimoResumo;
+  const elC = document.getElementById('gReal_custo');
+  const elE = document.getElementById('gReal_exec');
+  if (!elC || !elE) return;
+  if (!d) { elC.textContent = '—'; elE.textContent = '—'; return; }
+  elC.textContent = (d.custo_total_estimado_usd!=null) ? ('US$ ' + Number(d.custo_total_estimado_usd).toFixed(4)) : '—';
+  elE.textContent = (d.total_execucoes!=null) ? d.total_execucoes : '—';
+}
+
+document.querySelectorAll('.copy-btn[data-copy]').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    const ta = document.getElementById(btn.getAttribute('data-copy'));
+    const statusEl = document.getElementById(btn.getAttribute('data-status'));
+    function flash(){ statusEl.classList.add('show'); setTimeout(function(){ statusEl.classList.remove('show'); }, 1500); }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(ta.value).then(flash).catch(function(){
+        ta.removeAttribute('readonly'); ta.select(); try{ document.execCommand('copy'); flash(); }catch(e){} ta.setAttribute('readonly','');
+      });
+    } else {
+      ta.removeAttribute('readonly'); ta.select(); try{ document.execCommand('copy'); flash(); }catch(e){} ta.setAttribute('readonly','');
+    }
+  });
+});
+
+// ============================================================
+// ABA CONTRATO — modelo de contrato editável + dados por cliente.
+// Guardado só no navegador (localStorage), não depende de login/API.
+// ============================================================
+const CTR_KEY_EMPRESA = 'rui_contrato_empresa_v1';
+const CTR_KEY_MODELO = 'rui_contrato_modelo_v1';
+const CTR_KEY_CLIENTES = 'rui_contrato_clientes_v1';
+const CTR_KEY_CLIENTE_SEL = 'rui_contrato_cliente_sel_v1';
+
+const CTR_MODELO_PADRAO = `CONTRATO DE LICENÇA DE USO DE
+AGENTE DE INTELIGÊNCIA ARTIFICIAL
+Sistema Rui — Qualificação Inteligente de Leads
+
+IDENTIFICAÇÃO DAS PARTES
+
+FORNECEDORA (LICENCIANTE)
+Nome / Razão Social: [FORNECEDORA_NOME]
+CPF / CNPJ (MEI): [FORNECEDORA_CPF_CNPJ]
+Endereço: [FORNECEDORA_ENDERECO]
+E-mail: [FORNECEDORA_EMAIL]
+Telefone / WhatsApp: [FORNECEDORA_TELEFONE]
+
+CONTRATANTE (LICENCIADA)
+Razão Social: [CONTRATANTE_RAZAO_SOCIAL]
+CNPJ: [CONTRATANTE_CNPJ]
+Endereço: [CONTRATANTE_ENDERECO]
+E-mail: [CONTRATANTE_EMAIL]
+Telefone: [CONTRATANTE_TELEFONE]
+Representante Legal: [CONTRATANTE_REPRESENTANTE]
+CPF do Representante: [CONTRATANTE_CPF_REPRESENTANTE]
+
+As partes acima qualificadas, doravante denominadas simplesmente FORNECEDORA e CONTRATANTE, celebram o presente Contrato de Licença de Uso de Agente de Inteligência Artificial, que se regerá pelas cláusulas e condições a seguir.
+
+CLÁUSULA 1ª — OBJETO DO CONTRATO
+1.1. O presente contrato tem por objeto a concessão, pela FORNECEDORA à CONTRATANTE, de licença de uso não exclusiva, intransferível e não sublicenciável do Agente de Inteligência Artificial denominado RUI (doravante "o Agente"), sistema automatizado de qualificação de leads desenvolvido e de propriedade exclusiva da FORNECEDORA.
+1.2. O Agente RUI opera nos canais de comunicação WhatsApp Business e Instagram Direct da CONTRATANTE, além de interface web proprietária (Interface RUI), realizando atendimento automatizado, triagem, qualificação e roteamento de potenciais clientes (leads) por meio de tecnologia de inteligência artificial.
+1.3. A concessão da licença abrange exclusivamente o uso do Agente, não implicando cessão, transferência de titularidade, acesso ao código-fonte, documentação técnica interna, modelos de linguagem, fluxos de automação ou qualquer outro ativo intelectual pertencente à FORNECEDORA.
+1.4. A CONTRATANTE é responsável por fornecer e manter ativos e vinculados ao Agente os acessos à sua conta de WhatsApp Business e ao seu perfil do Instagram, sendo tais credenciais de sua exclusiva responsabilidade.
+1.5. O escopo técnico e funcional detalhado da licença — incluindo canais habilitados, volume mensal de interações incluído e funcionalidades padrão contempladas — está descrito no Anexo Técnico de Escopo, parte integrante e inseparável deste contrato. Qualquer funcionalidade não listada no referido Anexo será tratada como alteração, nos termos da Cláusula 5ª.
+
+CLÁUSULA 2ª — INFRAESTRUTURA E RESPONSABILIDADES TÉCNICAS
+2.1. A FORNECEDORA é responsável por disponibilizar e manter toda a infraestrutura tecnológica necessária ao funcionamento do Agente, incluindo, sem limitação: servidores de hospedagem, plataforma de automação de fluxos, APIs de inteligência artificial, sistema de memória de sessão e banco de dados.
+2.2. A CONTRATANTE é responsável, de forma exclusiva, por:
+Fornecer o número de WhatsApp Business ativo e vinculado à Meta, em conformidade com os Termos de Uso da plataforma;
+Fornecer acesso ao perfil do Instagram por meio da integração com a API do Facebook/Meta, mantendo o perfil em boas condições operacionais;
+Arcar com eventuais custos de terceiros relacionados ao uso das plataformas da Meta (WhatsApp Business API, Facebook Graph API), os quais não estão incluídos na mensalidade do presente contrato;
+Garantir que seus acessos e credenciais junto à Meta estejam devidamente regularizados e ativos durante toda a vigência contratual.
+2.3. A FORNECEDORA não se responsabiliza por interrupções, instabilidades ou falhas decorrentes de indisponibilidade dos serviços de terceiros, incluindo, mas não se limitando a: Meta (WhatsApp, Instagram), Anthropic, OpenAI, provedores de nuvem ou quaisquer outras plataformas fora do controle direto da FORNECEDORA. Nesses casos, não haverá desconto, compensação ou reembolso de qualquer natureza.
+2.4. A FORNECEDORA garante o funcionamento adequado de toda a infraestrutura sob seu direto controle. Em caso de falhas técnicas diretamente imputáveis à FORNECEDORA — excluídas expressamente as falhas de serviços de terceiros como Meta, Anthropic e provedores de nuvem — a FORNECEDORA se compromete a restabelecer o funcionamento do Agente em até 24 (vinte e quatro) horas corridas a contar da identificação ou notificação do problema, o que ocorrer primeiro. Falhas originadas em serviços de terceiros não estão sujeitas a este prazo e serão tratadas conforme a disponibilidade dos respectivos provedores.
+
+CLÁUSULA 3ª — PERÍODO DE TESTE GRATUITO
+3.1. Antes da contratação formal, a FORNECEDORA poderá disponibilizar à CONTRATANTE um período de teste gratuito de 24 (vinte e quatro) horas, a contar do momento em que o Agente for disponibilizado para uso.
+3.2. Durante o período de teste: (i) o Agente funcionará em ambiente real ou de homologação, conforme critério da FORNECEDORA; (ii) não haverá cobrança de qualquer natureza; (iii) a FORNECEDORA poderá impor limitações de volume de interações; (iv) a CONTRATANTE não poderá exigir suporte técnico prioritário.
+3.3. O período de teste não gera qualquer obrigação de contratação por parte da CONTRATANTE, tampouco direito adquirido a condições comerciais específicas.
+3.4. Ao optar pela contratação após o período de teste, a CONTRATANTE declara ter avaliado o Agente e estar ciente de suas funcionalidades, aceitando integralmente as condições do presente contrato.
+
+CLÁUSULA 4ª — VALORES, PAGAMENTO E CONDIÇÕES FINANCEIRAS
+4.1. A contratação do Agente RUI implica o pagamento dos seguintes valores, definidos entre as partes e registrados neste instrumento:
+Taxa de Setup (implantação): R$ [VALOR_SETUP]
+Mensalidade (licença de uso): R$ [VALOR_MENSALIDADE]
+Valor por Alteração (a partir do 2º mês): R$ [VALOR_ALTERACAO]
+4.2. No ato da contratação (início do 1º mês), a CONTRATANTE deverá efetuar o pagamento integral e simultâneo de: (i) taxa de setup e (ii) mensalidade referente ao primeiro mês. Esses pagamentos são condições essenciais para a ativação do Agente.
+4.3. A partir do segundo mês, a mensalidade será devida no mesmo dia do mês em que ocorreu a ativação do Agente. O atraso no pagamento sujeitará a CONTRATANTE a multa moratória de 2% (dois por cento) sobre o valor em atraso, acrescida de juros de mora de 1% (um por cento) ao mês e atualização monetária pelo IPCA, calculados pro rata die.
+4.4. O não pagamento por período superior a 15 (quinze) dias corridos autorizará a FORNECEDORA a suspender imediatamente o acesso ao Agente, sem necessidade de notificação prévia, sem prejuízo da cobrança de todos os valores devidos, inclusive multas e encargos.
+
+CLÁUSULA 5ª — POLÍTICA DE ALTERAÇÕES NO AGENTE
+5.1. Entende-se por "alteração" qualquer modificação técnica, funcional ou comportamental no Agente RUI solicitada pela CONTRATANTE, incluindo, exemplificativamente: alteração de roteiros de atendimento, adição ou remoção de perguntas de qualificação, modificação de fluxos de roteamento, ajustes de personalidade ou tom do Agente, integrações adicionais, e alterações nas perguntas ou critérios de qualificação.
+5.2. DURANTE O PRIMEIRO MÊS: A CONTRATANTE tem direito a 1 (uma) alteração sem custo adicional, já coberta pelos valores de setup e primeira mensalidade pagos. Essa solicitação deve ser feita formalmente — por e-mail ou WhatsApp — até o 30º (trigésimo) dia corrido de funcionamento do Agente. A aplicabilidade da alteração gratuita será analisada e decidida em conjunto pelas partes, de boa-fé, com base nos seguintes motivos reconhecidos: (i) comportamento funcional do Agente divergente do escopo acordado; (ii) necessidade de ajuste em perguntas ou fluxos de qualificação inadequados à realidade operacional da CONTRATANTE; (iii) incompatibilidade verificável entre o funcionamento do Agente e processos internos previamente informados à FORNECEDORA. Em caso de divergência, as partes comprometem-se a resolver amigavelmente antes de qualquer medida formal. Após confirmação mútua do escopo, a FORNECEDORA terá prazo de 7 (sete) a 10 (dez) dias úteis para implementar a alteração.
+5.3. A PARTIR DO SEGUNDO MÊS: Toda e qualquer alteração será cobrada pelo valor unitário definido no Anexo de Proposta Comercial, parte integrante deste contrato. A FORNECEDORA apresentará confirmação escrita (e-mail ou mensagem) do escopo e do valor antes de iniciar os trabalhos, e a CONTRATANTE deverá aprovar formalmente. O prazo de execução será de 7 (sete) a 10 (dez) dias úteis após aprovação e confirmação do pagamento.
+5.4. Apenas a FORNECEDORA detém autorização técnica e jurídica para realizar alterações no Agente. Qualquer tentativa pela CONTRATANTE de modificar, acessar, replicar, engenharia reversa ou interferir tecnicamente no Agente sem autorização prévia e expressa da FORNECEDORA constituirá violação grave deste contrato, sujeitando a infratora às penalidades previstas na Cláusula 11ª.
+
+CLÁUSULA 6ª — VIGÊNCIA, RENOVAÇÃO E CANCELAMENTO
+6.1. O presente contrato vigorará pelo prazo de 12 (doze) meses, contados da data de ativação do Agente, renovando-se automaticamente por períodos iguais e sucessivos de 12 (doze) meses. A FORNECEDORA enviará notificação de renovação por e-mail ao endereço cadastrado da CONTRATANTE com antecedência mínima de 48 (quarenta e oito) horas antes da data de renovação. Caso a CONTRATANTE não deseje renovar, deverá manifestar-se expressamente por e-mail em até 24 (vinte e quatro) horas após o recebimento da notificação. A ausência de manifestação será interpretada como anuência à renovação automática.
+6.2. CANCELAMENTO DURANTE O PRIMEIRO MÊS: A CONTRATANTE poderá cancelar o contrato até o último dia do primeiro mês de vigência sem ônus adicionais, sem reembolso dos valores já pagos (setup e primeira mensalidade) e sem qualquer penalidade. O cancelamento deve ser comunicado por escrito à FORNECEDORA.
+6.3. CANCELAMENTO A PARTIR DO SEGUNDO MÊS: Caso a CONTRATANTE deseje cancelar o contrato a partir do início do segundo mês, será devida multa rescisória equivalente a 10% (dez por cento) do valor correspondente às mensalidades restantes até o término do período de 12 (doze) meses vigente.
+EXEMPLO ILUSTRATIVO — Cláusula 6.3: Mensalidade = R$ 1.500,00. Se o cancelamento ocorrer no início do 2º mês, restarão 11 meses. Multa = 10% × (R$ 1.500,00 × 11) = 10% × R$ 16.500,00 = R$ 1.650,00. Esse valor é devido além dos valores já pagos anteriormente, não havendo reembolso de qualquer parcela.
+6.4. A multa prevista no item 6.3 será calculada com base no valor da mensalidade vigente no momento do cancelamento e deverá ser paga em até 10 (dez) dias úteis após a notificação do cancelamento.
+6.5. A FORNECEDORA poderá rescindir o presente contrato imediatamente, sem necessidade de aviso prévio e sem pagamento de qualquer indenização à CONTRATANTE, nas hipóteses previstas na Cláusula 11ª.
+6.6. REAJUSTE ANUAL: Os valores de mensalidade e de alteração definidos no Anexo de Proposta Comercial serão reajustados automaticamente a cada renovação anual do contrato, com base na variação acumulada do Índice Nacional de Preços ao Consumidor Amplo (IPCA), apurado pelo IBGE no período de 12 (doze) meses imediatamente anterior à data de renovação. O novo valor será comunicado à CONTRATANTE junto ao e-mail de renovação previsto na Cláusula 6.1, com antecedência mínima de 48 (quarenta e oito) horas. A ausência de manifestação contrária no prazo previsto implica aceitação tácita do reajuste. A taxa de setup, por ser cobrada uma única vez, não está sujeita a este reajuste.
+
+CLÁUSULA 7ª — PROPRIEDADE INTELECTUAL E SIGILO TECNOLÓGICO
+7.1. O Agente RUI, incluindo toda a sua arquitetura técnica, fluxos de automação, lógica de qualificação, modelos de linguagem configurados, prompts de sistema, bases de dados proprietárias, código-fonte, interfaces e qualquer outro componente, é de propriedade exclusiva e intransferível da FORNECEDORA, protegido pela Lei nº 9.609/1998 (Lei do Software), Lei nº 9.610/1998 (Lei de Direitos Autorais) e demais normas aplicáveis.
+7.2. É expressamente vedado à CONTRATANTE, direta ou indiretamente, por si ou por terceiros:
+Copiar, reproduzir, distribuir, sublicenciar ou comercializar o Agente ou qualquer de seus componentes;
+Realizar engenharia reversa, decompilar, desmontar ou tentar extrair o código-fonte ou a lógica operacional do Agente;
+Adaptar, modificar, traduzir ou criar obras derivadas baseadas no Agente;
+Remover, ocultar ou alterar qualquer marca, aviso de propriedade ou indicação de autoria do Agente;
+Utilizar o Agente para finalidade diversa da contratada, ou cedê-lo a terceiros, ainda que a título gratuito.
+7.3. A violação de qualquer proibição prevista nesta cláusula sujeitará a CONTRATANTE às penalidades contratuais estabelecidas na Cláusula 11ª, sem prejuízo das medidas judiciais cabíveis, incluindo ação de perdas e danos, tutela inibitória e responsabilidade penal, conforme aplicável.
+
+CLÁUSULA 8ª — CONFIDENCIALIDADE E PROTEÇÃO DE DADOS
+8.1. As partes se comprometem a manter em sigilo todas as informações confidenciais a que tiverem acesso em razão deste contrato, incluindo, sem limitação: informações técnicas sobre o Agente, dados de clientes, estratégias comerciais, condições financeiras pactuadas e quaisquer outras informações identificadas como confidenciais ou que, pela sua natureza, devam ser assim tratadas.
+8.2. As obrigações de confidencialidade sobrevivem ao término ou rescisão deste contrato pelo prazo de 5 (cinco) anos, independentemente do motivo do encerramento.
+8.3. Em relação à Lei Geral de Proteção de Dados (Lei nº 13.709/2018 — LGPD): (i) a FORNECEDORA atuará como operadora dos dados pessoais de leads coletados pelo Agente, sendo a CONTRATANTE a controladora; (ii) a CONTRATANTE é a única responsável por garantir que a coleta e o tratamento de dados por meio do Agente estejam em conformidade com a LGPD; (iii) a FORNECEDORA adotará medidas técnicas e organizacionais adequadas para proteger os dados tratados no âmbito do sistema.
+8.4. A CONTRATANTE declara estar ciente de que o Agente coleta e processa dados pessoais de terceiros (leads e potenciais clientes) e assume integral responsabilidade pela base legal de tal tratamento, pelo atendimento de solicitações de titulares e pelo cumprimento das demais obrigações de controlador previstas na LGPD.
+8.5. TRATAMENTO DE DADOS APÓS O ENCERRAMENTO CONTRATUAL: Caso a CONTRATANTE deseje, mediante solicitação formal enviada em até 30 (trinta) dias corridos após o término ou rescisão deste contrato, a FORNECEDORA disponibilizará a exportação dos dados de leads coletados pelo Agente, em formato legível (ex: planilha eletrônica), no prazo de até 10 (dez) dias corridos a contar da solicitação. Encerrado esse prazo, ou na ausência de solicitação, a FORNECEDORA adotará as seguintes medidas no prazo de até 30 (trinta) dias corridos após o término ou rescisão: (i) todos os dados pessoais sensíveis coletados pelo Agente — assim definidos nos termos do art. 5º, II da LGPD — serão definitivamente excluídos dos sistemas da FORNECEDORA, salvo obrigação legal de retenção; (ii) dados não sensíveis de natureza operacional e histórica, que não permitam a identificação direta de indivíduos, poderão ser mantidos em banco de dados pela FORNECEDORA para fins de melhoria do sistema, auditoria e histórico de operação. Em caso de recontratação posterior, os dados sensíveis serão recoletados a partir do zero, mediante novo consentimento dos titulares conforme exigido pela LGPD. A FORNECEDORA emitirá confirmação escrita da exclusão dos dados sensíveis quando solicitado pela CONTRATANTE.
+8.6. Para fins de atendimento a solicitações relacionadas à proteção de dados pessoais no âmbito da operação do Agente, a FORNECEDORA disponibiliza como canal de contato o e-mail cadastrado no preâmbulo deste contrato.
+
+CLÁUSULA 9ª — INTEGRIDADE DO AGENTE E TENTATIVAS DE VIOLAÇÃO
+9.1. O Agente RUI é dotado de mecanismos de monitoramento e registro de interações. Qualquer tentativa, bem-sucedida ou não, de: (i) burlar as regras de operação do Agente; (ii) induzir o Agente a comportamentos não autorizados por meio de técnicas de prompt injection, jailbreak ou similares; (iii) acessar indevidamente a infraestrutura técnica subjacente; ou (iv) extrair informações proprietárias da FORNECEDORA por meio do Agente — será considerada violação grave deste contrato.
+9.2. A FORNECEDORA reserva-se o direito de monitorar, registrar e auditar as interações com o Agente para fins de segurança, qualidade e proteção de seus ativos intelectuais, sendo tal monitoramento parte integrante do serviço prestado.
+9.3. Em caso de detecção de tentativa de violação, a FORNECEDORA poderá: (i) suspender imediatamente o acesso ao Agente; (ii) rescindir o contrato sem reembolso; (iii) ingressar com as medidas judiciais cabíveis, incluindo ação por danos materiais e morais, bem como notícia-crime perante as autoridades competentes, com fundamento na Lei nº 12.737/2012 (Lei Carolina Dieckmann), na Lei nº 9.609/1998 e no Código Penal.
+9.4. Entende-se por "tentativa de violação" não apenas ações diretas da CONTRATANTE, mas também ações praticadas por seus colaboradores, prepostos, representantes ou qualquer terceiro que tenha tido acesso ao Agente por autorização da CONTRATANTE.
+
+CLÁUSULA 10ª — NÃO CONCORRÊNCIA E PROTEÇÃO COMERCIAL
+10.1. Em razão do acesso privilegiado a informações estratégicas, operacionais e comerciais da CONTRATANTE obtido durante a vigência deste contrato — incluindo conhecimento sobre seu processo de qualificação de leads, perfil de clientes, estratégias de atendimento e dados de funil de vendas — a CONTRATANTE obriga-se, pelo prazo de 6 (seis) meses contados da data de encerramento ou rescisão deste contrato, a não: (i) desenvolver, contratar, financiar ou apoiar o desenvolvimento de sistema de inteligência artificial de qualificação de leads com funcionalidades equivalentes às do Agente RUI; (ii) contratar diretamente qualquer fornecedor indicado pela FORNECEDORA durante a vigência do contrato para serviço similar ao aqui prestado; (iii) utilizar os conhecimentos adquiridos sobre a operação do Agente RUI para replicar, interna ou externamente, o sistema ou qualquer de suas funcionalidades essenciais.
+10.2. A restrição prevista nesta cláusula fundamenta-se na proteção dos ativos intelectuais, metodologia proprietária e segredo de negócio da FORNECEDORA, não configurando limitação abusiva à atividade empresarial da CONTRATANTE, que permanece livre para contratar quaisquer outros serviços de tecnologia não relacionados à qualificação automatizada de leads por inteligência artificial no formato aqui descrito.
+10.3. O descumprimento sujeitará a CONTRATANTE ao pagamento de multa equivalente a 6 (seis) vezes o valor da mensalidade vigente ao tempo do cancelamento, sem prejuízo de perdas e danos adicionais comprovados e de medidas judiciais cabíveis, incluindo tutela inibitória.
+
+CLÁUSULA 11ª — PENALIDADES E RESCISÃO POR JUSTA CAUSA
+11.1. A FORNECEDORA poderá rescindir o presente contrato por justa causa, com efeito imediato e sem pagamento de qualquer indenização, nas seguintes hipóteses:
+Inadimplemento de qualquer obrigação financeira por prazo superior a 15 (quinze) dias;
+Violação das proibições de propriedade intelectual previstas na Cláusula 7ª;
+Tentativa de violação da integridade do Agente, conforme Cláusula 9ª;
+Uso do Agente para finalidades ilegais, contrárias à moral ou aos bons costumes;
+Cessão ou sublicenciamento não autorizado do Agente a terceiros;
+Prestação de informações falsas por ocasião da contratação;
+Descumprimento de qualquer outra obrigação essencial deste contrato, não sanada em 5 (cinco) dias úteis após notificação escrita.
+11.2. Em caso de rescisão por justa causa imputável à CONTRATANTE, a FORNECEDORA poderá exigir, a título de indenização, o maior valor entre: (i) a integralidade dos valores devidos até o final do período de 12 (doze) meses vigente; ou (ii) a multa rescisória prevista na Cláusula 6.3, incidente sobre o mesmo período — não sendo tais valores exigíveis cumulativamente entre si. Aplicar-se-á o critério mais elevado entre as duas hipóteses, sem prejuízo de eventuais perdas e danos adicionais apurados e de demais medidas judiciais cabíveis.
+
+CLÁUSULA 12ª — LIMITAÇÃO DE RESPONSABILIDADE E GARANTIAS
+12.1. O Agente RUI é fornecido "como está" (as is), sendo desenvolvido e calibrado para o escopo comercial da CONTRATANTE. A FORNECEDORA não garante que o Agente será isento de erros, que operará de forma ininterrupta ou que atenderá a expectativas não expressamente previstas neste contrato.
+12.2. Em nenhuma hipótese a FORNECEDORA será responsável por: (i) lucros cessantes ou danos indiretos decorrentes da indisponibilidade do Agente; (ii) perda de negócios, leads ou oportunidades comerciais; (iii) respostas do Agente que não tenham agradado ou convertido leads específicos; (iv) falhas atribuíveis a serviços de terceiros, conforme Cláusula 2.3.
+12.3. A responsabilidade total da FORNECEDORA, em qualquer hipótese, ficará limitada ao valor equivalente a 3 (três) mensalidades pagas pela CONTRATANTE.
+12.4. Caso a FORNECEDORA seja acionada por terceiro — incluindo leads ou potenciais clientes da CONTRATANTE — em razão de conteúdo, instrução ou conduta de responsabilidade da CONTRATANTE, incluindo informações incorretas fornecidas por esta para configuração do Agente, uso do Agente fora do escopo contratado ou violação de direitos de terceiros pela CONTRATANTE, a CONTRATANTE se compromete a indenizar e isentar a FORNECEDORA de todos os custos, perdas e danos daí decorrentes, incluindo honorários advocatícios razoavelmente incorridos.
+
+CLÁUSULA 13ª — SUPORTE TÉCNICO E ATENDIMENTO
+13.1. A FORNECEDORA disponibilizará suporte técnico à CONTRATANTE para dúvidas operacionais e ajustes simples de configuração do Agente, pelos seguintes canais: (i) WhatsApp, mediante envio de mensagem escrita; (ii) chamada de voz, mediante agendamento prévio ou ligação direta em horário comercial.
+13.2. O atendimento será realizado exclusivamente em horário comercial: segunda a sexta-feira, das 08h00 às 18h00 (horário de Brasília), excluídos feriados nacionais, estaduais (Pernambuco) e municipais (Recife). Solicitações recebidas fora deste horário serão consideradas recebidas no início do próximo dia útil, para fins de contagem do prazo de atendimento.
+13.3. O prazo de resposta e atendimento é de até 24 (vinte e quatro) horas úteis, contadas a partir do recebimento da solicitação dentro do horário comercial estabelecido no item 13.2. O suporte abrange: esclarecimento de dúvidas sobre o funcionamento do Agente, orientações de uso e ajustes simples de configuração que não configurem alteração nos termos da Cláusula 5ª.
+13.4. Não estão incluídos no suporte técnico gratuito: implementação de novas funcionalidades, alterações de fluxo ou comportamento do Agente, integrações adicionais ou qualquer modificação que se enquadre no conceito de alteração previsto na Cláusula 5ª. Tais demandas serão tratadas como alterações e cobradas conforme o Anexo de Proposta Comercial.
+
+CLÁUSULA 14ª — DISPOSIÇÕES GERAIS
+14.1. COMUNICAÇÕES: Todas as comunicações entre as partes deverão ser realizadas por e-mail (endereços cadastrados no preâmbulo deste contrato) ou por WhatsApp, sendo consideradas eficazes no momento da confirmação de leitura ou após 24 horas do envio, o que ocorrer primeiro.
+14.2. ALTERAÇÕES CONTRATUAIS: O presente contrato somente poderá ser alterado por instrumento escrito assinado por ambas as partes. Comunicações informais não têm o condão de modificar as condições aqui estabelecidas.
+14.3. TOLERÂNCIA: A eventual tolerância de qualquer das partes em relação ao descumprimento de obrigação pela outra não constituirá renúncia ao direito de exigir o seu cumprimento, nem novação, nem alteração do contrato.
+14.4. CESSÃO: Nenhuma das partes poderá ceder ou transferir, total ou parcialmente, os direitos e obrigações decorrentes deste contrato sem o consentimento prévio e escrito da outra parte.
+14.5. AUTONOMIA DAS PARTES: A CONTRATANTE reconhece que a FORNECEDORA atua como empresária autônoma independente, não havendo qualquer vínculo empregatício, societário ou de exclusividade entre as partes.
+14.6. TRIBUTOS: Cada parte é exclusivamente responsável pelo recolhimento dos tributos, contribuições e encargos incidentes sobre suas respectivas atividades e receitas decorrentes deste contrato, não havendo qualquer solidariedade tributária entre as partes.
+14.7. VALIDADE DA ASSINATURA ELETRÔNICA: As partes reconhecem a validade jurídica da assinatura do presente contrato por meio eletrônico, inclusive por certificado digital no padrão ICP-Brasil ou por meio de plataformas de assinatura eletrônica com trilha de auditoria (ex.: DocuSign, ClickSign ou similares), nos termos do art. 10, §2º, da Medida Provisória nº 2.200-2/2001 e do art. 219 do Código Civil, dispensando-se reconhecimento de firma em cartório, sem prejuízo da recomendação de segurança adicional constante ao final deste instrumento.
+14.8. LEGISLAÇÃO APLICÁVEL: O presente contrato será regido e interpretado de acordo com as leis da República Federativa do Brasil, em especial o Código Civil (Lei nº 10.406/2002), a Lei do Software (Lei nº 9.609/1998), a LGPD (Lei nº 13.709/2018) e demais normas aplicáveis.
+14.9. FORO: As partes elegem o Foro da Comarca de Recife, Estado de Pernambuco, com exclusão de qualquer outro, por mais privilegiado que seja, para dirimir quaisquer dúvidas ou litígios decorrentes deste contrato.
+
+CLÁUSULA 15ª — CASO FORTUITO E FORÇA MAIOR
+15.1. Nenhuma das partes será responsabilizada pelo descumprimento de obrigações contratuais decorrente de caso fortuito ou força maior, assim entendidos os eventos imprevisíveis, inevitáveis e alheios à vontade das partes, incluindo, exemplificativamente: desastres naturais, atos governamentais ou regulatórios que afetem a operação dos serviços, pandemia, greve geral, falha generalizada de infraestrutura de internet, e indisponibilidade prolongada de plataformas essenciais de terceiros, como Meta e provedores de inteligência artificial, conforme art. 393 do Código Civil.
+15.2. A parte afetada pelo evento de força maior deverá notificar a outra por escrito no prazo de até 48 (quarenta e oito) horas após a ocorrência, descrevendo a natureza e a duração estimada do impedimento. As obrigações afetadas ficarão suspensas durante o período de força maior, sem que isso configure inadimplemento ou justifique rescisão com penalidade.
+15.3. Se o evento de força maior perdurar por mais de 30 (trinta) dias corridos, qualquer das partes poderá optar pela rescisão contratual sem multa e sem indenização, mediante notificação escrita à outra parte.
+
+CLÁUSULA 16ª — ADITIVOS CONTRATUAIS
+16.1. Qualquer ampliação do escopo contratado — incluindo adição de novos canais de atendimento, integração de novos sistemas, expansão das funcionalidades do Agente ou alteração de condições comerciais além do reajuste anual previsto na Cláusula 6.6 — deverá ser formalizada por meio de Aditivo Contratual assinado por ambas as partes.
+16.2. O Aditivo Contratual é documento autônomo que integra o presente contrato, devendo conter: (i) identificação das partes; (ii) descrição objetiva do novo escopo; (iii) valor adicional, se aplicável; (iv) prazo de execução; (v) impacto, se houver, sobre as demais cláusulas do contrato. Na ausência de Aditivo assinado, nenhuma expansão de escopo será exigível de qualquer das partes.
+
+ASSINATURAS
+Por estarem justas e contratadas, as partes assinam o presente instrumento em 2 (duas) vias de igual teor e forma, juntamente com 2 (duas) testemunhas.
+Local e data: _______________________________________________
+
+FORNECEDORA — LICENCIANTE
+Nome: [FORNECEDORA_NOME]
+CPF / CNPJ: [FORNECEDORA_CPF_CNPJ]
+
+CONTRATANTE — LICENCIADA
+Razão Social: [CONTRATANTE_RAZAO_SOCIAL]
+CNPJ: [CONTRATANTE_CNPJ]
+Representante Legal: [CONTRATANTE_REPRESENTANTE]
+
+TESTEMUNHAS:
+1ª _______________________________________________
+Nome: _______________________________________________
+CPF: _______________________________________________
+2ª _______________________________________________
+Nome: _______________________________________________
+CPF: _______________________________________________
+
+RECOMENDAÇÃO: Para maior segurança jurídica, recomenda-se o reconhecimento de firma em cartório ou a assinatura digital com certificado ICP-Brasil por meio de plataformas como DocuSign, ClickSign ou similares.
+
+
+ANEXO TÉCNICO DE ESCOPO
+Parte integrante e inseparável do Contrato de Licença de Uso do Agente RUI
+Este Anexo delimita o escopo técnico e funcional do Agente RUI efetivamente contratado pela CONTRATANTE, para fins de definição do que está incluído na licença e do que será tratado como alteração, nos termos da Cláusula 5ª do contrato principal. Este documento somente terá validade se assinado na mesma data do contrato principal.
+Canais habilitados: [CANAIS_HABILITADOS]
+Volume mensal de interações incluído: [VOLUME_MENSAL_INTERACOES]
+Funcionalidades padrão incluídas (ex.: qualificação de leads, roteamento, follow-up automático, dashboard de acompanhamento): [FUNCIONALIDADES_PADRAO]
+Integrações adicionais incluídas: [INTEGRACOES_ADICIONAIS]
+Idioma(s) de atendimento: [IDIOMAS_ATENDIMENTO]
+Qualquer funcionalidade, canal, volume ou integração não listada expressamente acima será considerada alteração, sujeita às condições e valores previstos na Cláusula 5ª do contrato principal.
+
+FORNECEDORA — Assinatura e rubrica
+ _______________________________________________
+CONTRATANTE — Assinatura e rubrica
+ _______________________________________________
+
+
+ANEXO DE PROPOSTA COMERCIAL
+Parte integrante e inseparável do Contrato de Licença de Uso do Agente RUI
+Este Anexo formaliza os valores comerciais acordados entre as partes, tendo a mesma força jurídica do contrato ao qual está vinculado. Os valores aqui registrados somente poderão ser alterados mediante aditivo contratual assinado por ambas as partes.
+Data de assinatura deste Anexo: [DATA_ASSINATURA_ANEXO]
+Data de ativação do Agente (início da vigência): [DATA_ATIVACAO]
+
+Taxa de Setup (implantação única): R$ [VALOR_SETUP] — Rubrica: _______ / _______
+Mensalidade (licença de uso): R$ [VALOR_MENSALIDADE] — Rubrica: _______ / _______
+Valor por Alteração (a partir do 2º mês): R$ [VALOR_ALTERACAO] — Rubrica: _______ / _______
+
+Cada célula da coluna "Rubrica das Partes" deverá ser rubricada pela FORNECEDORA (F) e pela CONTRATANTE (C) no ato da assinatura, confirmando a ciência e concordância com cada valor individualmente.
+
+FORNECEDORA — Assinatura e rubrica
+ _______________________________________________
+CONTRATANTE — Assinatura e rubrica
+ _______________________________________________
+
+ATENÇÃO: Este Anexo somente terá validade jurídica se assinado por ambas as partes na mesma data do contrato principal. Nenhum valor poderá ser cobrado sem a formalização prévia neste documento.`;
+
+const CTR_CAMPOS_EMPRESA = ['nome','cpfCnpj','endereco','email','telefone'];
+const CTR_CAMPOS_CLIENTE = ['razaoSocial','cnpj','endereco','email','telefone','representante','cpfRepresentante','valorSetup','valorMensalidade','valorAlteracao','dataAssinaturaAnexo','dataAtivacao','canaisHabilitados','volumeMensalInteracoes','funcionalidadesPadrao','integracoesAdicionais','idiomasAtendimento'];
+
+function ctrIdEmpresa(campo){ return 'ctrEmp_' + campo; }
+function ctrIdCliente(campo){ return 'ctrCli_' + campo; }
+
+function ctrLoadEmpresa(){
+  try{ const raw = localStorage.getItem(CTR_KEY_EMPRESA); if(raw) return JSON.parse(raw); }catch(e){}
+  return {};
+}
+function ctrSaveEmpresa(dados){ localStorage.setItem(CTR_KEY_EMPRESA, JSON.stringify(dados)); }
+function ctrLoadModelo(){ return localStorage.getItem(CTR_KEY_MODELO) || CTR_MODELO_PADRAO; }
+function ctrSaveModelo(texto){ localStorage.setItem(CTR_KEY_MODELO, texto); }
+function ctrLoadClientes(){
+  try{ const raw = localStorage.getItem(CTR_KEY_CLIENTES); if(raw) return JSON.parse(raw); }catch(e){}
+  return [];
+}
+function ctrSaveClientes(lista){ localStorage.setItem(CTR_KEY_CLIENTES, JSON.stringify(lista)); }
+
+let ctrClienteAtualId = null;
+
+function ctrFlash(id){
+  const el = document.getElementById(id);
+  el.style.display = 'inline';
+  clearTimeout(el._ctrTimer);
+  el._ctrTimer = setTimeout(function(){ el.style.display = 'none'; }, 2200);
+}
+
+function ctrLerFormEmpresa(){
+  const obj = {};
+  CTR_CAMPOS_EMPRESA.forEach(function(c){ obj[c] = document.getElementById(ctrIdEmpresa(c)).value.trim(); });
+  return obj;
+}
+function ctrPreencherFormEmpresa(){
+  const d = ctrLoadEmpresa();
+  CTR_CAMPOS_EMPRESA.forEach(function(c){ document.getElementById(ctrIdEmpresa(c)).value = d[c] || ''; });
+}
+function ctrSalvarEmpresa(){
+  ctrSaveEmpresa(ctrLerFormEmpresa());
+  ctrFlash('ctrEmp-msg');
+  ctrAtualizarPreview();
+}
+
+function ctrLerFormCliente(){
+  const obj = {};
+  CTR_CAMPOS_CLIENTE.forEach(function(c){ obj[c] = document.getElementById(ctrIdCliente(c)).value.trim(); });
+  return obj;
+}
+function ctrPreencherFormCliente(c){
+  c = c || {};
+  CTR_CAMPOS_CLIENTE.forEach(function(campo){
+    document.getElementById(ctrIdCliente(campo)).value = c[campo] || '';
+  });
+}
+
+function ctrPopularSelect(){
+  const sel = document.getElementById('ctrCliSelect');
+  const clientes = ctrLoadClientes();
+  sel.innerHTML = '<option value="">— Novo cliente —</option>' +
+    clientes.map(function(c){ return '<option value="'+c.id+'">'+cfgEscapeHtml(c.razaoSocial || '(sem nome)')+'</option>'; }).join('');
+  sel.value = ctrClienteAtualId || '';
+}
+function ctrNovoCliente(){
+  ctrClienteAtualId = null;
+  document.getElementById('ctrCliSelect').value = '';
+  ctrPreencherFormCliente({});
+  ctrAtualizarPreview();
+}
+function ctrSelecionarCliente(id){
+  ctrClienteAtualId = id || null;
+  if (!id) { ctrPreencherFormCliente({}); ctrAtualizarPreview(); return; }
+  const c = ctrLoadClientes().find(function(x){ return x.id === id; });
+  if (!c) return;
+  ctrPreencherFormCliente(c);
+  localStorage.setItem(CTR_KEY_CLIENTE_SEL, id);
+  ctrAtualizarPreview();
+}
+function ctrSalvarCliente(){
+  const dados = ctrLerFormCliente();
+  if (!dados.razaoSocial) { alert('Preencha ao menos a razão social da concessionária antes de salvar.'); return; }
+  const clientes = ctrLoadClientes();
+  const agora = new Date().toISOString();
+  if (ctrClienteAtualId) {
+    const idx = clientes.findIndex(function(c){ return c.id === ctrClienteAtualId; });
+    if (idx >= 0) clientes[idx] = Object.assign({}, clientes[idx], dados, { atualizadoEm: agora });
+  } else {
+    ctrClienteAtualId = 'cli_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
+    clientes.push(Object.assign({ id: ctrClienteAtualId, criadoEm: agora, atualizadoEm: agora }, dados));
+  }
+  ctrSaveClientes(clientes);
+  ctrPopularSelect();
+  localStorage.setItem(CTR_KEY_CLIENTE_SEL, ctrClienteAtualId);
+  ctrFlash('ctrCli-msg');
+  ctrAtualizarPreview();
+}
+function ctrExcluirCliente(){
+  if (!ctrClienteAtualId) { alert('Nenhum cliente selecionado.'); return; }
+  const clientes = ctrLoadClientes();
+  const c = clientes.find(function(x){ return x.id === ctrClienteAtualId; });
+  if (!confirm('Excluir o cliente "' + (c ? c.razaoSocial : '') + '"? Essa ação não pode ser desfeita.')) return;
+  ctrSaveClientes(clientes.filter(function(x){ return x.id !== ctrClienteAtualId; }));
+  ctrClienteAtualId = null;
+  localStorage.removeItem(CTR_KEY_CLIENTE_SEL);
+  ctrPopularSelect();
+  ctrPreencherFormCliente({});
+  ctrAtualizarPreview();
+}
+
+function ctrPreencherFormModelo(){
+  document.getElementById('ctrModelo').value = ctrLoadModelo();
+}
+function ctrSalvarModelo(){
+  ctrSaveModelo(document.getElementById('ctrModelo').value);
+  ctrFlash('ctrModelo-msg');
+  ctrAtualizarPreview();
+}
+function ctrRestaurarModelo(){
+  if (!confirm('Isso troca o texto atual do modelo pelo texto padrão original. Continuar?')) return;
+  ctrSaveModelo(CTR_MODELO_PADRAO);
+  ctrPreencherFormModelo();
+  ctrAtualizarPreview();
+}
+
+function ctrFmtDataBR(iso){
+  const partes = (iso||'').split('-');
+  if (partes.length !== 3) return '';
+  return partes[2] + '/' + partes[1] + '/' + partes[0];
+}
+function ctrMontarTexto(){
+  const emp = ctrLoadEmpresa();
+  const cli = ctrLerFormCliente();
+  let texto = document.getElementById('ctrModelo').value;
+
+  const mapa = {
+    FORNECEDORA_NOME: emp.nome, FORNECEDORA_CPF_CNPJ: emp.cpfCnpj, FORNECEDORA_ENDERECO: emp.endereco,
+    FORNECEDORA_EMAIL: emp.email, FORNECEDORA_TELEFONE: emp.telefone,
+    CONTRATANTE_RAZAO_SOCIAL: cli.razaoSocial, CONTRATANTE_CNPJ: cli.cnpj, CONTRATANTE_ENDERECO: cli.endereco,
+    CONTRATANTE_EMAIL: cli.email, CONTRATANTE_TELEFONE: cli.telefone,
+    CONTRATANTE_REPRESENTANTE: cli.representante, CONTRATANTE_CPF_REPRESENTANTE: cli.cpfRepresentante,
+    VALOR_SETUP: cli.valorSetup, VALOR_MENSALIDADE: cli.valorMensalidade, VALOR_ALTERACAO: cli.valorAlteracao,
+    CANAIS_HABILITADOS: cli.canaisHabilitados, VOLUME_MENSAL_INTERACOES: cli.volumeMensalInteracoes,
+    FUNCIONALIDADES_PADRAO: cli.funcionalidadesPadrao, INTEGRACOES_ADICIONAIS: cli.integracoesAdicionais,
+    IDIOMAS_ATENDIMENTO: cli.idiomasAtendimento,
+    DATA_ASSINATURA_ANEXO: cli.dataAssinaturaAnexo ? ctrFmtDataBR(cli.dataAssinaturaAnexo) : '',
+    DATA_ATIVACAO: cli.dataAtivacao ? ctrFmtDataBR(cli.dataAtivacao) : ''
+  };
+  Object.keys(mapa).forEach(function(chave){
+    const val = mapa[chave] && String(mapa[chave]).trim() ? String(mapa[chave]).trim() : ('[' + chave + ']');
+    texto = texto.split('[' + chave + ']').join(val);
+  });
+  return texto;
+}
+function ctrAtualizarPreview(){
+  const el = document.getElementById('ctrPreview');
+  if (el) el.textContent = ctrMontarTexto();
+}
+function ctrCopiar(){
+  const texto = document.getElementById('ctrPreview').textContent;
+  function fallback(){ alert('Não foi possível copiar automaticamente. Selecione o texto manualmente.'); }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(texto).then(function(){ ctrFlash('ctrCopia-msg'); }).catch(fallback);
+  } else {
+    fallback();
+  }
+}
+function ctrImprimir(){ window.print(); }
+
+let ctrFieldsWired = false;
+function ctrWireFields(){
+  if (ctrFieldsWired) return;
+  ctrFieldsWired = true;
+  CTR_CAMPOS_EMPRESA.forEach(function(c){ document.getElementById(ctrIdEmpresa(c)).addEventListener('input', ctrAtualizarPreview); });
+  CTR_CAMPOS_CLIENTE.forEach(function(c){ document.getElementById(ctrIdCliente(c)).addEventListener('input', ctrAtualizarPreview); });
+  document.getElementById('ctrModelo').addEventListener('input', ctrAtualizarPreview);
+}
+
+let ctrInitDone = false;
+function initContratoTab(){
+  ctrWireFields();
+  ctrPreencherFormEmpresa();
+  ctrPreencherFormModelo();
+  ctrPopularSelect();
+  const ultimoId = localStorage.getItem(CTR_KEY_CLIENTE_SEL);
+  if (ultimoId && ctrLoadClientes().some(function(c){ return c.id === ultimoId; })) {
+    document.getElementById('ctrCliSelect').value = ultimoId;
+    ctrSelecionarCliente(ultimoId);
+  } else {
+    ctrAtualizarPreview();
+  }
+  ctrInitDone = true;
 }
 
 function initApp(){
