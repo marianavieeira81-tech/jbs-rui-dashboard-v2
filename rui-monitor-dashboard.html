@@ -207,6 +207,7 @@ textarea.sql{font-family:'DM Mono',monospace;font-size:11.5px;line-height:1.55;b
     <button class="tab-btn" data-tab="config" onclick="trocarAba('config')">Configuração</button>
     <button class="tab-btn" data-tab="gastos" onclick="trocarAba('gastos')">Gastos</button>
     <button class="tab-btn" data-tab="contrato" onclick="trocarAba('contrato')">Contrato</button>
+    <button class="tab-btn" data-tab="suporte" onclick="trocarAba('suporte')">Suporte</button>
   </div>
 
   <div class="tab-panel active" id="tab-panel-monitor">
@@ -647,6 +648,60 @@ where tipo_evento = 'execucao_ok' and criado_em >= date_trunc('month', now());</
     </div>
 
   </div><!-- /tab-panel-contrato -->
+
+  <div class="tab-panel" id="tab-panel-suporte">
+
+    <div class="sec">Registrar um chamado agora</div>
+    <div class="card" style="margin-bottom:16px;">
+      <div class="hint">Ferramenta funcional — não depende do n8n. Preencha os dados de um problema reportado (mesmo que ainda tenha chegado pelo seu WhatsApp pessoal) e gera o SQL pronto pra colar no Supabase, projeto GWM. Exige que a tabela <span class="mono">chamados_suporte</span> já exista — SQL de criação e o roteiro completo do M07 estão no <a href="https://claude.ai/code/artifact/4499d661-cdfa-4946-90da-7735e6991fde" target="_blank" rel="noopener" style="color:var(--ac);">documento de Suporte e Operação</a>.</div>
+
+      <div class="field-grid" style="grid-template-columns:1fr 1fr 1fr;">
+        <div class="field">
+          <label>Loja / cliente</label>
+          <select id="supLoja">
+            <option value="Boa Viagem">Boa Viagem</option>
+            <option value="Parnamirim">Parnamirim</option>
+            <option value="Caruaru">Caruaru</option>
+            <option value="Outro">Outro (digitar)</option>
+          </select>
+        </div>
+        <div class="field" id="supLojaOutraWrap" style="display:none;">
+          <label>Nome da loja/cliente</label>
+          <input type="text" id="supLojaOutra" placeholder="Ex.: JBS Motors">
+        </div>
+        <div class="field">
+          <label>Nome de quem relatou</label>
+          <input type="text" id="supNome" placeholder="Ex.: João (vendedor)">
+        </div>
+        <div class="field">
+          <label>Telefone de contato</label>
+          <input type="text" id="supTelefone" placeholder="Ex.: 81999999999">
+        </div>
+      </div>
+
+      <div class="field" style="margin-bottom:16px;">
+        <label>O que foi relatado</label>
+        <textarea id="supDescricao" rows="3" placeholder="Ex.: Rui parou de responder no WhatsApp desde as 14h"></textarea>
+      </div>
+
+      <div class="subsec">Prioridade</div>
+      <div class="checks" style="margin-bottom:18px;">
+        <label class="check"><input type="radio" name="supPrioridade" value="normal" checked> Normal</label>
+        <label class="check"><input type="radio" name="supPrioridade" value="urgente"> Urgente</label>
+      </div>
+
+      <button class="btn-ref" style="margin-left:0;" type="button" id="supBtnGerar">Gerar SQL do chamado</button>
+
+      <div class="sqlbox" id="supOutWrap" style="display:none;">
+        <div class="sqlbox-head"><div class="subsec">SQL pronto pra colar no Supabase</div>
+          <div><span class="copy-status" id="supCp1">copiado ✓</span> <button class="copy-btn" type="button" data-copy="supSqlOut" data-status="supCp1">Copiar</button></div>
+        </div>
+        <textarea class="sql" id="supSqlOut" readonly rows="6"></textarea>
+      </div>
+      <p class="hint" id="supErro" style="display:none;color:var(--red);">Preencha pelo menos: Loja/cliente, Telefone e O que foi relatado.</p>
+    </div>
+
+  </div><!-- /tab-panel-suporte -->
 
 </div>
 
@@ -1355,6 +1410,43 @@ function atualizarDadosReaisGastos(){
   elC.textContent = (d.custo_total_estimado_usd!=null) ? ('US$ ' + Number(d.custo_total_estimado_usd).toFixed(4)) : '—';
   elE.textContent = (d.total_execucoes!=null) ? d.total_execucoes : '—';
 }
+
+// ============================================================
+// ABA SUPORTE — gera SQL pra tabela chamados_suporte.
+// Mesmo padrão de segurança da aba Configuração: só monta o SQL,
+// não grava nada sozinha (sem credencial do Supabase exposta aqui).
+// ============================================================
+(function(){
+  var lojaSel = document.getElementById('supLoja');
+  var lojaOutraWrap = document.getElementById('supLojaOutraWrap');
+  if(!lojaSel) return;
+  lojaSel.addEventListener('change', function(){
+    lojaOutraWrap.style.display = lojaSel.value === 'Outro' ? 'flex' : 'none';
+  });
+
+  function escSql(s){ return String(s || '').replace(/'/g, "''"); }
+
+  document.getElementById('supBtnGerar').addEventListener('click', function(){
+    var loja = lojaSel.value === 'Outro' ? document.getElementById('supLojaOutra').value : lojaSel.value;
+    var nome = document.getElementById('supNome').value;
+    var telefone = document.getElementById('supTelefone').value;
+    var descricao = document.getElementById('supDescricao').value;
+    var prioridade = document.querySelector('input[name="supPrioridade"]:checked').value;
+    var erroEl = document.getElementById('supErro');
+
+    if(!loja || !telefone || !descricao){
+      erroEl.style.display = 'block';
+      return;
+    }
+    erroEl.style.display = 'none';
+
+    var sql = "insert into public.chamados_suporte (loja, nome_contato, telefone_contato, descricao, prioridade)\nvalues ('" +
+      escSql(loja) + "', '" + escSql(nome) + "', '" + escSql(telefone) + "', '" + escSql(descricao) + "', '" + escSql(prioridade) + "');";
+
+    document.getElementById('supSqlOut').value = sql;
+    document.getElementById('supOutWrap').style.display = 'block';
+  });
+})();
 
 document.querySelectorAll('.copy-btn[data-copy]').forEach(function(btn){
   btn.addEventListener('click', function(){
