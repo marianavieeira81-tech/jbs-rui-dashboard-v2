@@ -89,6 +89,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 
 /* KPI */
 .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+.kpi-grid-5{grid-template-columns:repeat(5,1fr);}
 .kpi{background:var(--surface);border-radius:var(--r);padding:22px 24px;border:1px solid var(--bdr);box-shadow:var(--sh);cursor:default;transition:all .25s;position:relative;overflow:hidden;}
 .kpi:hover{border-color:rgba(212,175,55,.2);box-shadow:var(--sh-gold),var(--sh-md);transform:translateY(-2px);}
 .kpi.gold{background:linear-gradient(145deg,#130F00,#0A0800);border-color:rgba(212,175,55,.25);}
@@ -158,6 +159,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 .sh{background:rgba(212,175,55,.1);color:var(--ac);border:1px solid rgba(212,175,55,.2);}.sm{background:var(--s2);color:var(--tx2);border:1px solid var(--bdr);}.sl{background:var(--red-bg);color:var(--red);border:1px solid rgba(225,29,72,.2);}
 .stpill{font-size:11px;padding:3px 10px;border-radius:5px;font-weight:600;}
 .st-q{background:var(--grn-bg);color:var(--grn-l);}.st-t{background:rgba(212,175,55,.1);color:var(--ac);}.st-a{background:rgba(30,80,200,.12);color:#6090FF;}.st-i{background:var(--red-bg);color:var(--red);}
+.transf-urgente{background:var(--red-bg);color:var(--red);}.transf-comercial{background:rgba(167,139,250,.12);color:#A78BFA;}
 .setor-pill{font-size:11px;padding:3px 10px;border-radius:5px;font-weight:600;white-space:nowrap;}
 .setor-novo{background:rgba(56,189,248,.12);color:#38BDF8;}.setor-seminovo{background:rgba(167,139,250,.12);color:#A78BFA;}.setor-oficina{background:rgba(251,146,60,.12);color:#FB923C;}.setor-reclamacao{background:rgba(251,113,133,.12);color:#FB7185;}.setor-pecas{background:rgba(163,230,53,.12);color:#A3E635;}
 .sent-row{display:flex;align-items:center;gap:5px;}
@@ -689,7 +691,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   .topbar{flex-direction:column;align-items:flex-start;gap:14px;}
   .topbar-r{width:100%;justify-content:space-between;}
   .topbar h1{font-size:21px;}
-  .kpi-grid,.g2,.g3,.sc-grid,.cat-grid,.dr-method-grid,.ag-kpis,.cob-grid{grid-template-columns:1fr;}
+  .kpi-grid,.kpi-grid-5,.g2,.g3,.sc-grid,.cat-grid,.dr-method-grid,.ag-kpis,.cob-grid{grid-template-columns:1fr;}
   .card,.kpi{padding:18px;}
   table.ltbl,table.rtbl{display:block;overflow-x:auto;white-space:nowrap;}
   .cob-hour-grid{grid-template-columns:repeat(24,32px);overflow-x:auto;}
@@ -809,6 +811,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       <div class="sb-lbl">Principal</div>
       <div class="sb-item active" onclick="go('dash')"><i class="sb-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg></i>Painel de Controle</div>
       <div class="sb-item" onclick="go('filaespera')"><i class="sb-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></i>Fila de Espera</div>
+      <div class="sb-item" onclick="go('transferencias')"><i class="sb-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></i>Fila de Transferências</div>
       <div class="sb-item" onclick="go('plataformas')"><i class="sb-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></i>Central de Leads</div>
       <div class="sb-item" onclick="go('cobertura')"><i class="sb-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg></i>Cobertura 24/7</div>
     </div>
@@ -870,7 +873,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   </div>
 
   <div class="sec">Indicadores da semana · gerados automaticamente pelo Agente Rui</div>
-  <div class="kpi-grid">
+  <div class="kpi-grid kpi-grid-5">
     <div class="kpi c-premium">
       <div class="kpi-top"><span class="kpi-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 1 0-16 0"/><circle cx="12" cy="7" r="4"/></svg></span><div class="kpi-tag">WhatsApp + Check-in</div></div>
       <div class="kpi-lbl">Leads recebidos</div>
@@ -897,6 +900,12 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       <div class="kpi-lbl">Score médio</div>
       <div class="kpi-val" data-count="0" data-kpi="scoreMedio">—</div>
       <svg class="kpi-spark" width="100%" height="26" viewBox="0 0 100 26" preserveAspectRatio="none"><polyline points="0,14 20,13 40,15 60,12 80,11 100,9" fill="none" stroke="#fff" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>
+      <div class="kpi-sub"><span class="pill nu">aguardando dados</span></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-top"><span class="kpi-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><div class="kpi-tag">Transferências</div></div>
+      <div class="kpi-lbl">Aguardando humano</div>
+      <div class="kpi-val" data-count="0" data-kpi="transferenciasPendentes">—</div>
       <div class="kpi-sub"><span class="pill nu">aguardando dados</span></div>
     </div>
   </div>
@@ -1045,6 +1054,62 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     </div>
   </div>
 </div>
+
+<!-- ============ FILA DE TRANSFERÊNCIAS ============ -->
+<div id="p-transferencias" style="display:none">
+  <div class="topbar">
+    <div><div class="eye">Escalonamento para Humano</div><h1>Fila de Transferências</h1></div>
+    <div class="topbar-r">
+      <div class="ts"><span>Última atualização</span><strong id="transfTs">—</strong></div>
+      <button class="btn-ref" onclick="fetchTransferenciasData()">&#8629; Atualizar</button>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-grid" style="margin-bottom:20px;">
+    <div class="kpi">
+      <div class="kpi-tag">FILA</div>
+      <div class="kpi-lbl">Aguardando atendimento</div>
+      <div class="kpi-val" id="transfKpiPendentes">—</div>
+      <div class="kpi-sub"><span class="pill nu">aguardando dados</span></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-tag">URGENTE</div>
+      <div class="kpi-lbl">Pedido humano · insulto · frustração</div>
+      <div class="kpi-val" id="transfKpiUrgente" style="color:var(--red)">—</div>
+      <div class="kpi-sub"><span class="pill nu">aguardando dados</span></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-tag">COMERCIAL</div>
+      <div class="kpi-lbl">Lead quente · financiamento · negociação</div>
+      <div class="kpi-val" id="transfKpiComercial" style="color:#A78BFA">—</div>
+      <div class="kpi-sub"><span class="pill nu">aguardando dados</span></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-tag">EM ANDAMENTO</div>
+      <div class="kpi-lbl">Já assumidas por alguém</div>
+      <div class="kpi-val" id="transfKpiAtendimento">—</div>
+      <div class="kpi-sub"><span class="pill nu">aguardando dados</span></div>
+    </div>
+  </div>
+
+  <div class="card" style="padding:0;overflow:hidden;">
+    <div style="padding:20px 24px 0;display:flex;align-items:center;gap:10px;">
+      <span style="font-size:13px;opacity:.5;">&#9888;</span>
+      <span class="ctitle" style="margin:0;">Transferências para atendimento humano</span>
+      <span class="fila-badge" id="transfBadge" style="margin-left:auto;">— na fila</span>
+    </div>
+    <!-- FILTROS -->
+    <div style="display:flex;gap:8px;padding:14px 24px 0;flex-wrap:wrap;">
+      <button class="ftab active" onclick="filterTransferencias(this,'todos')">Todos</button>
+      <button class="ftab" onclick="filterTransferencias(this,'urgente')">Urgente</button>
+      <button class="ftab" onclick="filterTransferencias(this,'comercial')">Comercial</button>
+    </div>
+    <!-- LISTA -->
+    <div id="transferenciasList" style="padding:8px 0;"></div>
+  </div>
+</div>
+
 <div id="p-plataformas" style="display:none">
   <div class="topbar">
     <div><div class="eye">Principal</div><h1>Central de Leads</h1></div>
@@ -2010,6 +2075,7 @@ function go(id){
   if(id==='cobertura') buildCobertura();
   if(id==='funil'){ buildFunil(); buildFunilPresencial(); }
   if(id==='filaespera') fetchFilaData();
+  if(id==='transferencias') fetchTransferenciasData();
   if(id==='diagnostico'){ buildDiagnostico(); fetchDiagnosticoFromSupabase().then(buildDiagnostico); }
   if(id==='checkin') ciInit();
   if(id==='agenda') agInit();
@@ -3285,14 +3351,23 @@ function buildTable(){
   };
   // Em produção usa ACTIVE_LEADS; em demo usa o array LEADS (formato curto)
   if(DATA_MODE==='production'&&ACTIVE_LEADS.length>0){
-    tb.innerHTML=ACTIVE_LEADS.filter(l=>matchLoja(l.loja)&&matchModelo(l.modelo)).slice(0,15).map(l=>`<tr>
+    tb.innerHTML=ACTIVE_LEADS.filter(l=>matchLoja(l.loja)&&matchModelo(l.modelo)).slice(0,15).map(l=>{
+      // Badge "Transferido" ganha cor de categoria (urgente/comercial) só quando
+      // existe um evento real de transferência humana pra esse lead — qualificação
+      // normal (sem escalonamento) continua com o "Transferido" dourado de sempre.
+      const transf = l.status==='Transferido' ? transferenciaAtivaDoLead(l) : null;
+      const cat = transf ? categorizarMotivoTransferencia(transf.motivo) : null;
+      const stCls = cat==='urgente' ? 'transf-urgente' : cat==='comercial' ? 'transf-comercial' : (stM[l.status]||'st-i');
+      const stTitle = transf ? ` title="Motivo: ${transf.motivo.replace(/"/g,'&quot;')}"` : '';
+      return `<tr>
       <td><strong>${l.nome}</strong></td>
       <td>${canalPill(l)}</td>
       <td><span class="sp ${scC(l.score)}">${l.score}/100</span></td>
       <td>${l.modelo||'—'}</td>
-      <td><span class="stpill ${stM[l.status]||'st-i'}">${l.status}</span></td>
+      <td><span class="stpill ${stCls}"${stTitle}>${l.status}</span></td>
       <td>${setorPill(l.setor)}</td>
-    </tr>`).join('');
+    </tr>`;
+    }).join('');
   } else {
     tb.innerHTML='<tr><td colspan="6" style="text-align:center;padding:40px 20px;color:var(--tx3);font-size:13px">Aguardando primeiros leads do agente Rui...</td></tr>';
   }
@@ -4043,6 +4118,14 @@ const N8N_HISTORICO_QUERY = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/rui-l
 // Enquanto ela não importar/ativar esse fluxo no n8n, a chamada abaixo falha
 // silenciosamente e o botão cai no fallback local (ver filaAddFromCheckin).
 const N8N_FILA_ADICIONAR = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/adicionar-fila-espera';
+// Fila de Transferências (11/08) — lê/grava a tabela transferencias_humano no Supabase.
+// Endpoints ainda NÃO existem no n8n (dependem do node "registrar evento" que já
+// grava rui_eventos hoje). Enquanto ela não importar/ativar esses 2 fluxos, a
+// consulta volta lista vazia (sem quebrar o dashboard) e as ações de assumir/
+// concluir mostram um aviso claro em vez de fingir que salvaram — ver
+// fetchTransferenciasData()/salvarStatusTransferencia().
+const N8N_TRANSFERENCIAS_QUERY  = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/rui-transferencias-query';
+const N8N_TRANSFERENCIAS_UPDATE = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/rui-transferencias-atualizar';
 const REFRESH_INTERVAL_MS = 30000;
 
 // ============================================================
@@ -4175,7 +4258,7 @@ function buildPerguntas(l){
   // tem_veiculo_troca é o campo real no Supabase (não existe forma_pagamento na tabela).
   // Todo campo abaixo usa null quando o dado não existe — nunca confundir com resposta negativa.
   return [
-    {num:'P1',tema:'Intenção',      pergunta:'Qual o objetivo da compra?',        resposta:null},
+    {num:'P1',tema:'Intenção',      pergunta:'Qual o objetivo da compra?',        resposta:l.objetivo_compra||null},
     {num:'P2',tema:'Prazo',         pergunta:'Em quanto tempo pretende comprar?', resposta:l.urgencia||null},
     {num:'P3',tema:'Modelo',        pergunta:'Tem algum modelo em mente?',        resposta:l.veiculo_interesse||null},
     {num:'P4',tema:'Veículo atual', pergunta:'Possui veículo para troca?',
@@ -4185,7 +4268,7 @@ function buildPerguntas(l){
     {num:'P6',tema:'Decisão',       pergunta:'Essa escolha você costuma fazer de forma independente, ou é uma decisão que envolve mais alguém?',
       resposta: decideSozinho===true ? 'Decide sozinho' : decideSozinho===false ? 'Decide com outra pessoa' : null,
       detalhe:  decideSozinho===false ? (l.co_decisor||null) : null},
-    {num:'P7',tema:'Localização',   pergunta:'Você está aqui em Recife ou vem de outra cidade?', resposta:null},
+    {num:'P7',tema:'Localização',   pergunta:'Você está aqui em Recife ou vem de outra cidade?', resposta:l.localizacao||null},
   ];
 }
 
@@ -4235,7 +4318,7 @@ function mapLead(l){
                    : 'Sem troca',
     decisao:     l.decide_sozinho!=null?(l.decide_sozinho?'Decide sozinho':'Decide com outra pessoa'):'',
     codDetalhe:  l.co_decisor||'',
-    localizacao: '',
+    localizacao: l.localizacao||'',
     causa:       l.submotivo||l.causa_esfriamento||'',
     submotivo:        l.submotivo||'',
     motivo_categoria: categorizaMotivo(l.submotivo||l.causa_esfriamento||''),
@@ -4492,16 +4575,21 @@ function refreshDashKpis(){
   const qualificados = leads.filter(l=>l.qualificadoEm && (l.canal||'').toLowerCase()!=='presencial').length;
   const scores = leads.map(l=>l.score||0);
   const scoreMedio = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : 0;
+  // Transferências pendentes não tem filtro de loja/modelo próprio ainda (a tabela
+  // transferencias_humano não guarda loja) — conta o total bruto por enquanto.
+  const transferenciasPendentes = ACTIVE_TRANSFERENCIAS.filter(t=>t.status_transferencia==='pendente').length;
   const set=(sel,v)=>{const el=document.querySelector(sel);if(el)el.textContent=v;};
   set('[data-kpi="total"]', leads.length);
   set('[data-kpi="qualificados"]', qualificados);
   set('[data-kpi="filaEspera"]', fila.length);
   set('[data-kpi="scoreMedio"]', scoreMedio);
+  set('[data-kpi="transferenciasPendentes"]', transferenciasPendentes);
 }
 
 async function atualizarDashboard(){
   await fetchAllData();
   await fetchFilaData();
+  await fetchTransferenciasData();
   buildTable();
   updateOrbCount();
   updateCICount(); // Ponto 10: mantém contador CI sincronizado no ciclo automático
@@ -4897,6 +4985,189 @@ async function fetchFilaData(){
 }
 
 // ============================================================
+// FILA DE TRANSFERÊNCIAS — leads que o Rui encaminhou pra atendimento humano
+// no meio da conversa (6 motivos fixos do node "Parsear resposta IA", ver
+// categorizarMotivoTransferencia). Guardado numa tabela própria no Supabase
+// (transferencias_humano, desacoplada de rui_eventos — rui_eventos é log
+// append-only, esse aqui é estado mutável: pendente → em_atendimento → concluído),
+// lida/gravada via os 2 endpoints n8n N8N_TRANSFERENCIAS_QUERY/UPDATE.
+// ============================================================
+let ACTIVE_TRANSFERENCIAS = [];
+
+// Acha o lead correspondente em ACTIVE_LEADS a partir do identificador salvo na
+// transferência (sender_id/telefone) — mesma comparação por dígitos usada no
+// resto do dashboard pra WhatsApp. Retorna null se o lead ainda não apareceu
+// em ACTIVE_LEADS (ex: transferência muito recente, antes do próximo fetch).
+function encontrarLeadPorIdentificador(identificador){
+  if(!identificador) return null;
+  const idNorm = String(identificador).replace(/\D/g,'');
+  if(!idNorm) return null;
+  return ACTIVE_LEADS.find(l=>{
+    const tel = (l.telefone||'').replace(/\D/g,'');
+    const sid = (l.senderId||'').replace(/\D/g,'');
+    return tel===idNorm || sid===idNorm;
+  }) || null;
+}
+
+// Transferência ativa mais relevante de um lead (pra colorir o badge "Transferido"
+// na tabela de leads) — a mais recente ainda não concluída; se todas já foram
+// concluídas, mostra a mais recente mesmo assim (não deixa o badge sem info).
+function transferenciaAtivaDoLead(lead){
+  if(!ACTIVE_TRANSFERENCIAS.length) return null;
+  const tel = (lead.telefone||'').replace(/\D/g,'');
+  const sid = (lead.senderId||'').replace(/\D/g,'');
+  const doLead = ACTIVE_TRANSFERENCIAS.filter(t=>{
+    const idNorm=(t.lead_identifier||'').replace(/\D/g,'');
+    return idNorm && (idNorm===tel || idNorm===sid);
+  });
+  if(!doLead.length) return null;
+  doLead.sort((a,b)=>new Date(b.criado_em)-new Date(a.criado_em));
+  return doLead.find(t=>t.status_transferencia!=='concluido') || doLead[0];
+}
+
+async function fetchTransferenciasData(){
+  try{
+    const res = await authFetch(N8N_TRANSFERENCIAS_QUERY, {method:'GET'});
+    if(res.ok){
+      const rawText = await res.text();
+      const data = (rawText&&rawText.trim()) ? JSON.parse(rawText) : [];
+      ACTIVE_TRANSFERENCIAS = Array.isArray(data) ? data : (data.transferencias||[]);
+    }
+  }catch(e){ /* silencioso — endpoint pode ainda não existir no n8n; fila fica vazia */ }
+  buildFilaTransferencias();
+  buildTable(); // badge urgente/comercial na tabela de leads depende de ACTIVE_TRANSFERENCIAS
+  const el=document.getElementById('transfTs');
+  if(el) el.textContent=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+}
+
+function buildFilaTransferencias(){
+  const wrap=document.getElementById('transferenciasList');
+  if(!wrap) return;
+
+  // Só mostra fila ativa (pendente/em_atendimento) — concluídas saem da lista,
+  // mesmo padrão da Fila de Espera (que só mostra quem ainda está "aguardando").
+  const ativos = ACTIVE_TRANSFERENCIAS
+    .filter(t=>t.status_transferencia==='pendente'||t.status_transferencia==='em_atendimento')
+    .map(t=>Object.assign({}, t, {categoria: categorizarMotivoTransferencia(t.motivo)}))
+    .sort((a,b)=>{
+      // Urgente sempre antes de comercial; dentro do mesmo grupo, quem espera há mais tempo primeiro.
+      if(a.categoria!==b.categoria) return a.categoria==='urgente' ? -1 : 1;
+      return new Date(a.criado_em)-new Date(b.criado_em);
+    });
+
+  const badge=document.getElementById('transfBadge');
+  if(badge) badge.textContent=`${ativos.length} na fila`;
+
+  const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  set('transfKpiPendentes',    ACTIVE_TRANSFERENCIAS.filter(t=>t.status_transferencia==='pendente').length);
+  set('transfKpiUrgente',      ativos.filter(t=>t.categoria==='urgente').length);
+  set('transfKpiComercial',    ativos.filter(t=>t.categoria==='comercial').length);
+  set('transfKpiAtendimento',  ACTIVE_TRANSFERENCIAS.filter(t=>t.status_transferencia==='em_atendimento').length);
+
+  if(ativos.length===0){
+    wrap.innerHTML=`<div class="fila-empty"><div class="fila-empty-ico">✅</div><div>Nenhuma transferência pendente no momento.</div><div style="margin-top:8px;font-size:12px;color:var(--tx3)">O Rui registra automaticamente quando encaminha um lead pra atendimento humano.</div></div>`;
+    return;
+  }
+
+  wrap.innerHTML=ativos.map(t=>{
+    const lead   = encontrarLeadPorIdentificador(t.lead_identifier);
+    const nome   = lead?.nome || t.lead_identifier || 'Lead não identificado';
+    const catCls = t.categoria==='urgente' ? 'transf-urgente' : 'transf-comercial';
+    const catLbl = t.categoria==='urgente' ? '🔴 Urgente' : '🔵 Comercial';
+    const idEsc  = String(t.id);
+
+    let acaoHtml;
+    if(t.status_transferencia==='em_atendimento'){
+      acaoHtml = `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span style="font-size:11px;color:var(--tx3);">Com:</span>
+        <span class="filtro-cl-opt sel" style="cursor:default;">${t.vendedor_responsavel||'—'}</span>
+        <button class="btn-cliente" onclick="concluirTransferencia('${idEsc}')">✓ Marcar concluído</button>
+      </div>`;
+    } else {
+      acaoHtml = `<div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center;">
+        <span style="font-size:11px;color:var(--tx3);margin-right:2px;">Assumir:</span>
+        ${transfVendedorTagsHTML(idEsc)}
+      </div>`;
+    }
+
+    return `<div class="fila-card" data-categoria="${t.categoria||''}">
+      <div class="fila-av" style="background:${t.categoria==='urgente'?'#E11D48':'#8B7CF0'}">${ini(nome)}</div>
+      <div class="fila-info" style="flex:1;min-width:0">
+        <div class="fila-name">${nome}</div>
+        <div style="display:flex;gap:6px;align-items:center;margin:4px 0 7px;flex-wrap:wrap;">
+          <span class="stpill ${catCls}">${catLbl}</span>
+          ${lead?.telefone?`<span class="fila-phone" style="margin:0;">${lead.telefone}</span>`:''}
+        </div>
+        <div style="font-size:12px;color:var(--tx2);line-height:1.5;margin-bottom:8px;">
+          <strong style="color:var(--tx3);font-weight:600;">Motivo:</strong> ${t.motivo}
+        </div>
+        ${acaoHtml}
+      </div>
+      <div class="fila-meta">
+        <div><span class="fila-time-badge">${tempoEspera(t.criado_em)}</span></div>
+        <div class="fila-date">${fmtDataHoraFila(t.criado_em)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Linha de tags com o roster compartilhado de vendedores (mesmo getVendedores()
+// usado no Check-in e na Central de Leads, ver populaSelectVendedores) — clicar
+// assume a transferência. Reaproveita o padrão de chip já estabelecido em vez de
+// inventar um campo de texto livre novo.
+function transfVendedorTagsHTML(transferId){
+  const tags = getVendedores().map(v=>
+    `<span class="filtro-cl-opt" onclick="assumirTransferencia('${transferId}','${v.replace(/'/g,"\\'")}')">${v}</span>`
+  ).join('');
+  return tags + `<span class="filtro-cl-opt" style="opacity:.7;font-style:italic;" onclick="transfAssumirNovoVendedor('${transferId}')">+ novo</span>`;
+}
+function transfAssumirNovoVendedor(transferId){
+  const vendedor = promptNovoVendedor();
+  if(!vendedor) return;
+  assumirTransferencia(transferId, vendedor);
+}
+
+// Grava no Supabase (via n8n) quem assumiu/concluiu. Diferente do padrão de
+// fallback local usado em outras partes do dashboard (ex: filaAddFromCheckin) —
+// aqui NÃO existe fallback silencioso de propósito: essa tela serve pra coordenar
+// entre vendedores em aparelhos diferentes, então fingir sucesso sem gravar no
+// backend faria dois vendedores acharem que assumiram o mesmo lead.
+async function salvarStatusTransferencia(id, campos){
+  try{
+    const res = await fetch(N8N_TRANSFERENCIAS_UPDATE, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(Object.assign({token:authToken(), id:id}, campos))
+    });
+    return res.ok;
+  }catch(e){ return false; }
+}
+function transfToast(msg){
+  const t=document.getElementById('toast');
+  if(!t) return;
+  t.querySelector('span').textContent = msg;
+  t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3200);
+}
+async function assumirTransferencia(id, vendedor){
+  if(!vendedor) return;
+  const ok = await salvarStatusTransferencia(id, {status_transferencia:'em_atendimento', vendedor_responsavel:vendedor, atendido_em:new Date().toISOString()});
+  if(ok){ transfToast('Transferência assumida por '+vendedor+'.'); await fetchTransferenciasData(); }
+  else { transfToast('Não foi possível salvar — verifique se o webhook do n8n já foi configurado.'); }
+}
+async function concluirTransferencia(id){
+  const ok = await salvarStatusTransferencia(id, {status_transferencia:'concluido', concluido_em:new Date().toISOString()});
+  if(ok){ transfToast('Transferência marcada como concluída.'); await fetchTransferenciasData(); }
+  else { transfToast('Não foi possível salvar — verifique se o webhook do n8n já foi configurado.'); }
+}
+
+function filterTransferencias(btn, filter){
+  document.querySelectorAll('#p-transferencias .ftab').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  document.querySelectorAll('#transferenciasList .fila-card').forEach(row=>{
+    row.style.display = (filter==='todos' || row.dataset.categoria===filter) ? '' : 'none';
+  });
+}
+
+// ============================================================
 // INIT
 // ============================================================
 function buildEstoqueSection(estoque, resumo){
@@ -5062,6 +5333,7 @@ function startDashboard(){
   atualizarDashboard();
   setInterval(atualizarDashboard, REFRESH_INTERVAL_MS);
   setInterval(()=>{ if(document.getElementById('p-filaespera').style.display!=='none') fetchFilaData(); }, REFRESH_INTERVAL_MS);
+  setInterval(()=>{ if(document.getElementById('p-transferencias').style.display!=='none') fetchTransferenciasData(); }, REFRESH_INTERVAL_MS);
   // Sem isso, quem deixasse a aba Diagnóstico aberta esperando o pipeline das 23h
   // nunca via os dados aparecerem sozinhos — só ao trocar de aba e voltar.
   setInterval(()=>{ if(document.getElementById('p-diagnostico').style.display!=='none') fetchDiagnosticoFromSupabase().then(buildDiagnostico); }, REFRESH_INTERVAL_MS);
@@ -5136,6 +5408,33 @@ function categorizaMotivo(submotivoBruto){
   const norm=_normTxt(submotivoBruto);
   const i=_MOTIVOS_FIXOS_NORM.indexOf(norm);
   return i>=0 ? MOTIVOS_FIXOS[i] : OUTRO_MOTIVO_LABEL;
+}
+
+// ============================================================
+// NÃO CONFUNDIR com categorizaMotivo() acima — são 2 taxonomias diferentes:
+// categorizaMotivo() classifica por que um lead ESFRIOU (submotivo, aba Diagnóstico).
+// categorizarMotivoTransferencia() classifica por que o Rui chamou um HUMANO no
+// meio da conversa (motivo, node "Parsear resposta IA" do n8n) em só 2 grupos
+// visuais: urgente ou comercial. As 6 strings abaixo são EXATAS (vêm do n8n) —
+// nunca normalizar/traduzir, só comparar literalmente. O motivo 5 é dinâmico
+// ("lead muito quente (score 85)", o número muda a cada lead), por isso usa
+// startsWith em vez de igualdade.
+// ============================================================
+function categorizarMotivoTransferencia(motivo){
+  const m = (motivo||'').trim();
+  const URGENTES = [
+    'pedido explícito de atendente humano',
+    'insulto/abuso ao agente',
+    'frustração persistente (2+ turnos seguidos)'
+  ];
+  const COMERCIAIS = [
+    'combinação desconfiança + veículo positivo + preço positivo',
+    'pergunta sobre condição de financiamento'
+  ];
+  if(URGENTES.includes(m)) return 'urgente';
+  if(COMERCIAIS.includes(m)) return 'comercial';
+  if(m.startsWith('lead muito quente')) return 'comercial';
+  return null; // motivo fora dos 6 conhecidos — não deveria acontecer, mas não quebra a UI
 }
 
 // Gera slug único para cada causa/área (usado como ID nas barras/cards/modal)
