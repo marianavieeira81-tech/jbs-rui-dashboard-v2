@@ -3753,6 +3753,12 @@ function openLeadCard(lead){
         </div>
       `).join('')}
     </div>
+    <!-- OBJEÇÃO — sinal captado pelo Rui durante a conversa, dado mais importante pro handoff do consultor -->
+    ${lead.objecao?`
+    <div class="lcard-section">
+      <div class="lcard-section-title">Objeção identificada pelo Rui</div>
+      <div class="lcard-q-resposta">${objecaoLabel(lead.objecao)}</div>
+    </div>`:''}
     <!-- PERFIL DE USO — interpretação da IA, não é resposta literal a nenhuma pergunta -->
     ${lead.intencao?`
     <div class="lcard-section">
@@ -4259,17 +4265,30 @@ function buildPerguntas(l){
   // Todo campo abaixo usa null quando o dado não existe — nunca confundir com resposta negativa.
   return [
     {num:'P1',tema:'Intenção',      pergunta:'Qual o objetivo da compra?',        resposta:l.objetivo_compra||null},
-    {num:'P2',tema:'Prazo',         pergunta:'Em quanto tempo pretende comprar?', resposta:l.urgencia||null},
-    {num:'P3',tema:'Modelo',        pergunta:'Tem algum modelo em mente?',        resposta:l.veiculo_interesse||null},
+    {num:'P2',tema:'Prazo',         pergunta:'Em quanto tempo pretende comprar?', resposta:l.urgencia==='test_drive'?'Pediu test drive':(l.urgencia||null)},
+    {num:'P3',tema:'Modelo',        pergunta:'Tem algum modelo em mente?',        resposta:l.modeloInteresse||null},
     {num:'P4',tema:'Veículo atual', pergunta:'Possui veículo para troca?',
       resposta: l.tem_veiculo_troca===true  ? ('Sim'+(l.carro_troca&&l.carro_troca!=='a confirmar'?' — '+l.carro_troca:''))
                : l.tem_veiculo_troca===false ? 'Não' : null},
-    {num:'P5',tema:'Carteira',      pergunta:'Carteira potencial estimada?',      resposta:l.pagamento||null},
     {num:'P6',tema:'Decisão',       pergunta:'Essa escolha você costuma fazer de forma independente, ou é uma decisão que envolve mais alguém?',
       resposta: decideSozinho===true ? 'Decide sozinho' : decideSozinho===false ? 'Decide com outra pessoa' : null,
       detalhe:  decideSozinho===false ? (l.co_decisor||null) : null},
     {num:'P7',tema:'Localização',   pergunta:'Você está aqui em Recife ou vem de outra cidade?', resposta:l.localizacao||null},
   ];
+}
+
+function objecaoLabel(v){
+  if(!v) return null;
+  const t = v.toLowerCase();
+  if(t.startsWith('sem objeç')||t.startsWith('sem objec')) return 'Sem objeção';
+  if(t.startsWith('não_identificada')||t.startsWith('nao_identificada')||t.startsWith('não identificada')) return 'Não identificada';
+  if(t.startsWith('ver_pessoalmente')||t.startsWith('ver pessoalmente')) return 'Quer ver o carro pessoalmente';
+  if(t.startsWith('preço')||t.startsWith('preco')) return 'Objeção de preço';
+  if(t.startsWith('concorr')){
+    const resto = v.replace(/^concorr[eê]ncia[\s:—-]*/i,'').trim();
+    return 'Comparando com concorrente'+(resto?': '+resto:'');
+  }
+  return v;
 }
 
 function getStatus(l){
@@ -4307,12 +4326,13 @@ function mapLead(l){
     status:      getStatus(l),
     hora:        l.atualizado_em?new Date(l.atualizado_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'',
     data:        l.atualizado_em?l.atualizado_em.split('T')[0]:'',
-    modelo:      l.veiculo_interesse||'',
+    modelo:      l.modeloInteresse||'',
     setor:       l.setor||'',
     pagamento:   l.carteira_potencial>0?'R$ '+(l.carteira_potencial>=1000?Math.round(l.carteira_potencial/1000)+'k':l.carteira_potencial):'',
     carteiraRaw: l.carteira_potencial||0,
     prazo:       l.urgencia||'',
     intencao:    l.perfil_uso||'',
+    objecao:     l.objecao_final||'',
     veicAtual:   l.tem_veiculo_troca
                    ? ('Possui veículo para troca'+(l.carro_troca&&l.carro_troca!=='a confirmar'?': '+l.carro_troca:''))
                    : 'Sem troca',
