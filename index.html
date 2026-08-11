@@ -1449,7 +1449,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
         <div class="ci-row2">
           <div class="ci-field">
             <div class="ci-label">Vendedor responsável</div>
-            <input class="ci-input" id="ci-vendedor" type="text" placeholder="Seu nome"/>
+            <select class="ci-input" id="ci-vendedor" onchange="ciVendedorSelectChange(this)"></select>
           </div>
           <div class="ci-field">
             <div class="ci-label">Loja</div>
@@ -1974,6 +1974,20 @@ function posC(i){return i===0?'g':i===1?'s':i===2?'b':'';}
 function scoreColor(sc){return sc>85?'#EF4444':sc>=71?'#F97316':sc>=51?'#EAB308':sc>=26?'#22c55e':'#38BDF8';}
 function tempColor(t){const m={'Premium':'#EF4444','Quente':'#F97316','Engajado':'#EAB308','Morno':'#22c55e','Frio':'#38BDF8'};return m[t]||'var(--tx3)';}
 
+// Formata um intervalo de tempo (ms) em texto curto em português — usado no
+// tempo até atendimento (vendedor). Não confundir com "dias de espera" da
+// Fila de Espera, que já tem seu próprio cálculo (prioridadeFila).
+function fmtDecorrido(ms){
+  if(ms==null || isNaN(ms) || ms<0) return null;
+  const min = Math.round(ms/60000);
+  if(min<1) return 'menos de 1 min';
+  if(min<60) return min+' min';
+  const h = Math.floor(min/60), m = min%60;
+  if(h<24) return h+'h'+(m>0?' '+m+'min':'');
+  const d = Math.floor(h/24), hr = h%24;
+  return d+' dia'+(d>1?'s':'')+(hr>0?' e '+hr+'h':'');
+}
+
 // ============================================================
 // NAV
 // ============================================================
@@ -2013,8 +2027,18 @@ function ciInit(){
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
     dtEl.value = now.toISOString().slice(0,16);
   }
+  populaSelectVendedores(document.getElementById('ci-vendedor'));
   ciRenderHistory();
   document.getElementById('ciCount').textContent = ciPresencialLeadsRaw().length;
+}
+
+// "+ Adicionar novo vendedor…" no select do Check-in — pede o nome, cadastra
+// no roster compartilhado e já deixa selecionado.
+function ciVendedorSelectChange(selectEl){
+  if(selectEl.value==='__novo__'){
+    const nome = promptNovoVendedor();
+    if(nome){ populaSelectVendedores(selectEl, nome); } else { selectEl.value=''; }
+  }
 }
 
 function ciChip(el, groupId, selClass){
@@ -2421,6 +2445,48 @@ function ciDelete(id){
 const CI_CORES=['#D4AF37','#00A065','#E11D48','#6090FF','#F59E0B','#C09060','#9B59B6'];
 function ciAvatarColor(nome){return CI_CORES[(nome.charCodeAt(0)||0)%CI_CORES.length];}
 
+// ============================================================
+// VENDEDORES — lista compartilhada de nomes, usada no Check-in (campo
+// "Vendedor responsável") e na atribuição de leads do WhatsApp na Central
+// de Leads. Fica salva só no localStorage deste navegador — se um vendedor
+// usar outro aparelho, precisa adicionar o próprio nome de novo lá na
+// primeira vez (mesma limitação dos outros documentos editáveis do painel).
+// Começa vazia de propósito — os nomes reais são adicionados pela própria
+// interface, nunca inventados aqui no código.
+// ============================================================
+function getVendedores(){
+  try{ return JSON.parse(localStorage.getItem('rui_vendedores_v1')||'[]'); }catch(e){ return []; }
+}
+function addVendedor(nomeBruto){
+  const nome = (nomeBruto||'').trim();
+  if(!nome) return null;
+  const arr = getVendedores();
+  const existente = arr.find(v=>v.toLowerCase()===nome.toLowerCase());
+  if(existente) return existente;
+  arr.push(nome);
+  arr.sort((a,b)=>a.localeCompare(b,'pt-BR'));
+  localStorage.setItem('rui_vendedores_v1', JSON.stringify(arr));
+  return nome;
+}
+function removeVendedor(nome){
+  localStorage.setItem('rui_vendedores_v1', JSON.stringify(getVendedores().filter(v=>v!==nome)));
+}
+// Pede o nome do novo vendedor e já cadastra no roster compartilhado.
+// Usado tanto no Check-in quanto na atribuição de leads do WhatsApp.
+function promptNovoVendedor(){
+  const nome = prompt('Nome do novo vendedor:');
+  return nome ? addVendedor(nome) : null;
+}
+// Preenche um <select> com a lista de vendedores + opção "novo vendedor".
+function populaSelectVendedores(selectEl, valorSelecionado){
+  if(!selectEl) return;
+  const vendedores = getVendedores();
+  selectEl.innerHTML = '<option value="">Selecione seu nome</option>'
+    + vendedores.map(v=>`<option value="${v.replace(/"/g,'&quot;')}">${v}</option>`).join('')
+    + '<option value="__novo__">+ Adicionar novo vendedor…</option>';
+  if(valorSelecionado && vendedores.includes(valorSelecionado)) selectEl.value = valorSelecionado;
+}
+
 function ciYNLabel(v){return v==='S'?'✔ Sim':v==='N'?'✖ Não':'—';}
 
 function ciIntencaoBadgeClass(v){
@@ -2739,10 +2805,11 @@ function ciHiCardHTML(r){
       <div class="ci-hi-av" style="background:${cor}">${iniA}</div>
       <div style="flex:1;">
         <div class="ci-hi-name">${r.nome}</div>
-        <div class="ci-hi-sub">${r.vend||'—'} &middot; ${dtFmt}</div>
+        <div class="ci-hi-sub">${dtFmt}</div>
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex-shrink:0;">
         <span class="ptag pr" style="margin-top:0;">Presencial</span>
+        ${r.vend?`<span class="filtro-cl-opt sel" style="cursor:default;">${r.vend}</span>`:''}
         ${notaBadge}
         <span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;${iSty}">${r.intencao||'—'}</span>
         <span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;${dSty}">${r.desfecho||'—'}</span>
@@ -2777,19 +2844,27 @@ function waHiCardHTML(l, idx){
   const iniA   = ini(l.nome||'?');
   const dtFmt  = l.data ? new Date(l.data+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'})+(l.hora?' '+l.hora:'') : (l.hora||'—');
   const isTransferred = l.status==='Transferido';
-  const state = isTransferred ? getLeadState(l.nome) : null;
+  const nomeEsc = (l.nome||'').replace(/'/g,"\\'");
+  const info = isTransferred ? getLeadState(l.nome) : null;
   let statusHtml = '';
   if(isTransferred){
-    if(state==='aguardando'){
-      statusHtml = `<button class="btn-aguardando" onclick="event.stopPropagation();leadAttend('${(l.nome||'').replace(/'/g,"\\'")}')">⏳ aguardando</button>`;
-    } else if(state==='atendendo'){
-      statusHtml = `<button class="btn-cliente" onclick="event.stopPropagation();leadOutcome('${(l.nome||'').replace(/'/g,"\\'")}','cliente')">✓ cliente</button>
-        <button class="btn-nao-fechou" onclick="event.stopPropagation();leadOutcome('${(l.nome||'').replace(/'/g,"\\'")}','nao-fechou')">✗ não fechou</button>`;
-    } else if(state==='cliente'){
-      statusHtml = `<span class="badge-cliente">✓ Cliente</span>`;
-    } else if(state==='nao-fechou'){
-      statusHtml = `<span class="badge-nao-fechou">✗ Não fechou</span>`;
+    // Tempo até atendimento = do momento em que o Rui terminou de qualificar
+    // (qualificadoEm) até o vendedor clicar na própria tag — só existe depois
+    // disso ser atribuído a alguém, e só se aplica a leads de WhatsApp.
+    const tempoTxt = (info.vendedor && info.atendido_em && l.qualificadoEm)
+      ? fmtDecorrido(new Date(info.atendido_em)-new Date(l.qualificadoEm)) : null;
+    let resultado = '';
+    if(info.vendedor && info.state==='atendendo'){
+      resultado = `<button class="btn-cliente" onclick="event.stopPropagation();leadOutcome('${nomeEsc}','cliente')">✓ cliente</button>
+        <button class="btn-nao-fechou" onclick="event.stopPropagation();leadOutcome('${nomeEsc}','nao-fechou')">✗ não fechou</button>`;
+    } else if(info.state==='cliente'){
+      resultado = `<span class="badge-cliente">✓ Cliente</span>`;
+    } else if(info.state==='nao-fechou'){
+      resultado = `<span class="badge-nao-fechou">✗ Não fechou</span>`;
     }
+    statusHtml = `${vendedorTagsHTML(nomeEsc, info.vendedor, 'handleTagVendedor')}
+      ${tempoTxt?`<span style="font-size:11px;color:var(--tx3);white-space:nowrap;">⏱ ${tempoTxt}</span>`:''}
+      ${resultado}`;
   } else {
     statusHtml = `<span class="badge-status">${l.status||'—'}</span>`;
   }
@@ -2953,21 +3028,70 @@ function updateOrbCount(){
 // PLATAFORMAS — CONTROLE DE HANDOFF (Transferido → aguardando/atendendo/cliente)
 // Usado dentro dos cards de WhatsApp da Central de Leads unificada (waHiCardHTML)
 // ============================================================
+// Formato salvo mudou de string simples ("aguardando") para objeto
+// ({state, vendedor, atendido_em}) — getLeadState lê os dois formatos, então
+// registros antigos (de antes dessa mudança) continuam funcionando, só sem
+// vendedor/horário (aparecem como "não atribuído" na visão por vendedor).
 function getLeadState(nome){
-  return localStorage.getItem('adtsa_lead_'+nome)||'aguardando';
+  const raw = localStorage.getItem('adtsa_lead_'+nome);
+  if(!raw) return {state:'aguardando', vendedor:null, atendido_em:null};
+  try{
+    const parsed = JSON.parse(raw);
+    if(parsed && typeof parsed==='object') return {state:parsed.state||'aguardando', vendedor:parsed.vendedor||null, atendido_em:parsed.atendido_em||null};
+  }catch(e){}
+  return {state:raw, vendedor:null, atendido_em:null}; // formato antigo (string)
 }
-function setLeadState(nome,state){
-  localStorage.setItem('adtsa_lead_'+nome,state);
+function setLeadState(nome,state,vendedor,atendido_em){
+  const atual = getLeadState(nome);
+  localStorage.setItem('adtsa_lead_'+nome, JSON.stringify({
+    state,
+    vendedor:     vendedor!==undefined     ? vendedor     : atual.vendedor,
+    atendido_em:  atendido_em!==undefined  ? atendido_em  : atual.atendido_em
+  }));
 }
 
-function leadAttend(nome){
-  // Vendedor começou a atender — "aguardando" some, aparecem "cliente" e "não fechou"
-  setLeadState(nome,'atendendo');
-  renderCILeadList();
+// Atualiza a lista de leads da Central de Leads (ESTADO 3), se estiver visível.
+function refreshCurrentCIList(){
+  if(currentCISetor) renderCILeadList();
+}
+
+function leadAttend(nome, vendedor){
+  // Vendedor escolheu o próprio nome no select — "quem vai atender?" some,
+  // aparece o nome dele + tempo desde a qualificação, e os botões cliente/não fechou.
+  if(!vendedor) return;
+  setLeadState(nome,'atendendo',vendedor,new Date().toISOString());
+  refreshCurrentCIList();
 }
 function leadOutcome(nome,outcome){
   setLeadState(nome,outcome);
-  renderCILeadList();
+  refreshCurrentCIList();
+}
+// Select "Quem vai atender?" dentro do card do lead (Central de Leads) —
+// resolve a opção "+ Novo vendedor…" com o mesmo prompt do Check-in.
+// Linha de tags clicáveis com o nome de cada vendedor (reaproveita o mesmo
+// estilo de chip já usado no painel de Filtro — .filtro-cl-opt/.sel). Clicar
+// em qualquer tag atribui/reatribui o lead pra aquele vendedor; a tag do
+// vendedor atual (se já tiver algum) fica destacada. onClickFn é o nome da
+// função a chamar (handleTagVendedor no card, handleTagVendedorPopup no
+// popup completo — a diferença é só se atualiza o popup depois ou não).
+function vendedorTagsHTML(nomeLeadEsc, vendedorAtual, onClickFn){
+  const tags = getVendedores().map(v=>{
+    const sel = v===vendedorAtual ? ' sel' : '';
+    return `<span class="filtro-cl-opt${sel}" onclick="${onClickFn}('${nomeLeadEsc}','${v.replace(/'/g,"\\'")}')">${v}</span>`;
+  }).join('');
+  return tags + `<span class="filtro-cl-opt" style="opacity:.7;font-style:italic;" onclick="handleTagVendedorNovo('${nomeLeadEsc}','${onClickFn}')">+ novo</span>`;
+}
+function handleTagVendedor(nome, vendedor){
+  leadAttend(nome, vendedor);
+}
+function handleTagVendedorPopup(nome, vendedor){
+  leadAttend(nome, vendedor);
+  if(window._lcCurrentLead) openLeadCard(window._lcCurrentLead); // reabre o popup já com a tag nova destacada
+}
+function handleTagVendedorNovo(nome, onClickFn){
+  const vendedor = promptNovoVendedor();
+  if(!vendedor) return;
+  window[onClickFn](nome, vendedor);
 }
 
 // ============================================================
@@ -3500,6 +3624,7 @@ function initNetwork(){
 // CARD COMPLETO DO LEAD — 7 perguntas + todos os campos
 // ============================================================
 function openLeadCard(lead){
+  window._lcCurrentLead = lead; // referência p/ re-render depois de atribuir vendedor
   document.getElementById('lc-name').textContent = lead.nome;
   const sc=lead.score;
   const scCol=sc>=81?'#EF4444':sc>=61?'#F97316':sc>=41?'#EAB308':sc>=21?'#22c55e':'#38BDF8';
@@ -3534,6 +3659,8 @@ function openLeadCard(lead){
       <div class="lcard-row"><div class="lcard-key">Canal</div><div class="lcard-val">${lead.canal||'WhatsApp'}</div></div>
       <div class="lcard-row"><div class="lcard-key">Data</div><div class="lcard-val" style="font-family:'DM Mono',monospace;font-size:12px">${lead.data} · ${lead.hora}</div></div>
     </div>
+    <!-- ATENDIMENTO — quem atendeu e em quanto tempo (WhatsApp) / vendedor do check-in (presencial) -->
+    ${buildAtendimentoSectionHTML(lead)}
     <!-- HISTÓRICO DE CONTATOS ANTERIORES -->
     <div class="lcard-section" id="lc-historico-section" style="display:none">
       <div class="lcard-section-title">Histórico de contatos anteriores</div>
@@ -3551,6 +3678,13 @@ function openLeadCard(lead){
         </div>
       `).join('')}
     </div>
+    <!-- PERFIL DE USO — interpretação da IA, não é resposta literal a nenhuma pergunta -->
+    ${lead.intencao?`
+    <div class="lcard-section">
+      <div class="lcard-section-title">Perfil de uso · interpretação da IA</div>
+      <div style="font-size:11px;color:var(--tx3);font-style:italic;margin-bottom:6px">Resumo gerado pela IA a partir da conversa — não é resposta literal do lead a nenhuma pergunta específica.</div>
+      <div class="lcard-q-resposta">${lead.intencao}</div>
+    </div>`:''}
   `;
   // Chat simulado
   const senderIdChat = lead.telefone ? '55' + lead.telefone.replace(/[^0-9]/g,'') : lead.nome.replace(/[^a-zA-Z0-9]/g,'.').toLowerCase();
@@ -3671,6 +3805,32 @@ function sendChatMsg(canal, senderId){
 function closeLeadCard(){
   document.getElementById('lcardOverlay').classList.remove('show');
   document.getElementById('leadCardFull').classList.remove('show');
+}
+
+// ============================================================
+// SEÇÃO "ATENDIMENTO" DO POPUP — mesma lógica de vendedor+tempo usada nos
+// cartões da Central de Leads (waHiCardHTML), só que em formato de card
+// detalhado. Presencial mostra o vendedor do check-in, sem tempo (o cliente
+// já chega atendido na hora). WhatsApp só aparece depois de qualificado —
+// antes disso ainda não tem quem atribuir.
+// ============================================================
+function buildAtendimentoSectionHTML(lead){
+  if((lead.canal||'')==='presencial'){
+    return `<div class="lcard-section">
+      <div class="lcard-section-title">Atendimento</div>
+      ${lead.vendedor?`<span class="filtro-cl-opt sel" style="cursor:default;">${lead.vendedor}</span>`:'<span style="color:var(--tx3);font-style:italic;font-size:12px">Vendedor não informado</span>'}
+    </div>`;
+  }
+  if(lead.status!=='Transferido') return ''; // ainda não qualificado — nada pra atribuir ainda
+  const info = getLeadState(lead.nome);
+  const nomeEsc = (lead.nome||'').replace(/'/g,"\\'");
+  const tempoTxt = (info.vendedor && info.atendido_em && lead.qualificadoEm)
+    ? fmtDecorrido(new Date(info.atendido_em)-new Date(lead.qualificadoEm)) : null;
+  return `<div class="lcard-section">
+    <div class="lcard-section-title">Atendimento</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">${vendedorTagsHTML(nomeEsc, info.vendedor, 'handleTagVendedorPopup')}</div>
+    ${tempoTxt?`<div class="lcard-row"><div class="lcard-key">Tempo até atender</div><div class="lcard-val">${tempoTxt}</div></div>`:''}
+  </div>`;
 }
 
 // ============================================================
@@ -4011,14 +4171,22 @@ function calcTemperatura(score){
 }
 
 function buildPerguntas(l){
-  const p=[];
-  if(l.perfil_uso)        p.push({num:'P1',tema:'Intenção',      pergunta:'Qual o objetivo da compra?',        resposta:l.perfil_uso});
-  if(l.urgencia)          p.push({num:'P2',tema:'Prazo',          pergunta:'Em quanto tempo pretende comprar?', resposta:l.urgencia});
-  if(l.veiculo_interesse) p.push({num:'P3',tema:'Modelo',         pergunta:'Tem algum modelo em mente?',        resposta:l.veiculo_interesse});
-  // Ponto 8: campo real do Supabase — tem_veiculo_troca (forma_pagamento não existe na tabela)
-  if(l.tem_veiculo_troca!=null) p.push({num:'P4',tema:'Veículo atual', pergunta:'Possui veículo para troca?', resposta:l.tem_veiculo_troca?('Sim'+(l.carro_troca&&l.carro_troca!=='a confirmar'?' — '+l.carro_troca:'')):'Não'});
-  if(l.pagamento)         p.push({num:'P5',tema:'Carteira',       pergunta:'Carteira potencial estimada?',      resposta:l.pagamento});
-  return p;
+  const decideSozinho = l.decide_sozinho;
+  // tem_veiculo_troca é o campo real no Supabase (não existe forma_pagamento na tabela).
+  // Todo campo abaixo usa null quando o dado não existe — nunca confundir com resposta negativa.
+  return [
+    {num:'P1',tema:'Intenção',      pergunta:'Qual o objetivo da compra?',        resposta:null},
+    {num:'P2',tema:'Prazo',         pergunta:'Em quanto tempo pretende comprar?', resposta:l.urgencia||null},
+    {num:'P3',tema:'Modelo',        pergunta:'Tem algum modelo em mente?',        resposta:l.veiculo_interesse||null},
+    {num:'P4',tema:'Veículo atual', pergunta:'Possui veículo para troca?',
+      resposta: l.tem_veiculo_troca===true  ? ('Sim'+(l.carro_troca&&l.carro_troca!=='a confirmar'?' — '+l.carro_troca:''))
+               : l.tem_veiculo_troca===false ? 'Não' : null},
+    {num:'P5',tema:'Carteira',      pergunta:'Carteira potencial estimada?',      resposta:l.pagamento||null},
+    {num:'P6',tema:'Decisão',       pergunta:'Essa escolha você costuma fazer de forma independente, ou é uma decisão que envolve mais alguém?',
+      resposta: decideSozinho===true ? 'Decide sozinho' : decideSozinho===false ? 'Decide com outra pessoa' : null,
+      detalhe:  decideSozinho===false ? (l.co_decisor||null) : null},
+    {num:'P7',tema:'Localização',   pergunta:'Você está aqui em Recife ou vem de outra cidade?', resposta:null},
+  ];
 }
 
 function getStatus(l){
