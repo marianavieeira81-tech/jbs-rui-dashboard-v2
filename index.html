@@ -76,6 +76,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 .filtro-cl-opt{background:var(--s2);color:var(--tx2);border:1px solid var(--bdr);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;}
 .filtro-cl-opt:hover{border-color:rgba(212,175,55,.35);color:var(--tx);}
 .filtro-cl-opt.sel{background:var(--ac-faint);border-color:rgba(212,175,55,.5);color:var(--ac-l);}
+.filtro-cl-opt.cooldown{opacity:.4;cursor:not-allowed;}
 .filtro-cl-clear{width:100%;background:none;border:1px solid var(--bdr);color:var(--tx3);padding:8px 0;border-radius:var(--rsm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;}
 .filtro-cl-clear:hover{border-color:rgba(225,29,72,.4);color:#E11D48;}
 .loja-hint{display:none;font-size:11px;color:var(--tx3);max-width:170px;line-height:1.4;}
@@ -1091,6 +1092,18 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       <div class="kpi-val" id="transfKpiAtendimento">—</div>
       <div class="kpi-sub"><span class="pill nu">aguardando dados</span></div>
     </div>
+  </div>
+
+  <!-- DESEMPENHO POR VENDEDOR — os 5 vendedores fixos desta demonstração,
+       leads que cada um atendeu (WhatsApp + Check-in + Transferências
+       assumidas) e a conversão registrada manualmente por eles. -->
+  <div class="sec">Desempenho por Vendedor</div>
+  <div class="card" style="padding:0;overflow:hidden;margin-bottom:20px;">
+    <table class="ltbl">
+      <thead><tr><th>Vendedor</th><th>Leads Atendidos</th><th>Convertidos</th><th>Taxa de Conversão</th></tr></thead>
+      <tbody id="resumoVendedoresBody"></tbody>
+    </table>
+    <div style="padding:10px 24px;font-size:11px;color:var(--tx3);border-top:1px solid var(--bdr);">"Convertidos" conta o que cada vendedor já marcou manualmente como fechado (✓ cliente no WhatsApp · "Comprou" no Check-in). Ainda não vem de um CRM — quando a loja integrar um, esse número passa a vir de lá.</div>
   </div>
 
   <div class="card" style="padding:0;overflow:hidden;">
@@ -2517,34 +2530,69 @@ function ciAvatarColor(nome){return CI_CORES[(nome.charCodeAt(0)||0)%CI_CORES.le
 // ============================================================
 // VENDEDORES — lista compartilhada de nomes, usada no Check-in (campo
 // "Vendedor responsável") e na atribuição de leads do WhatsApp na Central
-// de Leads. Fica salva só no localStorage deste navegador — se um vendedor
-// usar outro aparelho, precisa adicionar o próprio nome de novo lá na
-// primeira vez (mesma limitação dos outros documentos editáveis do painel).
-// Começa vazia de propósito — os nomes reais são adicionados pela própria
-// interface, nunca inventados aqui no código.
+// de Leads. VENDEDORES_FIXOS é o roster desta demonstração (pedido explícito
+// dela em 2026-08-12, 5 nomes fixos) — aparece igual em qualquer navegador,
+// sem precisar cadastro manual. Nomes extras ainda podem ser adicionados pela
+// própria interface (Check-in, Fila de Transferências) e ficam salvos só no
+// localStorage deste navegador, somados aos 5 fixos.
 // ============================================================
+const VENDEDORES_FIXOS = ['Maria','Luciana','João Paulo','Gabriel','Felipe'];
 function getVendedores(){
-  try{ return JSON.parse(localStorage.getItem('rui_vendedores_v1')||'[]'); }catch(e){ return []; }
+  let extras = [];
+  try{ extras = JSON.parse(localStorage.getItem('rui_vendedores_v1')||'[]'); }catch(e){}
+  const semDuplicar = extras.filter(v=>!VENDEDORES_FIXOS.some(f=>f.toLowerCase()===v.toLowerCase()));
+  return [...VENDEDORES_FIXOS, ...semDuplicar];
 }
+// As duas funções abaixo só mexem nos EXTRAS (localStorage) — os 5 fixos
+// nunca são gravados lá, pra não duplicar/embaralhar com VENDEDORES_FIXOS.
 function addVendedor(nomeBruto){
   const nome = (nomeBruto||'').trim();
   if(!nome) return null;
-  const arr = getVendedores();
-  const existente = arr.find(v=>v.toLowerCase()===nome.toLowerCase());
+  if(VENDEDORES_FIXOS.some(f=>f.toLowerCase()===nome.toLowerCase())) return nome;
+  let extras = [];
+  try{ extras = JSON.parse(localStorage.getItem('rui_vendedores_v1')||'[]'); }catch(e){}
+  const existente = extras.find(v=>v.toLowerCase()===nome.toLowerCase());
   if(existente) return existente;
-  arr.push(nome);
-  arr.sort((a,b)=>a.localeCompare(b,'pt-BR'));
-  localStorage.setItem('rui_vendedores_v1', JSON.stringify(arr));
+  extras.push(nome);
+  extras.sort((a,b)=>a.localeCompare(b,'pt-BR'));
+  localStorage.setItem('rui_vendedores_v1', JSON.stringify(extras));
   return nome;
 }
 function removeVendedor(nome){
-  localStorage.setItem('rui_vendedores_v1', JSON.stringify(getVendedores().filter(v=>v!==nome)));
+  if(VENDEDORES_FIXOS.some(f=>f.toLowerCase()===nome.toLowerCase())) return; // os 5 fixos não saem pela interface
+  let extras = [];
+  try{ extras = JSON.parse(localStorage.getItem('rui_vendedores_v1')||'[]'); }catch(e){}
+  localStorage.setItem('rui_vendedores_v1', JSON.stringify(extras.filter(v=>v!==nome)));
 }
 // Pede o nome do novo vendedor e já cadastra no roster compartilhado.
 // Usado tanto no Check-in quanto na atribuição de leads do WhatsApp.
 function promptNovoVendedor(){
   const nome = prompt('Nome do novo vendedor:');
   return nome ? addVendedor(nome) : null;
+}
+
+// ============================================================
+// COOLDOWN DE 15 MIN — depois que um vendedor assume um lead na Central de
+// Leads, esse MESMO vendedor não pode assumir outro lead antes de 15 minutos
+// (pedido dela em 2026-08-12, pra evitar que uma pessoa acumule vários leads
+// de uma vez). Contagem por vendedor, salva no localStorage deste navegador
+// (mesma limitação já conhecida dos outros dados de vendedor neste painel).
+// ============================================================
+const VENDEDOR_COOLDOWN_MIN = 15;
+function getCooldowns(){
+  try{ return JSON.parse(localStorage.getItem('rui_vendedor_cooldown_v1')||'{}'); }catch(e){ return {}; }
+}
+function registrarCooldown(vendedor){
+  const mapa = getCooldowns();
+  mapa[vendedor] = new Date().toISOString();
+  localStorage.setItem('rui_vendedor_cooldown_v1', JSON.stringify(mapa));
+}
+// Minutos restantes até o vendedor poder assumir outro lead (0 = liberado).
+function cooldownRestanteMin(vendedor){
+  const ts = getCooldowns()[vendedor];
+  if(!ts) return 0;
+  const restanteMs = VENDEDOR_COOLDOWN_MIN*60000 - (Date.now()-new Date(ts).getTime());
+  return restanteMs>0 ? Math.ceil(restanteMs/60000) : 0;
 }
 // Preenche um <select> com a lista de vendedores + opção "novo vendedor".
 function populaSelectVendedores(selectEl, valorSelecionado){
@@ -2931,7 +2979,7 @@ function waHiCardHTML(l, idx){
     } else if(info.state==='nao-fechou'){
       resultado = `<span class="badge-nao-fechou">✗ Não fechou</span>`;
     }
-    statusHtml = `${vendedorTagsHTML(nomeEsc, info.vendedor, 'handleTagVendedor')}
+    statusHtml = `${info.vendedor ? vendedorConfirmadoHTML(info.vendedor) : vendedorTagsHTML(nomeEsc, 'handleTagVendedor')}
       ${tempoTxt?`<span style="font-size:11px;color:var(--tx3);white-space:nowrap;">⏱ ${tempoTxt}</span>`:''}
       ${resultado}`;
   } else {
@@ -3125,42 +3173,47 @@ function refreshCurrentCIList(){
 }
 
 function leadAttend(nome, vendedor){
-  // Vendedor escolheu o próprio nome no select — "quem vai atender?" some,
-  // aparece o nome dele + tempo desde a qualificação, e os botões cliente/não fechou.
+  // Vendedor escolheu a própria tag — ela vira a única visível, aparece o
+  // tempo desde a qualificação e os botões cliente/não fechou. Escolha é
+  // definitiva (sem reatribuir depois) e trava esse vendedor por 15min pra
+  // qualquer outro lead (cooldownRestanteMin), então checa de novo aqui —
+  // além de já vir desabilitada na tag — pra não gravar 2 leads se o clique
+  // chegar duplicado (ex: clique duplo, JS mais lento que o dedo).
   if(!vendedor) return;
+  if(cooldownRestanteMin(vendedor)>0) return;
   setLeadState(nome,'atendendo',vendedor,new Date().toISOString());
+  registrarCooldown(vendedor);
   refreshCurrentCIList();
 }
 function leadOutcome(nome,outcome){
   setLeadState(nome,outcome);
   refreshCurrentCIList();
 }
-// Select "Quem vai atender?" dentro do card do lead (Central de Leads) —
-// resolve a opção "+ Novo vendedor…" com o mesmo prompt do Check-in.
-// Linha de tags clicáveis com o nome de cada vendedor (reaproveita o mesmo
-// estilo de chip já usado no painel de Filtro — .filtro-cl-opt/.sel). Clicar
-// em qualquer tag atribui/reatribui o lead pra aquele vendedor; a tag do
-// vendedor atual (se já tiver algum) fica destacada. onClickFn é o nome da
-// função a chamar (handleTagVendedor no card, handleTagVendedorPopup no
-// popup completo — a diferença é só se atualiza o popup depois ou não).
-function vendedorTagsHTML(nomeLeadEsc, vendedorAtual, onClickFn){
-  const tags = getVendedores().map(v=>{
-    const sel = v===vendedorAtual ? ' sel' : '';
-    return `<span class="filtro-cl-opt${sel}" onclick="${onClickFn}('${nomeLeadEsc}','${v.replace(/'/g,"\\'")}')">${v}</span>`;
+// Tag única confirmada — substitui a linha de 5 tags assim que alguém já
+// assumiu o lead (não é mais clicável, escolha é definitiva).
+function vendedorConfirmadoHTML(nome){
+  return `<span class="filtro-cl-opt sel" style="cursor:default;">${nome}</span>`;
+}
+// Linha com as tags dos 5 vendedores fixos (reaproveita o mesmo estilo de
+// chip já usado no painel de Filtro — .filtro-cl-opt/.sel), só chamada ANTES
+// de alguém assumir o lead (depois disso vira vendedorConfirmadoHTML). Quem
+// estiver em cooldown (assumiu outro lead há menos de 15min) aparece
+// esmaecido e sem clique, com o tempo restante. onClickFn é o nome da função
+// a chamar (handleTagVendedor no card, handleTagVendedorPopup no popup
+// completo — a diferença é só se atualiza o popup depois ou não).
+function vendedorTagsHTML(nomeLeadEsc, onClickFn){
+  return getVendedores().map(v=>{
+    const restante = cooldownRestanteMin(v);
+    if(restante>0) return `<span class="filtro-cl-opt cooldown" title="Aguarde ${restante} min para assumir outro lead">${v} · ${restante}min</span>`;
+    return `<span class="filtro-cl-opt" onclick="${onClickFn}('${nomeLeadEsc}','${v.replace(/'/g,"\\'")}')">${v}</span>`;
   }).join('');
-  return tags + `<span class="filtro-cl-opt" style="opacity:.7;font-style:italic;" onclick="handleTagVendedorNovo('${nomeLeadEsc}','${onClickFn}')">+ novo</span>`;
 }
 function handleTagVendedor(nome, vendedor){
   leadAttend(nome, vendedor);
 }
 function handleTagVendedorPopup(nome, vendedor){
   leadAttend(nome, vendedor);
-  if(window._lcCurrentLead) openLeadCard(window._lcCurrentLead); // reabre o popup já com a tag nova destacada
-}
-function handleTagVendedorNovo(nome, onClickFn){
-  const vendedor = promptNovoVendedor();
-  if(!vendedor) return;
-  window[onClickFn](nome, vendedor);
+  if(window._lcCurrentLead) openLeadCard(window._lcCurrentLead); // reabre o popup já com a tag confirmada
 }
 
 // ============================================================
@@ -3912,7 +3965,7 @@ function buildAtendimentoSectionHTML(lead){
     ? fmtDecorrido(new Date(info.atendido_em)-new Date(lead.qualificadoEm)) : null;
   return `<div class="lcard-section">
     <div class="lcard-section-title">Atendimento</div>
-    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">${vendedorTagsHTML(nomeEsc, info.vendedor, 'handleTagVendedorPopup')}</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">${info.vendedor ? vendedorConfirmadoHTML(info.vendedor) : vendedorTagsHTML(nomeEsc, 'handleTagVendedorPopup')}</div>
     ${tempoTxt?`<div class="lcard-row"><div class="lcard-key">Tempo até atender</div><div class="lcard-val">${tempoTxt}</div></div>`:''}
   </div>`;
 }
@@ -5070,6 +5123,7 @@ async function fetchTransferenciasData(){
 }
 
 function buildFilaTransferencias(){
+  buildResumoVendedores(); // painel independente da lista de escalonamento abaixo
   const wrap=document.getElementById('transferenciasList');
   if(!wrap) return;
 
@@ -5137,6 +5191,66 @@ function buildFilaTransferencias(){
         <div class="fila-date">${fmtDataHoraFila(t.criado_em)}</div>
       </div>
     </div>`;
+  }).join('');
+}
+
+// ============================================================
+// DESEMPENHO POR VENDEDOR — soma os 3 lugares do painel que guardam "qual
+// vendedor atendeu esse lead": tags do WhatsApp na Central de Leads
+// (adtsa_lead_<nome>, ver getLeadState), Check-in presencial (campo vendedor
+// gravado na hora do check-in) e transferências assumidas nesta própria aba
+// (vendedor_responsavel). "Convertido" só existe pros 2 primeiros — WhatsApp
+// (botão ✓ cliente) e Check-in (desfecho "Comprou") — porque transferência
+// registra só se foi assumida/concluída, não se virou venda; por isso a taxa
+// de conversão usa como base WhatsApp+Check-in, não o total geral (senão as
+// transferências, que nunca têm como marcar "convertido", puxariam a taxa
+// pra baixo artificialmente).
+// ============================================================
+function getVendedorStats(vendedor){
+  let totalWA=0, clienteWA=0;
+  for(let i=0;i<localStorage.length;i++){
+    const key=localStorage.key(i);
+    if(!key || key.indexOf('adtsa_lead_')!==0) continue;
+    const info=getLeadState(key.slice('adtsa_lead_'.length));
+    if(info.vendedor===vendedor){
+      totalWA++;
+      if(info.state==='cliente') clienteWA++;
+    }
+  }
+  let totalPresencial=0, clientePresencial=0;
+  ciPresencialLeadsRaw().forEach(r=>{
+    if(r.vend===vendedor){
+      totalPresencial++;
+      if(r.desfecho==='Comprou') clientePresencial++;
+    }
+  });
+  const totalTransf = ACTIVE_TRANSFERENCIAS.filter(t=>t.vendedor_responsavel===vendedor).length;
+
+  const totalGeral      = totalWA + totalPresencial + totalTransf;
+  const totalConvertido = clienteWA + clientePresencial;
+  const baseConversao   = totalWA + totalPresencial;
+  return {
+    totalWA, totalPresencial, totalTransf, totalGeral, totalConvertido,
+    conversaoPct: baseConversao>0 ? Math.round(totalConvertido/baseConversao*100) : null
+  };
+}
+function buildResumoVendedores(){
+  const wrap=document.getElementById('resumoVendedoresBody');
+  if(!wrap) return;
+  wrap.innerHTML = getVendedores().map(v=>{
+    const s = getVendedorStats(v);
+    const partes=[];
+    if(s.totalWA)         partes.push(`${s.totalWA} WhatsApp`);
+    if(s.totalPresencial) partes.push(`${s.totalPresencial} Check-in`);
+    if(s.totalTransf)     partes.push(`${s.totalTransf} Transferência${s.totalTransf>1?'s':''}`);
+    const detalhe = partes.length ? partes.join(' · ') : 'nenhum lead ainda';
+    const conv = s.conversaoPct!=null ? `${s.conversaoPct}%` : '<span style="color:var(--tx3);font-style:italic;">— aguardando CRM</span>';
+    return `<tr>
+      <td><span class="filtro-cl-opt sel" style="cursor:default;">${v}</span></td>
+      <td><div style="font-weight:700;">${s.totalGeral}</div><div style="font-size:11px;color:var(--tx3);">${detalhe}</div></td>
+      <td>${s.totalConvertido}</td>
+      <td>${conv}</td>
+    </tr>`;
   }).join('');
 }
 
@@ -5366,6 +5480,10 @@ function startDashboard(){
   // Sem isso, quem deixasse a aba Diagnóstico aberta esperando o pipeline das 23h
   // nunca via os dados aparecerem sozinhos — só ao trocar de aba e voltar.
   setInterval(()=>{ if(document.getElementById('p-diagnostico').style.display!=='none') fetchDiagnosticoFromSupabase().then(buildDiagnostico); }, REFRESH_INTERVAL_MS);
+  // Refaz a lista de leads da Central de Leads (se estiver com um setor aberto)
+  // pra contagem regressiva do cooldown de vendedor andar sozinha e a tag
+  // reaparecer clicável assim que os 15min passarem, sem precisar recarregar.
+  setInterval(()=>{ if(document.getElementById('p-plataformas').style.display!=='none') refreshCurrentCIList(); }, REFRESH_INTERVAL_MS);
 }
 
 document.addEventListener('DOMContentLoaded',()=>{
