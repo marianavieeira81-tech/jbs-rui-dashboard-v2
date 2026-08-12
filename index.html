@@ -1941,6 +1941,10 @@ function buildLeadData(nome,score,i){
   const _hr=["23:15","01:30","02:45","14:22","00:38","22:10","03:20","09:30","01:55","21:03","04:12","10:15","02:08","23:50","20:47","03:22","01:25","12:04","03:47","06:30","00:15","03:11","22:40","04:50","02:05","04:45","01:20","23:44","05:10","19:32","05:18","21:30","03:55","00:28","22:20","04:08","00:48","13:30","02:30","21:15","04:05","23:10","02:55","01:42","20:35","04:30","03:10","22:00","05:45","02:20"];
   const _dt=["2026-05-09","2026-05-09","2026-05-09","2026-05-09","2026-05-08","2026-05-08","2026-05-08","2026-05-07","2026-05-07","2026-05-06","2026-05-06","2026-05-05","2026-05-05","2026-05-04","2026-05-04","2026-05-03","2026-05-03","2026-05-02","2026-05-02","2026-05-01","2026-04-30","2026-04-29","2026-04-28","2026-04-27","2026-04-26","2026-04-25","2026-04-24","2026-04-23","2026-04-22","2026-04-21","2026-04-20","2026-04-19","2026-04-18","2026-04-17","2026-04-16","2026-04-15","2026-04-14","2026-04-13","2026-04-12","2026-04-11","2026-04-10","2026-04-09","2026-04-08","2026-04-07","2026-04-06","2026-04-05","2026-04-04","2026-04-03","2026-04-02","2026-04-01"];
   const _fn=["(81) 99100-1234","(81) 98200-5678",null,"(81) 99300-9012","(81) 98400-3456",null,"(81) 99500-7890","(81) 98600-1234","(81) 99700-5678",null,"(81) 99800-9012","(81) 98900-3456","(81) 99000-7890",null,"(81) 99100-1111","(81) 98200-2222","(81) 99300-3333",null,"(81) 99400-4444","(81) 98500-5555",null,"(81) 99600-6666","(81) 98700-7777","(81) 99800-8888",null,"(81) 99900-9999","(81) 98000-0000","(81) 99100-1010",null,"(81) 99200-2020"];
+  const _ur=["Sim, pode separar!","Prefere aguardar um pouco antes de decidir","Quer ver mais opções antes de decidir","Sim, quer garantir logo","Prefere decidir depois de ver pessoalmente","Sim, pode reservar","Ainda quer pesquisar mais um pouco","Sim, tem interesse em garantir agora"];
+  const _cv=["0 km (novo)","Seminovo"];
+  const _ob=["Sem objeção até agora","Quer comparar o preço com outra concessionária","Prefere ver o carro pessoalmente antes de decidir","Ainda em dúvida entre dois modelos","Preocupado com o valor da parcela","Quer entender melhor as condições de garantia","Sem objeção até agora","Receoso com o prazo de entrega"];
+  const _un=["Boa Viagem","Parnamirim","Caruaru"];
   const sc=score;
   const modelo=_m[i%_m.length];
   const prazo=_pz[i%_pz.length];
@@ -1952,6 +1956,10 @@ function buildLeadData(nome,score,i){
   const envolveOutro=decisao!=="Independente";
   const codTipo=envolveOutro?(_cc[i%_cc.length]||"financeiro"):null;
   const codDetalhe=codTipo===null?null:codTipo==="financeiro"?"Focado principalmente no lado financeiro":codTipo==="escolha"?"Focado na escolha do veículo":"Envolvido em ambos os aspectos";
+  const urgencia=_ur[i%_ur.length];
+  const condicaoVeic=_cv[i%_cv.length];
+  const objecao=_ob[i%_ob.length];
+  const unidade=_un[i%_un.length];
   const temperatura=sc>85?"Premium":sc>=71?"Quente":sc>=51?"Engajado":sc>=26?"Morno":"Frio";
   const sentimento=_sn[i%_sn.length];
   const status=_st[i%_st.length];
@@ -1967,28 +1975,28 @@ function buildLeadData(nome,score,i){
     canal:"WhatsApp",telefone,localizacao,modelo,pagamento,prazo,intencao,veicAtual,
     decisao,codTipo,codDetalhe,
     perguntas:[
-      {num:"P1",tema:"Intenção",
-       pergunta:"Você está buscando o veículo para uso próprio, ou é para presentear alguém especial?",
-       resposta:respP1a3||respP1a5||respAll?intencao:null},
-      {num:"P2",tema:"Prazo",
-       pergunta:"Você já tem uma data em mente para a retirada?",
-       resposta:respP1a3||respP1a5||respAll?prazo:null},
-      {num:"P3",tema:"Modelo",
-       pergunta:"Tem alguma marca ou modelo que já está no seu radar? Ou prefere que eu te apresente o que temos disponível agora?",
+      {num:"B1",tema:"Intenção/Modelo",
+       pergunta:"Você já tem algum modelo em mente, ou prefere que eu te mostre o que chegou de mais exclusivo agora?",
        resposta:respP1a3||respP1a5||respAll?modelo:null},
-      {num:"P4",tema:"Pagamento",
-       pergunta:"Em relação à forma de pagamento, você já tem algo em mente? Trabalhamos com financiamento, consórcio e pagamento à vista.",
-       resposta:respP1a5||respAll?pagamento:null},
-      {num:"P5",tema:"Veículo atual",
-       pergunta:"Você tem algum veículo hoje que pensaria em incluir na negociação? Ou seria uma aquisição independente?",
-       resposta:respP1a5||respAll?veicAtual:null},
-      {num:"P6",tema:"Decisão",
-       pergunta:"Essa escolha você costuma fazer de forma independente, ou é uma decisão que envolve mais alguém?",
-       resposta:respAll?decisao:null,
-       detalhe:respAll&&envolveOutro?codDetalhe:null},
-      {num:"P7",tema:"Localização",
-       pergunta:"Você está aqui em Recife ou vem de outra cidade?",
-       resposta:respAll?localizacao:null},
+      {num:"B2",tema:"Carro atual",
+       pergunta:"Qual você dirige hoje?",
+       resposta:respP1a3||respP1a5||respAll?veicAtual:null},
+      {num:"B3",tema:"Urgência real",
+       pergunta:"Quer que eu já separe esse para você enquanto vemos os detalhes?",
+       resposta:respP1a5||respAll?urgencia:null},
+      {num:"B4",tema:"Decisor",
+       pergunta:"Você costuma tomar esse tipo de decisão sozinho?",
+       resposta:respP1a5||respAll?decisao:null,
+       detalhe:(respP1a5||respAll)&&envolveOutro?codDetalhe:null},
+      {num:"B5",tema:"Objeção latente",
+       pergunta:"Tem algum ponto que você ainda quer entender melhor antes de conversar com o vendedor?",
+       resposta:respAll?objecao:null},
+      {num:"G1",tema:"Condição do veículo",
+       pergunta:"Você procura um veículo 0 km (novo) ou um seminovo?",
+       resposta:respP1a3||respP1a5||respAll?condicaoVeic:null},
+      {num:"G2",tema:"Unidade preferida",
+       pergunta:"Em qual das nossas unidades você deseja nos visitar?",
+       resposta:respP1a5||respAll?unidade:null},
     ],
   };
 }
@@ -4263,17 +4271,25 @@ function buildPerguntas(l){
   const decideSozinho = l.decide_sozinho;
   // tem_veiculo_troca é o campo real no Supabase (não existe forma_pagamento na tabela).
   // Todo campo abaixo usa null quando o dado não existe — nunca confundir com resposta negativa.
+  // B3 (aceita_reserva) e G1 (condicao_veiculo) ainda não têm coluna confirmada no Supabase —
+  // ficam null até o n8n gravar esses campos (mesmo padrão do setor/score_final, ver memória do projeto).
   return [
-    {num:'P1',tema:'Intenção',      pergunta:'Qual o objetivo da compra?',        resposta:l.objetivo_compra||null},
-    {num:'P2',tema:'Prazo',         pergunta:'Em quanto tempo pretende comprar?', resposta:l.urgencia==='test_drive'?'Pediu test drive':(l.urgencia||null)},
-    {num:'P3',tema:'Modelo',        pergunta:'Tem algum modelo em mente?',        resposta:l.modeloInteresse||null},
-    {num:'P4',tema:'Veículo atual', pergunta:'Possui veículo para troca?',
+    {num:'B1',tema:'Intenção/Modelo',     pergunta:'Você já tem algum modelo em mente, ou prefere que eu te mostre o que chegou de mais exclusivo agora?',
+      resposta:l.modeloInteresse||null},
+    {num:'B2',tema:'Carro atual',         pergunta:'Qual você dirige hoje?',
       resposta: l.tem_veiculo_troca===true  ? ('Sim'+(l.carro_troca&&l.carro_troca!=='a confirmar'?' — '+l.carro_troca:''))
                : l.tem_veiculo_troca===false ? 'Não' : null},
-    {num:'P6',tema:'Decisão',       pergunta:'Essa escolha você costuma fazer de forma independente, ou é uma decisão que envolve mais alguém?',
+    {num:'B3',tema:'Urgência real',       pergunta:'Quer que eu já separe esse para você enquanto vemos os detalhes?',
+      resposta: l.aceita_reserva||null},
+    {num:'B4',tema:'Decisor',             pergunta:'Você costuma tomar esse tipo de decisão sozinho?',
       resposta: decideSozinho===true ? 'Decide sozinho' : decideSozinho===false ? 'Decide com outra pessoa' : null,
       detalhe:  decideSozinho===false ? (l.co_decisor||null) : null},
-    {num:'P7',tema:'Localização',   pergunta:'Você está aqui em Recife ou vem de outra cidade?', resposta:l.localizacao||null},
+    {num:'B5',tema:'Objeção latente',     pergunta:'Tem algum ponto que você ainda quer entender melhor antes de conversar com o vendedor?',
+      resposta: objecaoLabel(l.objecao_final)||null},
+    {num:'G1',tema:'Condição do veículo', pergunta:'Você procura um veículo 0 km (novo) ou um seminovo?',
+      resposta: l.condicao_veiculo||null},
+    {num:'G2',tema:'Unidade preferida',   pergunta:'Em qual das nossas unidades você deseja nos visitar?',
+      resposta: l.loja||l.loja_slug||l.unidade||null},
   ];
 }
 
