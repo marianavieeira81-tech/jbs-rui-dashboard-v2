@@ -3823,40 +3823,6 @@ function openLeadCard(lead){
       <div class="lcard-q-resposta">${lead.intencao}</div>
     </div>`:''}
   `;
-  // Chat simulado
-  const senderIdChat = lead.telefone ? '55' + lead.telefone.replace(/[^0-9]/g,'') : lead.nome.replace(/[^a-zA-Z0-9]/g,'.').toLowerCase();
-  const chatHistory = buildSimulatedChat(lead);
-  const chatColor = '#25D366';
-  const chatBg = 'rgba(37,211,102,0.08)';
-  const chatLabel = 'WhatsApp';
-  const chatIcon = `<svg width="16" height="16" viewBox="0 0 24 24" style="vertical-align:middle;margin-right:6px" fill="${chatColor}"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.116 1.527 5.847L.057 23.882a.5.5 0 0 0 .612.612l6.035-1.47A11.942 11.942 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.65-.523-5.15-1.43l-.369-.218-3.827.932.933-3.827-.22-.371A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>`;
-
-  const chatHtml = `
-    <div class="lcard-section" style="padding:0">
-      <div style="padding:14px 18px 10px;display:flex;align-items:center;border-bottom:1px solid var(--bdr)">
-        ${chatIcon}
-        <span style="font-size:12px;font-weight:700;color:${chatColor}">${chatLabel}</span>
-        <span style="margin-left:auto;font-size:11px;color:var(--tx3)">Conversa com o Rui</span>
-      </div>
-      <div id="lc-chat-messages" style="padding:14px 18px;display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto;background:${chatBg}">
-        ${chatHistory.map(msg=>`
-          <div style="display:flex;flex-direction:column;align-items:${msg.from!=='lead'?'flex-end':'flex-start'};gap:2px">
-            <div style="font-size:10px;color:var(--tx3);padding:0 4px">${msg.from==='rui'?'Rui':msg.from==='vendedor'?'Você':lead.nome.split(' ')[0]} · ${msg.hora}</div>
-            <div style="max-width:80%;padding:9px 13px;border-radius:${msg.from!=='lead'?'14px 14px 4px 14px':'14px 14px 14px 4px'};background:${msg.from!=='lead'?chatColor:'var(--s2)'};color:${msg.from!=='lead'?'#fff':'var(--tx1)'};font-size:13px;line-height:1.45">${msg.texto}</div>
-          </div>
-        `).join('')}
-      </div>
-      <div style="padding:12px 18px;border-top:1px solid var(--bdr);display:flex;gap:8px;align-items:flex-end">
-        <textarea id="lc-chat-input" placeholder="Digite sua mensagem..." style="flex:1;background:var(--s2);border:1px solid var(--bdr);border-radius:8px;color:var(--tx1);font-size:13px;padding:9px 12px;resize:none;height:40px;font-family:inherit;outline:none;transition:border .15s" rows="1" oninput="this.style.height='40px';this.style.height=Math.min(this.scrollHeight,120)+'px'" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMsg('WhatsApp','${senderIdChat}')}"></textarea>
-        <button onclick="sendChatMsg('WhatsApp','${senderIdChat}')" style="background:${chatColor};border:none;border-radius:8px;width:40px;height:40px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-        </button>
-      </div>
-    </div>
-  `;
-  document.getElementById('lc-body').innerHTML += chatHtml;
-  // Scroll ao fim do chat
-  setTimeout(()=>{const c=document.getElementById('lc-chat-messages');if(c)c.scrollTop=c.scrollHeight;},50);
 
   document.getElementById('lcardOverlay').classList.add('show');
   document.getElementById('leadCardFull').classList.add('show');
@@ -3883,61 +3849,6 @@ function openLeadCard(lead){
   });
 }
 
-function buildSimulatedChat(lead){
-  const nome = lead.nome.split(' ')[0];
-  const modelo = lead.modelo || 'um veículo';
-  const pagamento = lead.pagamento || 'não informado';
-  const prazo = lead.prazo || 'não definido';
-  const sc = lead.score;
-
-  const chatSets = [
-    [
-      {from:'lead',hora:'09:12',texto:`Oi, tudo bem? Queria saber sobre o ${modelo}`},
-      {from:'rui',hora:'09:13',texto:`Olá, ${nome}. Temos sim o ${modelo} disponível. O senhor já tem alguma especificação em mente — ano, cor ou versão?`},
-      {from:'lead',hora:'09:15',texto:'Estou pensando em financiar. Tem condição boa?'},
-      {from:'rui',hora:'09:15',texto:'Trabalhamos com as principais financeiras. Me diz o valor que o senhor tem em mente para entrada e eu verifico as melhores opções.'},
-      {from:'lead',hora:'09:18',texto:prazo},
-      {from:'rui',hora:'09:19',texto:'Entendido. Vou conectar o senhor agora com nosso consultor, ele já tem todo o contexto da conversa.'},
-    ],
-    [
-      {from:'lead',hora:'14:03',texto:`Boa tarde! Vi vocês no WhatsApp e queria saber do ${modelo}`},
-      {from:'rui',hora:'14:04',texto:`Boa tarde, ${nome}. O ${modelo} está disponível no nosso estoque. O senhor busca para uso próprio ou é um presente?`},
-      {from:'lead',hora:'14:06',texto:lead.intencao||'Uso próprio'},
-      {from:'rui',hora:'14:07',texto:'Perfeito. E o senhor tem algum veículo hoje que pensaria em incluir na negociação?'},
-      {from:'lead',hora:'14:10',texto:lead.veicAtual||'Não tenho veículo no momento'},
-      {from:'rui',hora:'14:11',texto:`Certo. Forma de pagamento preferida?`},
-      {from:'lead',hora:'14:12',texto:pagamento},
-      {from:'rui',hora:'14:13',texto:'Vou te conectar com nosso especialista. Ele entra em contato em instantes com as melhores opções.'},
-    ],
-    [
-      {from:'lead',hora:'21:47',texto:`Olá, tenho interesse no ${modelo}. Vocês têm?`},
-      {from:'rui',hora:'21:48',texto:`Temos sim. Quando o senhor estaria disponível para conhecer pessoalmente, ${nome}?`},
-      {from:'lead',hora:'21:49',texto:prazo},
-      {from:'rui',hora:'21:50',texto:'Anotado. Nosso consultor vai confirmar com o senhor no próximo dia útil.'},
-    ],
-  ];
-  return chatSets[lead.score % chatSets.length];
-}
-
-function sendChatMsg(canal, senderId){
-  const input = document.getElementById('lc-chat-input');
-  const container = document.getElementById('lc-chat-messages');
-  const texto = (input.value || '').trim();
-  if(!texto || !container) return;
-  const hora = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-  const chatColor = '#25D366';
-  const msgEl = document.createElement('div');
-  msgEl.style.cssText = 'display:flex;flex-direction:column;align-items:flex-end;gap:2px';
-  msgEl.innerHTML = `
-    <div style="font-size:10px;color:var(--tx3);padding:0 4px">Você · ${hora}</div>
-    <div style="max-width:80%;padding:9px 13px;border-radius:14px 14px 4px 14px;background:${chatColor};color:#fff;font-size:13px;line-height:1.45">${texto.replace(/</g,'&lt;')}</div>
-  `;
-  container.appendChild(msgEl);
-  container.scrollTop = container.scrollHeight;
-  input.value = '';
-  input.style.height = '40px';
-  fetch(N8N_SEND_REPLY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:authToken(),canal:canal.toLowerCase(),senderId,mensagem:texto})}).catch(e=>console.warn('[chat]',e));
-}
 
 function closeLeadCard(){
   document.getElementById('lcardOverlay').classList.remove('show');
@@ -4169,7 +4080,6 @@ const ENDPOINTS = {
   }
 };
 
-const N8N_SEND_REPLY    = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/adtsa-send-reply';
 const N8N_CHAT_HISTORY  = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/adtsa-chat-history';
 const N8N_LOGIN         = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/rui-login';
 const N8N_LOGOUT        = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/rui-logout';
@@ -4325,7 +4235,10 @@ function buildPerguntas(l){
     {num:'B1',tema:'Intenção/Modelo',     pergunta:'Você já tem algum modelo em mente, ou prefere que eu te mostre o que chegou de mais exclusivo agora?',
       resposta:l.modeloInteresse||null},
     {num:'B2',tema:'Carro atual',         pergunta:'Qual você dirige hoje?',
-      resposta: l.tem_veiculo_troca===true  ? ('Sim'+(l.carro_troca&&l.carro_troca!=='a confirmar'?' — '+l.carro_troca:''))
+      // Prioriza o modelo em texto (carro_troca) sobre o booleano de troca — a pergunta
+      // pede o carro atual, não se ele quer trocar; "Sim/Não" sozinho não responde "qual".
+      resposta: (l.carro_troca && l.carro_troca!=='a confirmar') ? l.carro_troca
+               : l.tem_veiculo_troca===true  ? 'Sim'
                : l.tem_veiculo_troca===false ? 'Não' : null},
     {num:'B3',tema:'Urgência real',       pergunta:'Quer que eu já separe esse para você enquanto vemos os detalhes?',
       resposta: l.aceita_reserva||null},
