@@ -2705,6 +2705,10 @@ let currentCIModel = null; // último modelo aberto (só dentro de Novos/Semi-no
 // bate com nenhum dos 5 nomes fixos (ex: n8n ainda não capturou, ou texto fora do catálogo),
 // pra garantir que a soma dos cards de modelo sempre feche com o total do setor.
 const CI_OUTRO_MODELO = '__outro__';
+// Sentinela pro card "Não informado" no nível de Setor (Novos/Semi-novos/Oficina/...) —
+// mesmo papel do CI_OUTRO_MODELO acima, mas pra quando o setor em si ainda não foi
+// confirmado pelo lead (G1 não respondida), não apenas o modelo dentro de um setor já sabido.
+const CI_SETOR_OUTRO = '__setor_outro__';
 const CI_SETORES = [
   {nome:'Novos',                         cor:'#38BDF8', temModelo:true},
   {nome:'Semi-novos',                    cor:'#A78BFA', temModelo:true},
@@ -2759,11 +2763,13 @@ const CI_GWM_MODELS = [
 // ESTADO 1 — cartões de setor (bloco principal). Mostra também a
 // distribuição de temperatura de todos os leads presenciais no período,
 // já que agora o check-in recebe pontuação (D1–D5) igual ao WhatsApp.
-// Leads de WhatsApp do período, com o setor "efetivo": quando o n8n ainda não
-// gravou o setor pro WhatsApp (comum hoje), assume Novos — o Rui só atende
-// quem quer comprar carro novo ou semi-novo, nunca oficina/peças/reclamação.
+// Leads de WhatsApp do período, com o setor real gravado pelo n8n. Antes este trecho
+// "assumia" Novos sempre que o setor ainda não tinha sido confirmado pelo lead — a
+// pedido dela (17/08), isso foi removido: sem confirmação real (G1 "novo ou seminovo"
+// respondida), o lead cai no card "Não informado" (ver renderCISectorCards) em vez de
+// ser adivinhado como Novos.
 function waLeadsComSetor(){
-  return (getLeadsForPeriod().wa||[]).map(l=>({...l, setor: l.setor || 'Novos'}));
+  return getLeadsForPeriod().wa||[];
 }
 
 // ESTADO 1 — cartões de setor (bloco principal). Junta WhatsApp + Check-in
@@ -2796,6 +2802,10 @@ function renderCISectorCards(){
 
   // Cartões de setor
   const counts = CI_SETORES.map(s=>({s, n: arr.filter(r=>r.setor===s.nome).length}));
+  // Leads (sempre WhatsApp — check-in é obrigatório escolher Setor no formulário) cujo
+  // setor ainda não foi confirmado pelo lead — nunca somar dentro de nenhum dos 5 setores
+  // reais sem confirmação, mesmo padrão do card "Outro / não informado" de modelo abaixo.
+  const semSetor = arr.filter(r=>!CI_SETORES.some(s=>s.nome===r.setor)).length;
   container.innerHTML = counts.map(({s,n})=>{
     const pct = total>0?Math.round(n/total*100):0;
     return `<div class="cat-card" onclick="openCISector('${s.nome}')" style="border-color:${s.cor}44;background:${s.cor}14;">
@@ -2804,7 +2814,12 @@ function renderCISectorCards(){
       <div class="cat-card-pct" style="margin-bottom:2px;">${pct}% do total</div>
       <div class="cat-card-sub">${s.temModelo?'leads com interesse':'atendimentos registrados'}</div>
     </div>`;
-  }).join('');
+  }).join('') + (semSetor>0 ? `<div class="cat-card" onclick="openCISector('${CI_SETOR_OUTRO}')" style="border-color:var(--bdr);background:var(--s2);">
+      <div class="cat-card-top"><span class="cat-card-chip" style="background:var(--tx3);"></span><div class="cat-card-lbl" style="color:var(--tx3);">Não informado</div></div>
+      <div class="cat-card-cnt" style="color:var(--tx3);">${semSetor}</div>
+      <div class="cat-card-pct" style="margin-bottom:2px;">${total>0?Math.round(semSetor/total*100):0}% do total</div>
+      <div class="cat-card-sub">setor ainda não confirmado</div>
+    </div>` : '');
 }
 
 // ESTADO 2 — só existe dentro de Novos/Semi-novos: abre o mesmo grid de
@@ -3009,6 +3024,7 @@ function waHiCardHTML(l, idx){
 function renderCILeadList(){
   const setor  = currentCISetor;
   const model  = currentCIModel;
+  const setorLabel = setor===CI_SETOR_OUTRO ? 'Não informado' : setor;
   const sInfo  = CI_SETORES.find(s=>s.nome===setor);
   const gwm    = model===CI_OUTRO_MODELO ? null : CI_GWM_MODELS.find(m=>m.name===model);
   const matchesModel = m => {
@@ -3016,12 +3032,15 @@ function renderCILeadList(){
     if(model===CI_OUTRO_MODELO) return !CI_GWM_MODELS.some(gm=>(m||'').toLowerCase().includes(gm.name.toLowerCase()));
     return (m||'').toLowerCase().includes(model.toLowerCase());
   };
+  // "Não informado": mesmo sentinela do modelo acima, agora pro setor — pega leads
+  // cujo setor ainda não bate com nenhum dos 5 setores reais (não foi confirmado).
+  const matchesSetor = s => setor===CI_SETOR_OUTRO ? !CI_SETORES.some(c=>c.nome===s) : s===setor;
 
   const waLeads = waLeadsCL()
-    .filter(l=>l.setor===setor && matchesModel(l.modelo))
+    .filter(l=>matchesSetor(l.setor) && matchesModel(l.modelo))
     .map(l=>({...l, _origem:'whatsapp'}));
   const ciLeads = ciLeadsCL()
-    .filter(r=>r.setor===setor && matchesModel(r.modelos))
+    .filter(r=>matchesSetor(r.setor) && matchesModel(r.modelos))
     .map(r=>({...r, _origem:'presencial'}));
   const leads = [...waLeads, ...ciLeads].sort((a,b)=>{
     const da = a._origem==='whatsapp' ? (a.data||'') : (a.dt||'');
@@ -3035,8 +3054,8 @@ function renderCILeadList(){
   const titleEl = document.getElementById('ciModelListTitle');
   if(titleEl){
     const rotulo = model===CI_OUTRO_MODELO
-      ? `<span style="color:var(--tx3)">${setor} · Outro / não informado</span>`
-      : (gwm ? `<span style="color:${gwm.color}">${setor} · ${gwm.name}</span>` : `<span style="color:${sInfo?.cor}">${setor}</span>`);
+      ? `<span style="color:var(--tx3)">${setorLabel} · Outro / não informado</span>`
+      : (gwm ? `<span style="color:${gwm.color}">${setorLabel} · ${gwm.name}</span>` : `<span style="color:${sInfo?sInfo.cor:'var(--tx3)'}">${setorLabel}</span>`);
     titleEl.innerHTML = `${rotulo}&ensp;<span style="font-size:13px;font-weight:500;color:var(--tx3);">${leads.length} lead${leads.length!==1?'s':''}</span>`;
   }
 
@@ -3047,7 +3066,7 @@ function renderCILeadList(){
     const modelLabel = model===CI_OUTRO_MODELO ? 'Outro / não informado' : model;
     content.innerHTML = `<div style="text-align:center;padding:60px 0;color:var(--tx3);font-size:13px;">
       <div style="font-size:42px;margin-bottom:14px;">📋</div>
-      Nenhum lead em <strong style="color:var(--tx);">${model?setor+' · '+modelLabel:setor}</strong> no período selecionado.
+      Nenhum lead em <strong style="color:var(--tx);">${model?setorLabel+' · '+modelLabel:setorLabel}</strong> no período selecionado.
     </div>`;
     return;
   }
@@ -4229,11 +4248,9 @@ function buildPerguntas(l){
   const decideSozinho = l.decide_sozinho;
   // tem_veiculo_troca é o campo real no Supabase (não existe forma_pagamento na tabela).
   // Todo campo abaixo usa null quando o dado não existe — nunca confundir com resposta negativa.
-  // B3 (aceita_reserva) e G1 (condicao_veiculo) ainda não têm coluna confirmada no Supabase —
-  // ficam null até o n8n gravar esses campos (mesmo padrão do setor/score_final, ver memória do projeto).
   return [
     {num:'B1',tema:'Intenção/Modelo',     pergunta:'Você já tem algum modelo em mente, ou prefere que eu te mostre o que chegou de mais exclusivo agora?',
-      resposta:l.modeloInteresse||null},
+      resposta:l.veiculo_interesse||null},
     {num:'B2',tema:'Carro atual',         pergunta:'Qual você dirige hoje?',
       // Prioriza o modelo em texto (carro_troca) sobre o booleano de troca — a pergunta
       // pede o carro atual, não se ele quer trocar; "Sim/Não" sozinho não responde "qual".
@@ -4241,7 +4258,10 @@ function buildPerguntas(l){
                : l.tem_veiculo_troca===true  ? 'Sim'
                : l.tem_veiculo_troca===false ? 'Não' : null},
     {num:'B3',tema:'Urgência real',       pergunta:'Quer que eu já separe esse para você enquanto vemos os detalhes?',
-      resposta: l.aceita_reserva||null},
+      // quer_reservar é booleano no Supabase (true/false/null) — precisa virar Sim/Não
+      // explicitamente, senão "false" (recusou reservar) cai no "||null" e aparece como
+      // "não respondeu esta pergunta", mesmo bug que a resposta de B1 tinha.
+      resposta: l.quer_reservar===true ? 'Sim' : l.quer_reservar===false ? 'Não' : null},
     {num:'B4',tema:'Decisor',             pergunta:'Você costuma tomar esse tipo de decisão sozinho?',
       resposta: decideSozinho===true ? 'Decide sozinho' : decideSozinho===false ? 'Decide com outra pessoa' : null,
       detalhe:  decideSozinho===false ? (l.co_decisor||null) : null},
@@ -4301,7 +4321,7 @@ function mapLead(l){
     status:      getStatus(l),
     hora:        l.atualizado_em?new Date(l.atualizado_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'',
     data:        l.atualizado_em?l.atualizado_em.split('T')[0]:'',
-    modelo:      l.modeloInteresse||'',
+    modelo:      l.veiculo_interesse||'',
     setor:       l.setor||'',
     pagamento:   l.carteira_potencial>0?'R$ '+(l.carteira_potencial>=1000?Math.round(l.carteira_potencial/1000)+'k':l.carteira_potencial):'',
     carteiraRaw: l.carteira_potencial||0,
