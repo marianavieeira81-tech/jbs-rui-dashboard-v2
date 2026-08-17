@@ -2146,8 +2146,11 @@ function ciGetChip(groupId){
 // Só quem procura carro Novo ou Semi-novo no check-in passa pela qualificação
 // (temperatura definida pelo vendedor + justificativa) — Oficina, Reclamações
 // e elogios e Vendas de peças e acessórios não são qualificados.
+// Vem de CI_SETORES (campo qualificavel) em vez de comparar nome fixo, pra
+// bater sempre com os mesmos setores usados no chip/dropdown (ver acima).
 function ciEhSetorQualificavel(setor){
-  return setor==='Novos'||setor==='Semi-novos';
+  const info = CI_SETORES.find(s=>s.nome===setor);
+  return !!(info && info.qualificavel);
 }
 
 // Opções de Intenção variam por Setor: Novos/Semi-novos/Reclamações usam o
@@ -2710,12 +2713,50 @@ const CI_OUTRO_MODELO = '__outro__';
 // confirmado pelo lead (G1 não respondida), não apenas o modelo dentro de um setor já sabido.
 const CI_SETOR_OUTRO = '__setor_outro__';
 const CI_SETORES = [
-  {nome:'Novos',                         cor:'#38BDF8', temModelo:true},
-  {nome:'Semi-novos',                    cor:'#A78BFA', temModelo:true},
-  {nome:'Oficina',                       cor:'#FB923C', temModelo:false},
-  {nome:'Reclamações e elogios',         cor:'#FB7185', temModelo:false},
-  {nome:'Vendas de peças e acessórios',  cor:'#A3E635', temModelo:false},
+  {nome:'Novos',                         cor:'#38BDF8', temModelo:true,  qualificavel:true},
+  {nome:'Semi-novos',                    cor:'#A78BFA', temModelo:true,  qualificavel:true},
+  {nome:'Oficina',                       cor:'#FB923C', temModelo:false, qualificavel:false},
+  {nome:'Reclamações e elogios',         cor:'#FB7185', temModelo:false, qualificavel:false},
+  {nome:'Vendas de peças e acessórios',  cor:'#A3E635', temModelo:false, qualificavel:false},
 ];
+
+// ============================================================
+// SETORES CONFIGURÁVEIS (M03) — chips do check-in e dropdown de filtro
+// GERADOS a partir de CI_SETORES acima, em vez de HTML fixo em 2 lugares.
+// Hoje CI_SETORES ainda é só os 5 valores da GWM-PE (nada mudou na
+// prática) — mas de agora em diante trocar esse único array já basta pra
+// mudar chip + dropdown + cor + regra de qualificação juntos, sem precisar
+// editar em 3 lugares separados como antes. Ligar isso a
+// concessionarias.setores_atendimento/setores_qualificaveis por cliente é
+// o próximo passo (falta um jeito do dashboard buscar essa config — hoje
+// ele só fala com o n8n por login/token, não existe esse endpoint ainda).
+// Protegido em try/catch: se algo falhar aqui, o HTML estático original
+// (os mesmos 5 setores, escritos direto no arquivo mais abaixo) continua
+// no ar sem quebrar nada.
+function _escHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function _hexParaRgb(hex){
+  const h = (hex||'').replace('#','');
+  const n = parseInt(h.length===3 ? h.split('').map(c=>c+c).join('') : h, 16);
+  return [(n>>16)&255,(n>>8)&255,n&255].join(',');
+}
+function renderSetorUIDinamica(){
+  const chipsBox = document.getElementById('ci-setor');
+  let styleTag = document.getElementById('setor-dyn-style');
+  if(!styleTag){ styleTag = document.createElement('style'); styleTag.id='setor-dyn-style'; document.head.appendChild(styleTag); }
+  styleTag.textContent = CI_SETORES.map((s,i)=>
+    `.ci-chip.sel-dyn-${i}{background:rgba(${_hexParaRgb(s.cor)},.12);border-color:rgba(${_hexParaRgb(s.cor)},.35);color:${s.cor};}`
+  ).join('\n');
+  if(chipsBox){
+    chipsBox.innerHTML = CI_SETORES.map((s,i)=>
+      `<div class="ci-chip" data-val="${_escHtml(s.nome)}" onclick="ciChip(this,'ci-setor','sel-dyn-${i}');ciAtualizarCamposPorSetor()">${_escHtml(s.nome)}</div>`
+    ).join('');
+  }
+  document.querySelectorAll('select.setor-select').forEach(sel=>{
+    sel.innerHTML = '<option value="todos">Todos os setores</option>' +
+      CI_SETORES.map(s=>`<option value="${_escHtml(s.nome)}">${_escHtml(s.nome)}</option>`).join('');
+  });
+}
+try{ renderSetorUIDinamica(); }catch(e){ console.warn('[setores] mantendo HTML estático original —', e); }
 const CI_GWM_MODELS = [
   {
     name:'Haval', color:'#D4AF37', bg:'rgba(212,175,55,.07)', bdr:'rgba(212,175,55,.25)',
