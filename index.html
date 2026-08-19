@@ -4306,7 +4306,9 @@ function buildPerguntas(l){
     {num:'G1',tema:'Condição do veículo', pergunta:'Você procura um veículo 0 km (novo) ou um seminovo?',
       resposta: l.condicao_veiculo||null},
     {num:'G2',tema:'Unidade preferida',   pergunta:'Em qual das nossas unidades você deseja nos visitar?',
-      resposta: l.loja||l.loja_slug||l.unidade||null},
+      // unidade_preferida é o campo dedicado a essa resposta (G2); loja/loja_slug/unidade
+      // continuam como fallback só para leads antigos que não tinham esse campo ainda.
+      resposta: l.unidade_preferida||l.loja||l.loja_slug||l.unidade||null},
   ];
 }
 
@@ -4332,7 +4334,10 @@ function getStatus(l){
     if(l.desfecho_visita==='desistiu'||l.desfecho_visita==='indefinido') return 'Encerrado';
     return 'Em andamento';
   }
-  if(l.qualificado_em) return 'Transferido';
+  // transferido_em cobre leads recentes: o fluxo passou a gravar esse campo
+  // (junto com transferido=true) na conclusão da qualificação, e qualificado_em
+  // não vem mais preenchido em alguns leads mesmo com todos os blocos concluídos.
+  if(l.qualificado_em||l.transferido_em) return 'Transferido';
   if(l.followup_status==='encerrado') return 'Encerrado';
   return 'Em andamento';
 }
@@ -4381,7 +4386,9 @@ function mapLead(l){
     vendedor:    l.checkin_vendedor||'',
     atendimento_em: l.atendimento_em||l.atualizado_em||'',
     cpf:         l.cpf||'',
-    qualificadoEm: l.qualificado_em||null,
+    // Mesmo fallback de getStatus(): usa transferido_em quando qualificado_em
+    // não vier preenchido, para não perder leads que completaram a qualificação.
+    qualificadoEm: l.qualificado_em||l.transferido_em||null,
     blocoParou:   l.bloco_parou||null,
     inicouFluxo:  !!(l.bloco_parou&&l.bloco_parou!=='abertura'),
     perguntas:   buildPerguntas(l)
