@@ -1841,11 +1841,28 @@ function refreshAllTabsForFilters(){
 const GWM_MODELOS = ['Haval','ORA','Tank','Poer','WEY'];
 let selectedModelo = localStorage.getItem('rui_modelo_filtro') || 'todos';
 
+// Apelidos de modelo por marca — necessário porque o texto capturado do lead costuma
+// ser só o nome do MODELO ("h6", "jolion"), não da marca ("Haval"), e "h6" não contém
+// a substring "haval". Tank/ORA/WEY funcionam por coincidência (o nome do modelo já
+// contém o nome da marca: "tank 500", "ora 03", "wey 07") — Haval e Poer não têm essa
+// coincidência e, sem isso, caem sempre em "Outro / não informado" ou fora do filtro.
+// Mesmos códigos de modelo já usados nas listas de reconhecimento do n8n (workflow de
+// Qualificação, nós "Parsear resposta IA"/"Montar prompt do Rui") — não inventados aqui.
+const CI_MODELO_ALIASES = {
+  Haval: ['h2','h6','h7','h9','jolion','joliom','dargo','big dog','bigdog','big-dog'],
+  Poer:  ['poer','p30','cannon','tgs','king kong','kingkong'],
+};
+const _modeloBateMarca = (texto, nomeMarca) => {
+  const t = (texto||'').toLowerCase();
+  if(t.includes(nomeMarca.toLowerCase())) return true;
+  return (CI_MODELO_ALIASES[nomeMarca]||[]).some(alias=>t.includes(alias));
+};
+
 // true (mostra) se o modelo escolhido aparecer no texto do veículo do registro
-// (mesmo tipo de comparação por substring já usado na navegação por modelo do Check-in),
-// ou se "todos" estiver selecionado.
+// (comparação por substring + apelidos de CI_MODELO_ALIASES acima), ou se "todos"
+// estiver selecionado.
 function matchModelo(modelo){
-  return selectedModelo==='todos' || (modelo||'').toLowerCase().includes(selectedModelo.toLowerCase());
+  return selectedModelo==='todos' || _modeloBateMarca(modelo, selectedModelo);
 }
 
 // ============================================================
@@ -2885,9 +2902,9 @@ function renderCIModelCardsForSector(setor){
   if(titleEl) titleEl.innerHTML = `<span style="color:${info?.cor}">${setor}</span> · modelo de interesse`;
   const arr = [...waLeadsCL(), ...ciLeadsCL()].filter(r=>r.setor===setor);
   const total = arr.length;
-  const matchesAlgumModelo = r => CI_GWM_MODELS.some(m=>((r.modelos||r.modelo||'')).toLowerCase().includes(m.name.toLowerCase()));
+  const matchesAlgumModelo = r => CI_GWM_MODELS.some(m=>_modeloBateMarca(r.modelos||r.modelo, m.name));
   const counts = CI_GWM_MODELS.map(m=>({
-    m, n: arr.filter(r=>((r.modelos||r.modelo||'')).toLowerCase().includes(m.name.toLowerCase())).length
+    m, n: arr.filter(r=>_modeloBateMarca(r.modelos||r.modelo, m.name)).length
   }));
   // Leads sem modelo capturado ainda (comum logo no início da conversa) ou com texto
   // fora dos 5 nomes fixos — sem esse card eles somem da tela por modelo mas continuam
@@ -4290,9 +4307,12 @@ function buildPerguntas(l){
     {num:'B1',tema:'Intenção/Modelo',     pergunta:'Você já tem algum modelo em mente, ou prefere que eu te mostre o que chegou de mais exclusivo agora?',
       resposta:l.veiculo_interesse||null},
     {num:'B2',tema:'Carro atual',         pergunta:'Qual você dirige hoje?',
-      // Prioriza o modelo em texto (carro_troca) sobre o booleano de troca — a pergunta
-      // pede o carro atual, não se ele quer trocar; "Sim/Não" sozinho não responde "qual".
-      resposta: (l.carro_troca && l.carro_troca!=='a confirmar') ? l.carro_troca
+      // carro_atual é o campo dedicado à resposta literal dessa pergunta (existe no
+      // schema do Supabase). carro_troca/tem_veiculo_troca são campos de TROCA
+      // (negociação) — conceito diferente de "o que você dirige hoje" — só entram
+      // como fallback para leads antigos gravados antes de carro_atual existir.
+      resposta: l.carro_atual ? l.carro_atual
+               : (l.carro_troca && l.carro_troca!=='a confirmar') ? l.carro_troca
                : l.tem_veiculo_troca===true  ? 'Sim'
                : l.tem_veiculo_troca===false ? 'Não' : null},
     {num:'B3',tema:'Urgência real',       pergunta:'Quer que eu já separe esse para você enquanto vemos os detalhes?',
