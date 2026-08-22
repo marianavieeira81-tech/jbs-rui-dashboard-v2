@@ -773,11 +773,23 @@ document.getElementById('login-input').addEventListener('keydown', function(e){
 async function fetchAutenticado(url, options){
   const res = await fetch(url, options);
   if (res.status === 401 || res.status === 403) {
+    let msg = 'Chave de acesso inválida ou expirada. Digite novamente.';
+    try { const body = await res.clone().json(); if (body && body.erro) msg = body.erro; } catch(e){}
     sessionStorage.removeItem(SECRET_STORAGE_KEY);
-    mostrarLogin('Chave de acesso inválida ou expirada. Digite novamente.');
-    throw new Error('Não autorizado (chave de acesso inválida ou expirada)');
+    mostrarLogin(msg);
+    throw new Error(msg);
   }
   return res;
+}
+
+// leitura defensiva do corpo da resposta — se o servidor devolver algo vazio ou
+// que não é JSON válido (ex.: falha no meio do workflow n8n), mostra uma mensagem
+// clara em vez do erro críptico do navegador ("Unexpected end of JSON input").
+async function lerJsonSeguro(res, contexto){
+  const texto = await res.text();
+  if (!texto) throw new Error(contexto + ': o servidor não devolveu nenhum dado. Pode ser uma falha temporária no n8n — tente Atualizar; se persistir, avise o suporte técnico.');
+  try { return JSON.parse(texto); }
+  catch(e) { throw new Error(contexto + ': resposta do servidor não é um JSON válido.'); }
 }
 
 function mostrarErro(msg){
@@ -809,7 +821,7 @@ function tagClasse(tipo){
 async function carregarResumo(){
   const res = await fetchAutenticado(ENDPOINT_RESUMO, { method: 'GET', headers: headersAuth() });
   if (!res.ok) throw new Error('Resumo: HTTP ' + res.status);
-  const data = await res.json();
+  const data = await lerJsonSeguro(res, 'Resumo');
 
   window._ultimoResumo = data; // usado pela aba Gastos pra mostrar dado real sem refazer a chamada
   atualizarDadosReaisGastos();
@@ -976,7 +988,7 @@ async function carregarEventos(){
 
   const res = await fetchAutenticado(ENDPOINT_EVENTOS + '?' + params.toString(), { method: 'GET', headers: headersAuth() });
   if (!res.ok) throw new Error('Eventos: HTTP ' + res.status);
-  const data = await res.json();
+  const data = await lerJsonSeguro(res, 'Eventos');
   renderEventos(data.eventos || []);
   totalRetornadoUltimaPagina = (data.eventos || []).length;
   atualizarPager();
@@ -1447,7 +1459,7 @@ async function carregarGastosReal(){
   try{
     const res = await fetchAutenticado(ENDPOINT_GASTOS_REAL, { method: 'GET', headers: headersAuth() });
     if (!res.ok) throw new Error('Gastos real: HTTP ' + res.status);
-    data = await res.json();
+    data = await lerJsonSeguro(res, 'Gastos real');
   }catch(e){
     gastosRealMarcarErro();
     return;
