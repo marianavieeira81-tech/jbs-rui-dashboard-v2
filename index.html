@@ -2097,6 +2097,7 @@ function toggleMobileMenu(force){
 
 function go(id){
   toggleMobileMenu(false);
+  localStorage.setItem('rui_aba_ativa', id);
   document.querySelectorAll('[id^="p-"]').forEach(p=>p.style.display='none');
   document.getElementById('p-'+id).style.display='block';
   document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
@@ -4862,7 +4863,11 @@ let selectedLojaFila = localStorage.getItem('rui_loja_fila_filtro') || 'todas';
 function matchLojaFila(f){
   if(selectedLojaFila==='todas') return true;
   if(selectedLojaFila==='Presencial') return !!(f.perfil && f.perfil.canal==='Presencial');
-  return (f.loja||'')===selectedLojaFila;
+  // Lead ainda sem loja marcada no n8n (ver aviso no topbar) não deve sumir
+  // ao filtrar por uma loja específica — só exclui quando há loja registrada
+  // e ela é diferente da selecionada.
+  if(!f.loja) return true;
+  return f.loja===selectedLojaFila;
 }
 
 function setLojaFilterFila(v){
@@ -4993,7 +4998,15 @@ async function fetchFilaEsperaSupabase(){
       return;
     }
     const rowsRaw=await res.json();
-    const rows=(Array.isArray(rowsRaw)?rowsRaw:[]).filter(r=>(selectedLojaFila==='todas'||(r.loja||r.loja_slug||'')===selectedLojaFila)&&matchModelo(r.modelo));
+    // A tabela fila_espera não tem coluna de loja — sem o `!loja` abaixo, qualquer
+    // filtro de loja diferente de "todas" escondia TODOS os leads daqui (a
+    // comparação nunca batia). Mesmo princípio de matchLojaFila(): lead sem loja
+    // marcada aparece em qualquer filtro, só exclui quando a loja é conhecida e diferente.
+    const rows=(Array.isArray(rowsRaw)?rowsRaw:[]).filter(r=>{
+      const loja=r.loja||r.loja_slug||'';
+      const passaLoja=selectedLojaFila==='todas'||!loja||loja===selectedLojaFila;
+      return passaLoja&&matchModelo(r.modelo);
+    });
     if(rows.length===0){
       wrap.innerHTML='<div style="padding:40px 24px;text-align:center;color:var(--tx3);font-size:13px">Nenhum lead aguardando no momento.</div>';
       return;
@@ -5482,6 +5495,12 @@ function startDashboard(){
   // pra contagem regressiva do cooldown de vendedor andar sozinha e a tag
   // reaparecer clicável assim que os 15min passarem, sem precisar recarregar.
   setInterval(()=>{ if(document.getElementById('p-plataformas').style.display!=='none') refreshCurrentCIList(); }, REFRESH_INTERVAL_MS);
+
+  // Restaura a aba em que ela estava antes de atualizar a página — sem isso,
+  // qualquer F5 (ou login de novo após sessão expirar) sempre voltava pro
+  // Painel de Controle porque essa é a única aba sem "display:none" no HTML.
+  const abaSalva = localStorage.getItem('rui_aba_ativa');
+  if(abaSalva && abaSalva!=='dash' && document.getElementById('p-'+abaSalva)) go(abaSalva);
 }
 
 document.addEventListener('DOMContentLoaded',()=>{
