@@ -2398,6 +2398,10 @@ async function ciSave(){
   arr.unshift(reg);
   localStorage.setItem('ci_registros', JSON.stringify(arr));
   document.getElementById('ciCount').textContent = ciPresencialLeadsRaw().length;
+  // "Comprou" converte; "Desistiu"/"Saiu sem definição" não converteu; "Vai
+  // pensar"/"Pediu retorno" ainda em aberto (nem true nem false).
+  const convertidoCI = desfech==='Comprou' ? true : (desfech==='Desistiu'||desfech==='Saiu sem definição') ? false : null;
+  registrarAtendimentoVendedor(vend,'presencial',nome,wa,convertidoCI,new Date(dt).toISOString());
   saveBtn.disabled = false;
   saveBtn.textContent = '✔ Salvar Check-in';
   ciClear();
@@ -3281,6 +3285,8 @@ function leadAttend(nome, vendedor){
   if(cooldownRestanteMin(vendedor)>0) return;
   setLeadState(nome,'atendendo',vendedor,new Date().toISOString());
   registrarCooldown(vendedor);
+  const leadInfo = ACTIVE_LEADS.find(l=>l.nome===nome);
+  registrarAtendimentoVendedor(vendedor,'whatsapp',nome,leadInfo?leadInfo.telefone:'',null);
   refreshCurrentCIList();
 }
 function leadOutcome(nome,outcome){
@@ -4205,6 +4211,32 @@ const N8N_FILA_ADICIONAR = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/adicio
 const N8N_TRANSFERENCIAS_QUERY  = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/rui-transferencias-query';
 const N8N_TRANSFERENCIAS_UPDATE = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/rui-transferencias-atualizar';
 const REFRESH_INTERVAL_MS = 30000;
+
+// Endpoint ainda NÃO existe no n8n (mesma situação de N8N_TRANSFERENCIAS_QUERY/
+// UPDATE acima) — grava 1 linha por atendimento assumido (WhatsApp/presencial/
+// transferência) na tabela atendimentos_vendedor, pra "Desempenho por Vendedor"
+// (buildResumoVendedores) parar de depender só do localStorage do WhatsApp, que
+// não sincroniza entre aparelhos. Fogo-e-esquece: nunca bloqueia nem trava a UI
+// se o endpoint ainda não existir ou falhar — a atribuição em si (localStorage/
+// Supabase de leads/transferências_humano, conforme o canal) continua sendo a
+// fonte real que o dashboard usa hoje; esta chamada é só uma cópia pro histórico.
+const N8N_ATENDIMENTO_REGISTRAR = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/registrar-atendimento-vendedor';
+function registrarAtendimentoVendedor(vendedor, canal, leadNome, leadTelefone, convertido, atendidoEm){
+  try{
+    fetch(N8N_ATENDIMENTO_REGISTRAR, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        token:         authToken(),
+        vendedor:      vendedor,
+        canal:         canal,
+        lead_nome:     leadNome || '',
+        lead_telefone: (leadTelefone||'').replace(/\D/g,''),
+        convertido:    convertido===undefined ? null : convertido,
+        atendido_em:   atendidoEm || new Date().toISOString()
+      })
+    }).catch(()=>{});
+  }catch(e){ /* endpoint pode ainda não existir no n8n — silencioso, ver nota acima */ }
+}
 
 // ============================================================
 // LOGIN / SESSÃO — cada concessionária só enxerga os próprios dados
@@ -5357,7 +5389,13 @@ function transfToast(msg){
 async function assumirTransferencia(id, vendedor){
   if(!vendedor) return;
   const ok = await salvarStatusTransferencia(id, {status_transferencia:'em_atendimento', vendedor_responsavel:vendedor, atendido_em:new Date().toISOString()});
-  if(ok){ transfToast('Transferência assumida por '+vendedor+'.'); await fetchTransferenciasData(); }
+  if(ok){
+    transfToast('Transferência assumida por '+vendedor+'.');
+    const transf = ACTIVE_TRANSFERENCIAS.find(t=>String(t.id)===String(id));
+    const lead   = transf ? encontrarLeadPorIdentificador(transf.lead_identifier) : null;
+    registrarAtendimentoVendedor(vendedor,'transferencia', lead?lead.nome:(transf?transf.lead_identifier:''), lead?lead.telefone:'', null);
+    await fetchTransferenciasData();
+  }
   else { transfToast('Não foi possível salvar — verifique se o webhook do n8n já foi configurado.'); }
 }
 async function concluirTransferencia(id){
