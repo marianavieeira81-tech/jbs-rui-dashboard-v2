@@ -3158,8 +3158,10 @@ function phoneSearch(term, pageId){
   });
 
   // Fila de espera (demo ou produção)
+  // fila_espera não tem coluna de loja (ver fetchFilaEsperaSupabase) — matchLoja
+  // normal esconderia TODOS os leads da fila com filtro de loja específico ativo.
   const filaLeads = (DATA_MODE==='production'&&ACTIVE_FILA.length>0)
-    ? ACTIVE_FILA.filter(f=>matchLoja(f.loja)&&matchModelo(f.modelo)) : DEMO_FILA;
+    ? ACTIVE_FILA.filter(f=>(selectedLoja==='todas'||!f.loja||f.loja===selectedLoja)&&matchModelo(f.modelo)) : DEMO_FILA;
   filaLeads.forEach(l=>{
     if((l.telefone||'').replace(/[^0-9]/g,'').includes(digits))
       add(l.nome, l.telefone, l.modelo||'—', 'Fila de Espera');
@@ -4347,6 +4349,24 @@ function objecaoLabel(v){
   return v;
 }
 
+// Sinal alternativo de "qualificação concluída" para quando NEM qualificado_em
+// NEM transferido_em vêm preenchidos do banco (bug real: lead Mariana Moura,
+// score 74, 24/08 — etapa já "encerrado" e blocos_completados 100%, mas os dois
+// timestamps ficaram nulos). Exige etapa==='encerrado' junto com todos os blocos
+// em true pra reduzir falso positivo de conversa parada no meio. Aceita objeto
+// ou string JSON (jsonb do Supabase pode chegar dos dois jeitos) e nunca lança erro.
+function todosBlocosConcluidos(l){
+  if((l.etapa||'')!=='encerrado') return false;
+  let obj = l.blocos_completados;
+  if(!obj) return false;
+  if(typeof obj === 'string'){
+    try{ obj = JSON.parse(obj); }catch(e){ return false; }
+  }
+  if(typeof obj !== 'object') return false;
+  const vals = Object.values(obj);
+  return vals.length>0 && vals.every(v=>v===true);
+}
+
 function getStatus(l){
   // Check-in presencial tem seu próprio ciclo de status: comprou vira cliente,
   // não passa pelo funil de qualificação/transferência do WhatsApp.
@@ -4409,7 +4429,9 @@ function mapLead(l){
     cpf:         l.cpf||'',
     // Mesmo fallback de getStatus(): usa transferido_em quando qualificado_em
     // não vier preenchido, para não perder leads que completaram a qualificação.
-    qualificadoEm: l.qualificado_em||l.transferido_em||null,
+    // 3º nível: nenhum dos dois timestamps veio, mas todosBlocosConcluidos(l)
+    // confirma que a qualificação terminou de fato — usa atualizado_em como data.
+    qualificadoEm: l.qualificado_em||l.transferido_em||(todosBlocosConcluidos(l)?(l.atualizado_em||null):null),
     blocoParou:   l.bloco_parou||null,
     inicouFluxo:  !!(l.bloco_parou&&l.bloco_parou!=='abertura'),
     perguntas:   buildPerguntas(l)
@@ -4649,7 +4671,9 @@ function refreshDashKpis(){
     return d>=GLOBAL_RANGE.from && d<=GLOBAL_RANGE.to;
   };
   const leads = ACTIVE_LEADS.filter(l=>matchLoja(l.loja)&&matchModelo(l.modelo)&&inPeriodo(l.data?l.data+'T12:00:00':''));
-  const fila  = ACTIVE_FILA.filter(f=>matchLoja(f.loja)&&matchModelo(f.modelo)&&inPeriodo(f.entradaISO));
+  // fila_espera não tem coluna de loja (mesma ressalva de matchLojaFila/fetchFilaEsperaSupabase)
+  // — matchLoja normal zerava esse KPI sempre que a loja selecionada não era "todas".
+  const fila  = ACTIVE_FILA.filter(f=>(selectedLoja==='todas'||!f.loja||f.loja===selectedLoja)&&matchModelo(f.modelo)&&inPeriodo(f.entradaISO));
   // Mesma regra do Funil: check-in presencial sempre tem "qualificado_em" preenchido
   // (processo manual do vendedor), então não conta aqui — senão esse card destoaria
   // da etapa "Qualificação completa" do Funil, que já exclui esses leads.
