@@ -1524,7 +1524,8 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
         <div class="ci-row2">
           <div class="ci-field">
             <div class="ci-label">Vendedor responsável</div>
-            <select class="ci-input" id="ci-vendedor" onchange="ciVendedorSelectChange(this)"></select>
+            <div class="filtro-cl-opts" id="ci-vendedor-tags"></div>
+            <input type="hidden" id="ci-vendedor"/>
           </div>
           <div class="ci-field">
             <div class="ci-label">Loja</div>
@@ -2124,18 +2125,9 @@ function ciInit(){
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
     dtEl.value = now.toISOString().slice(0,16);
   }
-  populaSelectVendedores(document.getElementById('ci-vendedor'));
+  ciRenderVendedorTags();
   ciRenderHistory();
   document.getElementById('ciCount').textContent = ciPresencialLeadsRaw().length;
-}
-
-// "+ Adicionar novo vendedor…" no select do Check-in — pede o nome, cadastra
-// no roster compartilhado e já deixa selecionado.
-function ciVendedorSelectChange(selectEl){
-  if(selectEl.value==='__novo__'){
-    const nome = promptNovoVendedor();
-    if(nome){ populaSelectVendedores(selectEl, nome); } else { selectEl.value=''; }
-  }
 }
 
 function ciChip(el, groupId, selClass){
@@ -2251,6 +2243,8 @@ function ciClear(){
     const el=document.getElementById(g);
     if(el){el.querySelectorAll('.ci-yn').forEach(b=>b.classList.remove('sel'));delete el.dataset.val;}
   });
+  ciVendedorEscolhido = '';
+  ciRenderVendedorTags();
   ciAtualizarCamposPorSetor();
   ciAtualizarCamposPorDesfecho();
   const err=document.getElementById('ci-err');if(err)err.style.display='none';
@@ -2612,14 +2606,39 @@ function cooldownRestanteMin(vendedor){
   const restanteMs = VENDEDOR_COOLDOWN_MIN*60000 - (Date.now()-new Date(ts).getTime());
   return restanteMs>0 ? Math.ceil(restanteMs/60000) : 0;
 }
-// Preenche um <select> com a lista de vendedores + opção "novo vendedor".
-function populaSelectVendedores(selectEl, valorSelecionado){
-  if(!selectEl) return;
-  const vendedores = getVendedores();
-  selectEl.innerHTML = '<option value="">Selecione seu nome</option>'
-    + vendedores.map(v=>`<option value="${v.replace(/"/g,'&quot;')}">${v}</option>`).join('')
-    + '<option value="__novo__">+ Adicionar novo vendedor…</option>';
-  if(valorSelecionado && vendedores.includes(valorSelecionado)) selectEl.value = valorSelecionado;
+// Tags clicáveis pro campo "Vendedor responsável" do Check-in — mesmo padrão
+// visual das tags de vendedor da Central de Leads/Fila de Transferências
+// (.filtro-cl-opt, ver vendedorTagsHTML/transfVendedorTagsHTML): todas visíveis,
+// clicar no próprio nome esconde as outras. Diferente da Central de Leads, aqui
+// a escolha NÃO é travada em definitivo — é só um campo de formulário ainda não
+// salvo, então clicar de novo na tag confirmada desfaz e mostra as opções de
+// novo, pra dar pra corrigir um clique errado antes de salvar (igual já dá pra
+// trocar Setor/Intenção/Desfecho no mesmo formulário).
+let ciVendedorEscolhido = '';
+function ciRenderVendedorTags(){
+  const wrap = document.getElementById('ci-vendedor-tags');
+  if(!wrap) return;
+  if(ciVendedorEscolhido){
+    wrap.innerHTML = `<span class="filtro-cl-opt sel" onclick="ciTrocarVendedor()" title="Clique para trocar">${_escHtml(ciVendedorEscolhido)}</span>`;
+    return;
+  }
+  wrap.innerHTML = getVendedores().map(v=>
+    `<span class="filtro-cl-opt" onclick="ciEscolherVendedor('${v.replace(/'/g,"\\'")}')">${_escHtml(v)}</span>`
+  ).join('') + `<span class="filtro-cl-opt" style="opacity:.7;font-style:italic;" onclick="ciNovoVendedor()">+ novo</span>`;
+}
+function ciEscolherVendedor(nome){
+  ciVendedorEscolhido = nome;
+  document.getElementById('ci-vendedor').value = nome;
+  ciRenderVendedorTags();
+}
+function ciTrocarVendedor(){
+  ciVendedorEscolhido = '';
+  document.getElementById('ci-vendedor').value = '';
+  ciRenderVendedorTags();
+}
+function ciNovoVendedor(){
+  const nome = promptNovoVendedor();
+  if(nome) ciEscolherVendedor(nome);
 }
 
 function ciYNLabel(v){return v==='S'?'✔ Sim':v==='N'?'✖ Não':'—';}
@@ -5300,7 +5319,7 @@ function buildResumoVendedores(){
 }
 
 // Linha de tags com o roster compartilhado de vendedores (mesmo getVendedores()
-// usado no Check-in e na Central de Leads, ver populaSelectVendedores) — clicar
+// usado no Check-in e na Central de Leads, ver ciRenderVendedorTags) — clicar
 // assume a transferência. Reaproveita o padrão de chip já estabelecido em vez de
 // inventar um campo de texto livre novo.
 function transfVendedorTagsHTML(transferId){
