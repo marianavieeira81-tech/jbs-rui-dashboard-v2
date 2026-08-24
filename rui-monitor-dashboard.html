@@ -500,6 +500,15 @@ textarea.sql{font-family:'DM Mono',monospace;font-size:11.5px;line-height:1.55;b
         <div class="subsec">Custo IA por agente</div>
         <div id="gr_por_agente"></div>
       </div>
+      <div class="model" id="gr_por_dia_box" style="display:none;margin-top:12px;">
+        <div class="subsec">Custo IA por dia (este mês)</div>
+        <div id="gr_por_dia"></div>
+      </div>
+      <div class="model" id="gr_por_concessionaria_box" style="display:none;margin-top:12px;">
+        <div class="subsec">Custo IA por concessionária (mês)</div>
+        <div id="gr_por_concessionaria"></div>
+        <p class="hint" id="gr_wa_nao_dividido" style="display:none;margin:8px 0 0;">O custo de WhatsApp ainda não é dividido por concessionária (falta essa informação na origem) — ele entra só no total geral acima.</p>
+      </div>
       <p class="hint" id="gr_erro" style="display:none;color:var(--red);margin-top:14px;">Não foi possível buscar os custos reais agora (endpoint indisponível ou tabela vazia) — mostrando "—". O campo "WhatsApp R$/mês" abaixo continua editável manualmente.</p>
     </div>
 
@@ -541,7 +550,7 @@ where tipo_evento = 'execucao_ok' and criado_em >= date_trunc('month', now());</
       <hr style="border:none;border-top:1px solid var(--bdr);margin:20px 0;">
 
       <div class="kpi-grid-3">
-        <div class="kpi"><div class="kpi-lbl">Custo total mensal</div><div class="kpi-val" id="g_total" style="font-size:26px;">—</div></div>
+        <div class="kpi"><div class="kpi-lbl">Custo total mensal</div><div class="kpi-val" id="g_total" style="font-size:26px;">—</div><div class="hint" id="g_total_fonte" style="margin:4px 0 0;"></div></div>
         <div class="kpi"><div class="kpi-lbl">Custo real por lead</div><div class="kpi-val" id="g_porlead" style="font-size:26px;">—</div></div>
         <div class="kpi"><div class="kpi-lbl">↳ parte IA / parte infra</div><div class="kpi-val" id="g_split" style="font-size:16px;">—</div></div>
       </div>
@@ -809,6 +818,15 @@ function fmtData(iso){
   if (!iso) return '—';
   const d = new Date(iso);
   return d.toLocaleString('pt-BR');
+}
+// Formata uma data "YYYY-MM-DD" (sem hora) pra DD/MM/AAAA sem passar por new Date() —
+// evitar isso é de propósito: new Date("YYYY-MM-DD") é interpretado como UTC meia-noite,
+// e convertido pro fuso local (pt-BR) pode virar o dia anterior.
+function fmtDiaSimples(diaISO){
+  if (!diaISO) return '—';
+  const partes = String(diaISO).split('-');
+  if (partes.length !== 3) return diaISO;
+  return partes[2] + '/' + partes[1] + '/' + partes[0];
 }
 function tagClasse(tipo){
   if (tipo === 'execucao_ok') return 't-ok';
@@ -1307,7 +1325,8 @@ const G_KEY = 'rui_gastos_v1';
 function gDefaultState(){
   return {
     custos:{ep:0,sb:0,gh:0,rd:0,wa:0,ou:0,leads:0,
-      iaEntrada:1.00,iaSaida:5.00,iaCache:0.10,iaPctCache:0,iaCambio:5.07,iaTokIn:0,iaTokOut:0,iaMsgs:8},
+      iaEntrada:1.00,iaSaida:5.00,iaCache:0.10,iaPctCache:0,iaCambio:5.07,iaTokIn:0,iaTokOut:0,iaMsgs:8,
+      iaRealTotal:null},
     preco:{margem:30,leads:50,incl:40,modelo:null}
   };
 }
@@ -1335,7 +1354,13 @@ function gCustoIAporMensagemBRL(){
 }
 function gCustoIAporLead(){ const msg = gCustoIAporMensagemBRL(); return msg===null ? null : msg*gState.custos.iaMsgs; }
 function gCustoIATotalMensal(){ const perLead = gCustoIAporLead(); return perLead===null ? null : perLead*gState.custos.leads; }
-function gCustoTotalMensal(){ const ia = gCustoIATotalMensal(); return ia===null ? null : gCustoInfraFixa()+ia; }
+// Usa o custo real de IA (vindo de ai_usage_log via ENDPOINT_GASTOS_REAL) quando disponível.
+// Sem isso, cai pra estimativa manual (tokens/mensagem x mensagens/lead x leads).
+function gCustoIATotalMensalEfetivo(){
+  if (gState.custos.iaRealTotal != null) return gState.custos.iaRealTotal;
+  return gCustoIATotalMensal();
+}
+function gCustoTotalMensal(){ const ia = gCustoIATotalMensalEfetivo(); return ia===null ? null : gCustoInfraFixa()+ia; }
 function gCustoPorLead(){ const leads=gState.custos.leads; if(leads<=0) return null; const total=gCustoTotalMensal(); return total===null ? null : total/leads; }
 
 function gRenderCusto(){
@@ -1343,8 +1368,14 @@ function gRenderCusto(){
   document.getElementById('g_total').textContent = total===null ? '—' : gFmtBRL(total);
   const cpl = gCustoPorLead();
   document.getElementById('g_porlead').textContent = cpl===null ? '—' : gFmtBRL(cpl);
-  const iaTotal = gCustoIATotalMensal();
+  const iaTotal = gCustoIATotalMensalEfetivo();
   document.getElementById('g_split').textContent = (iaTotal===null ? '—' : gFmtBRL(iaTotal)) + ' IA · ' + gFmtBRL(gCustoInfraFixa()) + ' infra';
+  const elFonte = document.getElementById('g_total_fonte');
+  if (elFonte) {
+    elFonte.textContent = (gState.custos.iaRealTotal != null)
+      ? 'usando custo real de IA deste mês (ai_usage_log)'
+      : 'usando estimativa manual — preencha os campos acima ou aguarde o custo real carregar';
+  }
 }
 
 function gRenderModelos(){
@@ -1448,10 +1479,15 @@ function gastosRealMarcarErro(){
   document.getElementById('gr_wa_total').textContent = '—';
   document.getElementById('gr_total').textContent = '—';
   document.getElementById('gr_por_agente_box').style.display = 'none';
+  document.getElementById('gr_por_dia_box').style.display = 'none';
+  document.getElementById('gr_por_concessionaria_box').style.display = 'none';
   document.getElementById('gr_erro').style.display = 'block';
   const campoWa = document.getElementById('g_wa');
   campoWa.removeAttribute('readonly');
   document.getElementById('g_wa_nota').style.display = 'none';
+  // Sem custo real disponível, a Modelo de Cobrança volta a usar a estimativa manual.
+  gState.custos.iaRealTotal = null;
+  gSave(); gRenderCusto(); gRenderModelos();
 }
 
 async function carregarGastosReal(){
@@ -1494,6 +1530,31 @@ async function carregarGastosReal(){
     boxAgente.style.display = 'none';
   }
 
+  // Custo por dia (este mês)
+  const porDia = Array.isArray(ia.por_dia) ? ia.por_dia : [];
+  const boxDia = document.getElementById('gr_por_dia_box');
+  if (porDia.length) {
+    document.getElementById('gr_por_dia').innerHTML = porDia.map(function(d){
+      return '<div class="mline"><span>' + fmtDiaSimples(d.dia) + '</span><b>' + fmtUsd(d.custo_ia) + '</b></div>';
+    }).join('');
+    boxDia.style.display = '';
+  } else {
+    boxDia.style.display = 'none';
+  }
+
+  // Custo por concessionária (mês) — hoje só IA; WhatsApp ainda não é atribuível por concessionária.
+  const porConcessionaria = Array.isArray(ia.por_concessionaria) ? ia.por_concessionaria : [];
+  const boxConc = document.getElementById('gr_por_concessionaria_box');
+  if (porConcessionaria.length) {
+    document.getElementById('gr_por_concessionaria').innerHTML = porConcessionaria.map(function(c){
+      return '<div class="mline"><span>' + (c.concessionaria || '—') + '</span><b>' + fmtUsd(c.custo_ia) + '</b></div>';
+    }).join('');
+    boxConc.style.display = '';
+    document.getElementById('gr_wa_nao_dividido').style.display = (waTotal != null) ? 'block' : 'none';
+  } else {
+    boxConc.style.display = 'none';
+  }
+
   // Auto-preenche "WhatsApp R$/mês" (Custos fixos) convertendo pro câmbio já configurado ali, e trava o campo.
   // Se a busca falhar (catch acima já retornou antes de chegar aqui), o campo permanece editável — fallback manual.
   if (waTotal != null) {
@@ -1502,9 +1563,14 @@ async function carregarGastosReal(){
     campoWa.value = brl.toFixed(2);
     campoWa.setAttribute('readonly', '');
     gState.custos.wa = brl;
-    gSave(); gRenderCusto(); gRenderModelos();
     document.getElementById('g_wa_nota').style.display = 'block';
   }
+
+  // NOVO: a Modelo de Cobrança passa a usar o custo real de IA (não mais só a estimativa manual)
+  // quando ele está disponível — é o que faz o valor cobrado seguir o gasto de verdade do cliente.
+  gState.custos.iaRealTotal = (iaTotal != null) ? (iaTotal * gState.custos.iaCambio) : null;
+
+  gSave(); gRenderCusto(); gRenderModelos();
 }
 
 // ============================================================
