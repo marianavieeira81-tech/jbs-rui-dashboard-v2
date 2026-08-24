@@ -2548,13 +2548,13 @@ function ciAvatarColor(nome){return CI_CORES[(nome.charCodeAt(0)||0)%CI_CORES.le
 // ============================================================
 // VENDEDORES — lista compartilhada de nomes, usada no Check-in (campo
 // "Vendedor responsável") e na atribuição de leads do WhatsApp na Central
-// de Leads. VENDEDORES_FIXOS é o roster desta demonstração (pedido explícito
-// dela em 2026-08-12, 5 nomes fixos) — aparece igual em qualquer navegador,
-// sem precisar cadastro manual. Nomes extras ainda podem ser adicionados pela
+// de Leads. VENDEDORES_FIXOS é o roster real da loja (atualizado em
+// 2026-08-24, 3 nomes fixos) — aparece igual em qualquer navegador, sem
+// precisar cadastro manual. Nomes extras ainda podem ser adicionados pela
 // própria interface (Check-in, Fila de Transferências) e ficam salvos só no
-// localStorage deste navegador, somados aos 5 fixos.
+// localStorage deste navegador, somados aos 3 fixos.
 // ============================================================
-const VENDEDORES_FIXOS = ['Maria','Luciana','João Paulo','Gabriel','Felipe'];
+const VENDEDORES_FIXOS = ['Maria Assiz','Mateus Silva','Sergio Fortunato'];
 function getVendedores(){
   let extras = [];
   try{ extras = JSON.parse(localStorage.getItem('rui_vendedores_v1')||'[]'); }catch(e){}
@@ -3033,29 +3033,31 @@ function waHiCardHTML(l, idx){
   const dtFmt  = l.data ? new Date(l.data+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'})+(l.hora?' '+l.hora:'') : (l.hora||'—');
   const isTransferred = l.status==='Transferido';
   const nomeEsc = (l.nome||'').replace(/'/g,"\\'");
-  const info = isTransferred ? getLeadState(l.nome) : null;
-  let statusHtml = '';
-  if(isTransferred){
-    // Tempo até atendimento = do momento em que o Rui terminou de qualificar
-    // (qualificadoEm) até o vendedor clicar na própria tag — só existe depois
-    // disso ser atribuído a alguém, e só se aplica a leads de WhatsApp.
-    const tempoTxt = (info.vendedor && info.atendido_em && l.qualificadoEm)
-      ? fmtDecorrido(new Date(info.atendido_em)-new Date(l.qualificadoEm)) : null;
-    let resultado = '';
-    if(info.vendedor && info.state==='atendendo'){
-      resultado = `<button class="btn-cliente" onclick="event.stopPropagation();leadOutcome('${nomeEsc}','cliente')">✓ cliente</button>
-        <button class="btn-nao-fechou" onclick="event.stopPropagation();leadOutcome('${nomeEsc}','nao-fechou')">✗ não fechou</button>`;
-    } else if(info.state==='cliente'){
-      resultado = `<span class="badge-cliente">✓ Cliente</span>`;
-    } else if(info.state==='nao-fechou'){
-      resultado = `<span class="badge-nao-fechou">✗ Não fechou</span>`;
-    }
-    statusHtml = `${info.vendedor ? vendedorConfirmadoHTML(info.vendedor) : vendedorTagsHTML(nomeEsc, 'handleTagVendedor')}
-      ${tempoTxt?`<span style="font-size:11px;color:var(--tx3);white-space:nowrap;">⏱ ${tempoTxt}</span>`:''}
-      ${resultado}`;
-  } else {
-    statusHtml = `<span class="badge-status">${l.status||'—'}</span>`;
+  // Tags de vendedor aparecem em qualquer status (antes só depois de
+  // "Transferido") — a loja quer escolher quem atende assim que o lead
+  // chega, não só depois do Rui terminar de qualificar.
+  const info = getLeadState(l.nome);
+  // Tempo até atendimento = do momento em que o Rui terminou de qualificar
+  // (qualificadoEm) até o vendedor clicar na própria tag — só existe depois
+  // disso ser atribuído a alguém, e só se aplica a leads de WhatsApp.
+  const tempoTxt = (info.vendedor && info.atendido_em && l.qualificadoEm)
+    ? fmtDecorrido(new Date(info.atendido_em)-new Date(l.qualificadoEm)) : null;
+  let resultado = '';
+  if(info.vendedor && info.state==='atendendo'){
+    resultado = `<button class="btn-cliente" onclick="event.stopPropagation();leadOutcome('${nomeEsc}','cliente')">✓ cliente</button>
+      <button class="btn-nao-fechou" onclick="event.stopPropagation();leadOutcome('${nomeEsc}','nao-fechou')">✗ não fechou</button>`;
+  } else if(info.state==='cliente'){
+    resultado = `<span class="badge-cliente">✓ Cliente</span>`;
+  } else if(info.state==='nao-fechou'){
+    resultado = `<span class="badge-nao-fechou">✗ Não fechou</span>`;
   }
+  const vendedorHtml = `${info.vendedor ? vendedorConfirmadoHTML(info.vendedor) : vendedorTagsHTML(nomeEsc, 'handleTagVendedor')}
+    ${tempoTxt?`<span style="font-size:11px;color:var(--tx3);white-space:nowrap;">⏱ ${tempoTxt}</span>`:''}
+    ${resultado}`;
+  // Antes de "Transferido" o status ainda diz algo útil (ex: "Em andamento"),
+  // então mantém o badge junto das tags; depois de Transferido as tags/nome
+  // já deixam claro que o lead foi atribuído, sem precisar repetir o texto.
+  const statusHtml = isTransferred ? vendedorHtml : `<span class="badge-status">${l.status||'—'}</span>${vendedorHtml}`;
   return `<div class="ci-hi" style="cursor:pointer;" onclick="openLeadCard(window._ciUnifiedLeads[${idx}])">
     <div class="ci-hi-head">
       <div class="ci-hi-av" style="background:${cor}">${iniA}</div>
@@ -3866,8 +3868,9 @@ function openLeadCard(lead){
       <div class="lcard-row"><div class="lcard-key">Telefone</div><div class="lcard-val" style="font-family:'DM Mono',monospace;font-size:12px">${lead.telefone||'<span style="color:var(--tx3);font-style:italic">Não informado</span>'}</div></div>
       <div class="lcard-row"><div class="lcard-key">Canal</div><div class="lcard-val">${lead.canal||'WhatsApp'}</div></div>
       <div class="lcard-row"><div class="lcard-key">Data</div><div class="lcard-val" style="font-family:'DM Mono',monospace;font-size:12px">${lead.data} · ${lead.hora}</div></div>
+      ${vendedorRowHTML(lead)}
     </div>
-    <!-- ATENDIMENTO — quem atendeu e em quanto tempo (WhatsApp) / vendedor do check-in (presencial) -->
+    <!-- ATENDIMENTO — só presencial (vendedor do check-in); no WhatsApp o vendedor já aparece acima, em Identificação -->
     ${buildAtendimentoSectionHTML(lead)}
     <!-- HISTÓRICO DE CONTATOS ANTERIORES -->
     <div class="lcard-section" id="lc-historico-section" style="display:none">
@@ -3933,28 +3936,35 @@ function closeLeadCard(){
 }
 
 // ============================================================
-// SEÇÃO "ATENDIMENTO" DO POPUP — mesma lógica de vendedor+tempo usada nos
-// cartões da Central de Leads (waHiCardHTML), só que em formato de card
-// detalhado. Presencial mostra o vendedor do check-in, sem tempo (o cliente
-// já chega atendido na hora). WhatsApp só aparece depois de qualificado —
-// antes disso ainda não tem quem atribuir.
+// LINHA "VENDEDOR" DO POPUP — logo abaixo de "Data", dentro de Identificação.
+// Mostra a tag de todos os vendedores até alguém clicar na própria (aí vira
+// só o nome confirmado), mesma lógica do cartão da Central de Leads
+// (waHiCardHTML). Aparece em qualquer status — antes só aparecia depois de
+// "Transferido" (Rui terminar de qualificar), mas a loja quer escolher quem
+// atende assim que o lead chega.
 // ============================================================
-function buildAtendimentoSectionHTML(lead){
-  if((lead.canal||'')==='presencial'){
-    return `<div class="lcard-section">
-      <div class="lcard-section-title">Atendimento</div>
-      ${lead.vendedor?`<span class="filtro-cl-opt sel" style="cursor:default;">${lead.vendedor}</span>`:'<span style="color:var(--tx3);font-style:italic;font-size:12px">Vendedor não informado</span>'}
-    </div>`;
-  }
-  if(lead.status!=='Transferido') return ''; // ainda não qualificado — nada pra atribuir ainda
+function vendedorRowHTML(lead){
+  if((lead.canal||'')==='presencial') return ''; // presencial usa a seção "Atendimento" abaixo (vendedor já vem do Check-in)
   const info = getLeadState(lead.nome);
   const nomeEsc = (lead.nome||'').replace(/'/g,"\\'");
   const tempoTxt = (info.vendedor && info.atendido_em && lead.qualificadoEm)
     ? fmtDecorrido(new Date(info.atendido_em)-new Date(lead.qualificadoEm)) : null;
+  return `<div class="lcard-row"><div class="lcard-key">Vendedor</div><div class="lcard-val" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
+    ${info.vendedor ? vendedorConfirmadoHTML(info.vendedor) : vendedorTagsHTML(nomeEsc, 'handleTagVendedorPopup')}
+    ${tempoTxt?`<span style="font-size:11px;color:var(--tx3);white-space:nowrap;">⏱ ${tempoTxt}</span>`:''}
+  </div></div>`;
+}
+
+// ============================================================
+// SEÇÃO "ATENDIMENTO" DO POPUP — só presencial (vendedor do check-in, sem
+// tempo, o cliente já chega atendido na hora). No WhatsApp o vendedor
+// aparece na linha "Vendedor" acima, dentro de Identificação (vendedorRowHTML).
+// ============================================================
+function buildAtendimentoSectionHTML(lead){
+  if((lead.canal||'')!=='presencial') return '';
   return `<div class="lcard-section">
     <div class="lcard-section-title">Atendimento</div>
-    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">${info.vendedor ? vendedorConfirmadoHTML(info.vendedor) : vendedorTagsHTML(nomeEsc, 'handleTagVendedorPopup')}</div>
-    ${tempoTxt?`<div class="lcard-row"><div class="lcard-key">Tempo até atender</div><div class="lcard-val">${tempoTxt}</div></div>`:''}
+    ${lead.vendedor?`<span class="filtro-cl-opt sel" style="cursor:default;">${lead.vendedor}</span>`:'<span style="color:var(--tx3);font-style:italic;font-size:12px">Vendedor não informado</span>'}
   </div>`;
 }
 
