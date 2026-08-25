@@ -504,7 +504,7 @@ textarea.sql{font-family:'DM Mono',monospace;font-size:11.5px;line-height:1.55;b
       <div class="model" id="gr_custos_fixos_box" style="display:none;margin-top:16px;">
         <div class="subsec">Itens de custo fixo cadastrados</div>
         <div id="gr_custos_fixos_lista"></div>
-        <p class="hint" style="margin-bottom:0;">Edição desses itens ainda não está disponível aqui — pendente de um webhook novo no n8n (ver nota no rodapé desta aba).</p>
+        <p class="hint" style="margin-bottom:0;">Pra criar, reajustar ou encerrar um item, use "Editar custos fixos" logo abaixo.</p>
       </div>
       <div class="model" id="gr_por_agente_box" style="display:none;margin-top:16px;">
         <div class="subsec">Custo IA por agente</div>
@@ -520,6 +520,33 @@ textarea.sql{font-family:'DM Mono',monospace;font-size:11.5px;line-height:1.55;b
       </div>
       <p class="hint" id="gr_wa_pendente" style="display:none;color:var(--tx3);margin-top:14px;margin-bottom:0;">Custo de WhatsApp: Dado indisponível — pipeline pendente (a tabela de origem do Twilio ainda não tem dado real). Isso não afeta os campos de IA acima.</p>
       <p class="hint" id="gr_erro" style="display:none;color:var(--red);margin-top:14px;margin-bottom:0;">Não foi possível buscar os custos reais agora — mostrando "Dado indisponível". Tente Atualizar.</p>
+    </div>
+
+    <div class="sec">Editar custos fixos</div>
+    <div class="card" style="margin-bottom:16px;">
+      <p class="hint" style="margin:0 0 14px;">Mesmo padrão de segurança das abas Configuração e Suporte: a página só monta o SQL pronto — você copia e cola no SQL Editor do Supabase. Nenhuma senha de escrita fica exposta no navegador.</p>
+      <div class="field-grid">
+        <div class="field"><label>Concessionária (slug)</label><input type="text" id="gf_slug" value="adtsa"></div>
+        <div class="field"><label>Item</label><input type="text" id="gf_item" placeholder="Ex.: easypanel, supabase, github_pages, redis, outros"></div>
+        <div class="field"><label>Valor mensal</label><input type="number" id="gf_valor" min="0" step="0.01" placeholder="0,00"></div>
+        <div class="field"><label>Moeda</label>
+          <select id="gf_moeda">
+            <option value="BRL" selected>BRL</option>
+            <option value="USD">USD</option>
+          </select>
+        </div>
+        <div class="field"><label>Vigência início</label><input type="date" id="gf_inicio"></div>
+        <div class="field"><label>Observação (opcional)</label><input type="text" id="gf_obs"></div>
+      </div>
+      <label class="check" style="margin-bottom:14px;"><input type="checkbox" id="gf_encerrar"> Encerrar o item vigente anterior com esse mesmo nome (mesma concessionária) antes de inserir o novo</label>
+      <button class="btn-ref" style="margin-left:0;" type="button" id="gfBtnGerar">Gerar SQL do custo fixo</button>
+      <div class="sqlbox" id="gfOutWrap" style="display:none;">
+        <div class="sqlbox-head"><div class="subsec">SQL pronto pra colar no Supabase</div>
+          <div><span class="copy-status" id="gfCp1">copiado ✓</span> <button class="copy-btn" type="button" data-copy="gfSqlOut" data-status="gfCp1">Copiar</button></div>
+        </div>
+        <textarea class="sql" id="gfSqlOut" readonly rows="6"></textarea>
+      </div>
+      <p class="hint" id="gfErro" style="display:none;color:var(--red);">Preencha pelo menos: concessionária, item, valor mensal e vigência início.</p>
     </div>
 
     <div class="sec">Simulador <span style="font-weight:400;text-transform:none;color:var(--tx3);">— cenários hipotéticos, não é o gasto real</span></div>
@@ -1459,8 +1486,53 @@ let gInitDone = false;
 function initGastosTab(){
   gWireFields();
   gFillAll();
+  gfWire();
+  const inicioEl = document.getElementById('gf_inicio');
+  if (inicioEl && !inicioEl.value) inicioEl.value = new Date().toISOString().slice(0,10);
   gInitDone = true;
   carregarGastosReal();
+}
+
+// ============================================================
+// ABA GASTOS — "Editar custos fixos": mesmo padrão de segurança das abas
+// Configuração e Suporte. Só monta o SQL, você cola no Supabase — nenhuma
+// credencial de escrita fica exposta no navegador.
+// ============================================================
+function gfEscSql(s){ return String(s || '').replace(/'/g, "''"); }
+let gfWired = false;
+function gfWire(){
+  if (gfWired) return;
+  gfWired = true;
+  const btn = document.getElementById('gfBtnGerar');
+  if (!btn) return;
+  btn.addEventListener('click', function(){
+    const slug = document.getElementById('gf_slug').value.trim();
+    const item = document.getElementById('gf_item').value.trim();
+    const valorStr = document.getElementById('gf_valor').value;
+    const moeda = document.getElementById('gf_moeda').value;
+    const inicio = document.getElementById('gf_inicio').value;
+    const obs = document.getElementById('gf_obs').value.trim();
+    const encerrar = document.getElementById('gf_encerrar').checked;
+    const erroEl = document.getElementById('gfErro');
+
+    if (!slug || !item || valorStr === '' || !inicio) {
+      erroEl.style.display = 'block';
+      return;
+    }
+    erroEl.style.display = 'none';
+
+    let sql = '';
+    if (encerrar) {
+      sql += "update public.custos_fixos\nset vigencia_fim = date '" + gfEscSql(inicio) + "' - interval '1 day'\n" +
+        "where concessionaria_slug = '" + gfEscSql(slug) + "' and item = '" + gfEscSql(item) + "' and vigencia_fim is null;\n\n";
+    }
+    sql += "insert into public.custos_fixos (concessionaria_slug, item, valor_mensal, moeda, vigencia_inicio, observacao)\nvalues ('" +
+      gfEscSql(slug) + "', '" + gfEscSql(item) + "', " + Number(valorStr).toFixed(2) + ", '" + gfEscSql(moeda) + "', date '" +
+      gfEscSql(inicio) + "', " + (obs ? "'" + gfEscSql(obs) + "'" : 'null') + ");";
+
+    document.getElementById('gfSqlOut').value = sql;
+    document.getElementById('gfOutWrap').style.display = 'block';
+  });
 }
 
 function atualizarDadosReaisGastos(){
@@ -1533,13 +1605,16 @@ async function carregarGastosReal(){
   const elTotal = document.getElementById('gr_total');
   if (iaDisponivel && waDisponivel && waMoeda === 'USD') {
     elTotal.textContent = fmtUsd(Number(ia.custo_usd) + Number(wa.custo_total));
+  } else if (iaDisponivel && waDisponivel) {
+    elTotal.textContent = fmtUsd(ia.custo_usd) + ' (só IA — WhatsApp em ' + waMoeda + ', não somado sem câmbio real)';
   } else if (iaDisponivel) {
     elTotal.textContent = fmtUsd(ia.custo_usd) + ' (só IA — WhatsApp indisponível)';
   } else {
     elTotal.textContent = 'Dado indisponível';
   }
 
-  // Itens de custos_fixos (leitura — edição pendente de webhook novo no n8n)
+  // Itens de custos_fixos (leitura). Edição é feita pelo gerador de SQL em "Editar custos fixos" acima
+  // (mesmo padrão de segurança das abas Configuração/Suporte — não é uma escrita direta ao Supabase).
   const itens = Array.isArray(fixo.itens) ? fixo.itens : [];
   const boxItens = document.getElementById('gr_custos_fixos_box');
   if (itens.length) {
