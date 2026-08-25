@@ -338,8 +338,18 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 /* tela de login */
 .login-overlay{position:fixed;inset:0;background:var(--bg);z-index:900;display:none;align-items:center;justify-content:center;}
 .login-overlay::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");opacity:.025;pointer-events:none;}
-.login-box{position:relative;background:var(--surface);border:1px solid rgba(212,175,55,.2);border-radius:var(--r);padding:40px;width:380px;box-shadow:0 24px 80px rgba(0,0,0,.9);}
+.login-box{position:relative;background:var(--surface);border:1px solid rgba(212,175,55,.2);border-radius:var(--r);padding:40px;width:380px;max-height:88vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.9);}
+.login-box.signup-box{width:440px;}
 .login-brand{text-align:center;margin-bottom:28px;}
+.gate-sub{text-align:center;font-size:13px;color:var(--tx2);margin-bottom:24px;}
+.gate-options{display:flex;flex-direction:column;gap:12px;}
+.gate-opt{background:var(--s2);border:1px solid var(--bdr);border-radius:var(--rsm);padding:16px 18px;text-align:left;cursor:pointer;font-family:inherit;transition:all .2s;}
+.gate-opt:hover{border-color:rgba(212,175,55,.5);background:var(--s3);transform:translateY(-1px);}
+.gate-opt-title{font-size:14px;font-weight:700;color:var(--tx);margin-bottom:3px;}
+.gate-opt-desc{font-size:12px;color:var(--tx3);line-height:1.4;}
+.gate-back{background:none;border:none;color:var(--tx3);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;padding:0;margin-bottom:18px;transition:color .15s;}
+.gate-back:hover{color:var(--ac-l);}
+.signup-intro{font-size:12px;color:var(--tx2);line-height:1.5;text-align:center;margin-bottom:22px;}
 .login-brand .sb-brand{font-size:26px;}
 .login-eye{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--tx3);margin-bottom:6px;font-weight:600;text-align:center;}
 .login-field{margin-bottom:16px;}
@@ -352,6 +362,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 .btn-login:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(212,175,55,.3);}
 .btn-login:disabled{opacity:.6;pointer-events:none;}
 .login-err{display:none;margin-top:14px;padding:10px 14px;border-radius:var(--rsm);background:var(--red-bg);color:var(--red);font-size:12px;font-weight:600;text-align:center;}
+.login-ok{display:none;margin-top:14px;padding:10px 14px;border-radius:var(--rsm);background:var(--grn-bg);color:var(--grn-l);font-size:12px;font-weight:600;text-align:center;line-height:1.5;}
 .sb-logout{width:100%;background:none;border:1px solid var(--bdr);color:var(--tx2);padding:9px 0;border-radius:var(--rsm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;margin-top:10px;}
 .sb-logout:hover{border-color:var(--red);color:var(--red);}
 .sb-tenant{font-size:12px;color:var(--tx2);font-weight:600;margin-top:2px;}
@@ -711,9 +722,31 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 </head>
 <body>
 
-<!-- TELA DE LOGIN — cada concessionária entra com o próprio usuário e senha -->
+<!-- TELA DE ACESSO — portão com 2 caminhos: cliente já cadastrado x quem quer contratar o Rui -->
 <div class="login-overlay" id="loginOverlay">
-  <form class="login-box" id="loginForm" onsubmit="doLogin(event)">
+
+  <!-- Portão de entrada -->
+  <div class="login-box" id="accessGate">
+    <div class="login-brand">
+      <div class="login-eye">BEM-VINDO</div>
+      <div class="sb-brand">RUI <span>AI</span></div>
+    </div>
+    <div class="gate-sub">Como você quer entrar?</div>
+    <div class="gate-options">
+      <button type="button" class="gate-opt" onclick="showAccessView('login')">
+        <div class="gate-opt-title">Já sou cliente</div>
+        <div class="gate-opt-desc">Acessar o painel da minha concessionária</div>
+      </button>
+      <button type="button" class="gate-opt" onclick="showAccessView('signup')">
+        <div class="gate-opt-title">Quero contratar o Rui</div>
+        <div class="gate-opt-desc">Fazer parte da comunidade de clientes do Rui</div>
+      </button>
+    </div>
+  </div>
+
+  <!-- Login — cliente já cadastrado -->
+  <form class="login-box" id="loginForm" style="display:none" onsubmit="doLogin(event)">
+    <button type="button" class="gate-back" onclick="showAccessView('gate')">← Voltar</button>
     <div class="login-brand">
       <div class="login-eye">ACESSO RESTRITO</div>
       <div class="sb-brand">RUI <span>AI</span></div>
@@ -734,6 +767,92 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     </div>
     <div class="login-err" id="loginErr"></div>
   </form>
+
+  <!-- Cadastro de interesse — quem quer se tornar cliente do Rui -->
+  <form class="login-box signup-box" id="signupForm" style="display:none" onsubmit="return submitCadastroInteresse(event)">
+    <button type="button" class="gate-back" onclick="showAccessView('gate')">← Voltar</button>
+    <div class="login-brand">
+      <div class="login-eye">QUERO CONHECER O RUI</div>
+      <div class="sb-brand">RUI <span>AI</span></div>
+    </div>
+    <div class="signup-intro">Preencha seus dados — nossa equipe entra em contato para marcar uma reunião rápida.</div>
+
+    <div class="login-field">
+      <div class="modal-label">Seu nome</div>
+      <input class="modal-input" type="text" id="cadNome" autocomplete="off"/>
+    </div>
+    <div class="login-field">
+      <div class="modal-label">Nome da concessionária/loja</div>
+      <input class="modal-input" type="text" id="cadEmpresa" autocomplete="off"/>
+    </div>
+    <div class="modal-row">
+      <div style="flex:1"><div class="modal-label">Cidade</div><input class="modal-input" type="text" id="cadCidade" autocomplete="off"/></div>
+      <div style="flex:1"><div class="modal-label">Estado</div><input class="modal-input" type="text" id="cadEstado" maxlength="2" style="text-transform:uppercase" autocomplete="off"/></div>
+    </div>
+    <div class="login-field">
+      <div class="modal-label">WhatsApp</div>
+      <input class="modal-input" type="tel" id="cadWhatsapp" placeholder="(00) 00000-0000" autocomplete="off"/>
+    </div>
+    <div class="login-field">
+      <div class="modal-label">E-mail</div>
+      <input class="modal-input" type="email" id="cadEmail" autocomplete="off"/>
+    </div>
+
+    <div class="ci-field">
+      <div class="modal-label">Segmento</div>
+      <div class="ci-chips" id="cad-segmento">
+        <div class="ci-chip" data-val="Concessionária de carros" onclick="ciChip(this,'cad-segmento','sel-gold')">Carros</div>
+        <div class="ci-chip" data-val="Multimarcas" onclick="ciChip(this,'cad-segmento','sel-gold')">Multimarcas</div>
+        <div class="ci-chip" data-val="Loja de motos" onclick="ciChip(this,'cad-segmento','sel-gold')">Motos</div>
+        <div class="ci-chip" data-val="Outro" onclick="ciChip(this,'cad-segmento','sel-gold')">Outro</div>
+      </div>
+    </div>
+    <div class="ci-field">
+      <div class="modal-label">Quantas lojas/unidades</div>
+      <div class="ci-chips" id="cad-lojas">
+        <div class="ci-chip" data-val="1" onclick="ciChip(this,'cad-lojas','sel-gold')">1</div>
+        <div class="ci-chip" data-val="2 a 5" onclick="ciChip(this,'cad-lojas','sel-gold')">2 a 5</div>
+        <div class="ci-chip" data-val="6 ou mais" onclick="ciChip(this,'cad-lojas','sel-gold')">6 ou mais</div>
+      </div>
+    </div>
+    <div class="ci-field">
+      <div class="modal-label">Leads por mês, aproximadamente</div>
+      <div class="ci-chips" id="cad-volume">
+        <div class="ci-chip" data-val="Até 50" onclick="ciChip(this,'cad-volume','sel-gold')">Até 50</div>
+        <div class="ci-chip" data-val="50 a 200" onclick="ciChip(this,'cad-volume','sel-gold')">50 a 200</div>
+        <div class="ci-chip" data-val="200 a 500" onclick="ciChip(this,'cad-volume','sel-gold')">200 a 500</div>
+        <div class="ci-chip" data-val="Mais de 500" onclick="ciChip(this,'cad-volume','sel-gold')">Mais de 500</div>
+      </div>
+    </div>
+    <div class="ci-field">
+      <div class="modal-label">Melhor horário pra uma reunião rápida</div>
+      <div class="ci-chips" id="cad-horario">
+        <div class="ci-chip" data-val="Manhã" onclick="ciChip(this,'cad-horario','sel-gold')">Manhã</div>
+        <div class="ci-chip" data-val="Tarde" onclick="ciChip(this,'cad-horario','sel-gold')">Tarde</div>
+        <div class="ci-chip" data-val="Noite" onclick="ciChip(this,'cad-horario','sel-gold')">Noite</div>
+      </div>
+    </div>
+    <div class="ci-field">
+      <div class="modal-label">Como conheceu o Rui</div>
+      <div class="ci-chips" id="cad-origem">
+        <div class="ci-chip" data-val="Indicação" onclick="ciChip(this,'cad-origem','sel-gold')">Indicação</div>
+        <div class="ci-chip" data-val="Instagram" onclick="ciChip(this,'cad-origem','sel-gold')">Instagram</div>
+        <div class="ci-chip" data-val="Google" onclick="ciChip(this,'cad-origem','sel-gold')">Google</div>
+        <div class="ci-chip" data-val="Outro" onclick="ciChip(this,'cad-origem','sel-gold')">Outro</div>
+      </div>
+    </div>
+    <div class="login-field">
+      <div class="modal-label">Mensagem (opcional)</div>
+      <textarea class="modal-input" id="cadMensagem" rows="2" style="resize:vertical;font-family:inherit"></textarea>
+    </div>
+
+    <div class="login-actions">
+      <button type="submit" class="btn-login" id="signupBtn">Quero fazer parte</button>
+    </div>
+    <div class="login-err" id="signupErr"></div>
+    <div class="login-ok" id="signupOk"></div>
+  </form>
+
 </div>
 
 <div class="loading" id="ld"><div class="ld-box"><div class="spinner"></div><div style="font-size:14px;font-weight:600;color:var(--tx)">Atualizando...</div></div></div>
@@ -4195,6 +4314,12 @@ const ENDPOINTS = {
 const N8N_CHAT_HISTORY  = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/adtsa-chat-history';
 const N8N_LOGIN         = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/rui-login';
 const N8N_LOGOUT        = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/rui-logout';
+// Cadastro de interesse (quem quer se tornar cliente do Rui) — endpoint ainda NÃO
+// existe no n8n, precisa ser criado (Webhook -> INSERT em rui_cadastros_interesse
+// no Supabase, ver SQL entregue). Enquanto não existir, o formulário mostra um
+// erro com um link de WhatsApp pra não perder o lead — ver submitCadastroInteresse().
+const N8N_CADASTRO_INTERESSE = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/rui-cadastro-interesse';
+const WHATSAPP_COMERCIAL = '5581995090483';
 const N8N_LEADS_QUERY   = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/rui-leads-query';
 const N8N_FILA_QUERY    = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/rui-fila-query';
 const N8N_HISTORICO_QUERY = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/rui-leads-historico-query';
@@ -4261,11 +4386,25 @@ function showLogin(msg){
   if(ov) ov.style.display='flex';
   if(sb) sb.style.display='none';
   if(main) main.style.display='none';
+  // sessão expirada (msg preenchido) volta direto pro login, já que quem expirou
+  // era necessariamente alguém que já tinha usuário/senha; primeira visita (sem
+  // msg) mostra o portão com os 2 caminhos.
+  showAccessView(msg ? 'login' : 'gate');
   const err=document.getElementById('loginErr');
   if(err){
     if(msg){ err.textContent=msg; err.style.display='block'; }
     else{ err.style.display='none'; }
   }
+}
+
+// Portão de acesso: 'gate' (escolha inicial) | 'login' (já é cliente) | 'signup' (quer contratar)
+function showAccessView(view){
+  const gate=document.getElementById('accessGate');
+  const login=document.getElementById('loginForm');
+  const signup=document.getElementById('signupForm');
+  if(gate) gate.style.display = view==='gate' ? 'block' : 'none';
+  if(login) login.style.display = view==='login' ? 'block' : 'none';
+  if(signup) signup.style.display = view==='signup' ? 'block' : 'none';
 }
 function hideLogin(){
   const ov=document.getElementById('loginOverlay');
@@ -4310,6 +4449,57 @@ async function doLogin(ev){
     err.textContent='Sem conexão com o servidor. Tente novamente.';
     err.style.display='block';
     btn.disabled=false; btn.textContent='Entrar';
+  }
+  return false;
+}
+
+// Cadastro de interesse — quem quer se tornar cliente do Rui (não é login).
+// Não guarda sessão nenhuma; só envia os dados pro n8n gravar em
+// rui_cadastros_interesse. Se o endpoint ainda não existir no n8n (fetch falha
+// ou responde erro), mostra um jeito de falar direto no WhatsApp em vez de
+// deixar o lead se perder em silêncio.
+async function submitCadastroInteresse(ev){
+  if(ev&&ev.preventDefault) ev.preventDefault();
+  const nome=(document.getElementById('cadNome').value||'').trim();
+  const empresa=(document.getElementById('cadEmpresa').value||'').trim();
+  const whatsapp=(document.getElementById('cadWhatsapp').value||'').trim();
+  const btn=document.getElementById('signupBtn');
+  const err=document.getElementById('signupErr');
+  const ok=document.getElementById('signupOk');
+  err.style.display='none'; ok.style.display='none';
+  if(!nome||!empresa||!whatsapp){
+    err.textContent='Preencha nome, concessionária e WhatsApp.';
+    err.style.display='block';
+    return false;
+  }
+  const payload={
+    nome_responsavel: nome,
+    empresa: empresa,
+    cidade: (document.getElementById('cadCidade').value||'').trim(),
+    estado: (document.getElementById('cadEstado').value||'').trim(),
+    whatsapp: whatsapp.replace(/\D/g,''),
+    email: (document.getElementById('cadEmail').value||'').trim(),
+    segmento: ciGetChip('cad-segmento'),
+    quantidade_lojas: ciGetChip('cad-lojas'),
+    volume_leads_mes: ciGetChip('cad-volume'),
+    melhor_horario_contato: ciGetChip('cad-horario'),
+    como_conheceu: ciGetChip('cad-origem'),
+    mensagem: (document.getElementById('cadMensagem').value||'').trim(),
+    origem_formulario: 'jbs-rui-dashboard-v2'
+  };
+  btn.disabled=true; btn.textContent='Enviando...';
+  try{
+    const res=await fetch(N8N_CADASTRO_INTERESSE,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    if(!res.ok) throw new Error('falha no envio');
+    ok.innerHTML='Cadastro recebido! Em breve entramos em contato para marcar uma reunião rápida.';
+    ok.style.display='block';
+    document.getElementById('signupForm').reset();
+    document.querySelectorAll('#signupForm .ci-chip').forEach(c=>{ [...c.classList].forEach(cls=>{ if(cls.startsWith('sel-')) c.classList.remove(cls); }); });
+    btn.textContent='Enviado ✓';
+  }catch(e){
+    err.innerHTML='Não conseguimos enviar agora. Fale direto com a gente: <a href="https://wa.me/'+WHATSAPP_COMERCIAL+'" target="_blank" rel="noopener" style="color:var(--ac-l);font-weight:700;">WhatsApp</a>';
+    err.style.display='block';
+    btn.disabled=false; btn.textContent='Quero fazer parte';
   }
   return false;
 }
