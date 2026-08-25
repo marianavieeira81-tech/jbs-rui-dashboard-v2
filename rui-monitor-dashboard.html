@@ -490,14 +490,23 @@ textarea.sql{font-family:'DM Mono',monospace;font-size:11.5px;line-height:1.55;b
       Vindo do Monitor (aba anterior): <b id="gReal_custo">—</b> gastos com IA já registrados · <b id="gReal_exec">—</b> execuções.
     </div>
 
-    <div class="sec">Custo real do mês <span style="font-weight:400;text-transform:none;color:var(--tx3);">— somado direto de ai_usage_log + twilio_usage_log</span></div>
+    <div class="sec">Custo real do mês <span style="font-weight:400;text-transform:none;color:var(--tx3);">— direto das views do Supabase, sem estimativa</span></div>
     <div class="card" style="margin-bottom:16px;">
       <div class="kpi-grid-3">
         <div class="kpi"><div class="kpi-lbl">Custo IA (mês)</div><div class="kpi-val" id="gr_ia_total" style="font-size:26px;">—</div></div>
-        <div class="kpi"><div class="kpi-lbl">Custo WhatsApp (mês)</div><div class="kpi-val" id="gr_wa_total" style="font-size:26px;">—</div></div>
-        <div class="kpi"><div class="kpi-lbl">Custo total mensal (IA + WhatsApp)</div><div class="kpi-val" id="gr_total" style="font-size:26px;">—</div></div>
+        <div class="kpi"><div class="kpi-lbl">Custo WhatsApp (mês)</div><div class="kpi-val" id="gr_wa_total" style="font-size:20px;">—</div></div>
+        <div class="kpi"><div class="kpi-lbl">Custo total (IA + WhatsApp, USD)</div><div class="kpi-val" id="gr_total" style="font-size:22px;">—</div></div>
       </div>
-      <div class="model" id="gr_por_agente_box" style="display:none;">
+      <div class="kpi-grid-2" style="margin-top:16px;margin-bottom:0;">
+        <div class="kpi"><div class="kpi-lbl">Custo fixo (mês) <span style="font-weight:400;text-transform:none;">— BRL, moeda diferente da IA, não somado acima</span></div><div class="kpi-val" id="gr_fixo_total" style="font-size:26px;">—</div></div>
+        <div class="kpi"><div class="kpi-lbl">Custo real de IA por lead</div><div class="kpi-val" id="gr_por_lead" style="font-size:26px;">—</div></div>
+      </div>
+      <div class="model" id="gr_custos_fixos_box" style="display:none;margin-top:16px;">
+        <div class="subsec">Itens de custo fixo cadastrados</div>
+        <div id="gr_custos_fixos_lista"></div>
+        <p class="hint" style="margin-bottom:0;">Edição desses itens ainda não está disponível aqui — pendente de um webhook novo no n8n (ver nota no rodapé desta aba).</p>
+      </div>
+      <div class="model" id="gr_por_agente_box" style="display:none;margin-top:16px;">
         <div class="subsec">Custo IA por agente</div>
         <div id="gr_por_agente"></div>
       </div>
@@ -508,20 +517,22 @@ textarea.sql{font-family:'DM Mono',monospace;font-size:11.5px;line-height:1.55;b
       <div class="model" id="gr_por_concessionaria_box" style="display:none;margin-top:12px;">
         <div class="subsec">Custo IA por concessionária (mês)</div>
         <div id="gr_por_concessionaria"></div>
-        <p class="hint" id="gr_wa_nao_dividido" style="display:none;margin:8px 0 0;">O custo de WhatsApp ainda não é dividido por concessionária (falta essa informação na origem) — ele entra só no total geral acima.</p>
       </div>
-      <p class="hint" id="gr_erro" style="display:none;color:var(--red);margin-top:14px;">Não foi possível buscar os custos reais agora (endpoint indisponível ou tabela vazia) — mostrando "—". O campo "WhatsApp R$/mês" abaixo continua editável manualmente.</p>
+      <p class="hint" id="gr_wa_pendente" style="display:none;color:var(--tx3);margin-top:14px;margin-bottom:0;">Custo de WhatsApp: Dado indisponível — pipeline pendente (a tabela de origem do Twilio ainda não tem dado real). Isso não afeta os campos de IA acima.</p>
+      <p class="hint" id="gr_erro" style="display:none;color:var(--red);margin-top:14px;margin-bottom:0;">Não foi possível buscar os custos reais agora — mostrando "Dado indisponível". Tente Atualizar.</p>
     </div>
 
-    <div class="sec">Custo Real por Lead</div>
+    <div class="sec">Simulador <span style="font-weight:400;text-transform:none;color:var(--tx3);">— cenários hipotéticos, não é o gasto real</span></div>
     <div class="card" style="margin-bottom:16px;">
+      <p class="hint" style="margin-top:0;">Estes campos são editáveis pra você testar cenários (ex.: "e se eu tivesse 200 leads/mês?"). Eles NÃO mudam o bloco "Custo real do mês" acima — são preenchidos uma vez com o dado real atual como ponto de partida, mas depois disso é só uma simulação.</p>
+
       <div class="subsec">Custos fixos <span style="font-weight:400;text-transform:none;color:var(--tx3);">— não mudam com o volume</span></div>
       <div class="field-grid">
         <div class="field"><label>EasyPanel R$/mês</label><input type="number" id="g_ep" min="0" step="0.01" value="0"></div>
         <div class="field"><label>Supabase R$/mês</label><input type="number" id="g_sb" min="0" step="0.01" value="0"></div>
         <div class="field"><label>GitHub Pages R$/mês</label><input type="number" id="g_gh" min="0" step="0.01" value="0"></div>
         <div class="field"><label>Redis R$/mês</label><input type="number" id="g_rd" min="0" step="0.01" value="0"></div>
-        <div class="field"><label>WhatsApp R$/mês</label><input type="number" id="g_wa" min="0" step="0.01" value="0"><span class="hint" id="g_wa_nota" style="display:none;margin:0;color:var(--ac-l);">puxado automaticamente do Twilio</span></div>
+        <div class="field"><label>WhatsApp R$/mês</label><input type="number" id="g_wa" min="0" step="0.01" value="0"><span class="hint" id="g_wa_nota" style="display:none;margin:0;color:var(--ac-l);">preenchido a partir do dado real — edite se quiser simular outro valor</span></div>
         <div class="field"><label>Outros R$/mês</label><input type="number" id="g_ou" min="0" step="0.01" value="0"></div>
       </div>
 
@@ -537,10 +548,12 @@ textarea.sql{font-family:'DM Mono',monospace;font-size:11.5px;line-height:1.55;b
         <div class="field"><label>Mensagens / lead</label><input type="number" id="g_iamsgs" min="0" step="1" value="8"></div>
         <div class="field"><label>Leads no mês</label><input type="number" id="g_leads" min="0" step="1" value="0"></div>
       </div>
-      <p class="hint">Preços padrão = tabela oficial da API da Anthropic. Câmbio é referência — confira o valor atual. Tokens por mensagem: pegue o real rodando a consulta abaixo.</p>
+      <p class="hint">Preços padrão = tabela oficial da API da Anthropic. Câmbio é referência — confira o valor atual.</p>
+
+      <button type="button" onclick="gPreencherComReal()">Preencher com dados reais atuais</button>
 
       <div class="callout">
-        <b>Pra pegar tokens/custo reais</b> (em vez de estimar), rode isto no SQL Editor do Supabase, projeto GWM, tabela <code style="font-family:'DM Mono',monospace;background:var(--s2);padding:1px 5px;border-radius:4px;">rui_eventos</code>:
+        <b>Alternativa manual</b>, se o bloco "Custo real do mês" acima estiver indisponível: rode isto no SQL Editor do Supabase, projeto GWM, tabela <code style="font-family:'DM Mono',monospace;background:var(--s2);padding:1px 5px;border-radius:4px;">rui_eventos</code>:
         <textarea class="sql" readonly rows="4" style="margin-top:8px;">select count(*) as execucoes, sum(tokens_input) as tokens_in, sum(tokens_output) as tokens_out,
   round(sum(custo_estimado_usd)::numeric,4) as custo_usd
 from rui_eventos
@@ -551,9 +564,9 @@ where tipo_evento = 'execucao_ok' and criado_em >= date_trunc('month', now());</
       <hr style="border:none;border-top:1px solid var(--bdr);margin:20px 0;">
 
       <div class="kpi-grid-3">
-        <div class="kpi"><div class="kpi-lbl">Custo total mensal</div><div class="kpi-val" id="g_total" style="font-size:26px;">—</div><div class="hint" id="g_total_fonte" style="margin:4px 0 0;"></div></div>
-        <div class="kpi"><div class="kpi-lbl">Custo real por lead</div><div class="kpi-val" id="g_porlead" style="font-size:26px;">—</div></div>
-        <div class="kpi"><div class="kpi-lbl">↳ parte IA / parte infra</div><div class="kpi-val" id="g_split" style="font-size:16px;">—</div></div>
+        <div class="kpi"><div class="kpi-lbl">Custo total mensal (simulado)</div><div class="kpi-val" id="g_total" style="font-size:26px;">—</div></div>
+        <div class="kpi"><div class="kpi-lbl">Custo por lead (simulado)</div><div class="kpi-val" id="g_porlead" style="font-size:26px;">—</div></div>
+        <div class="kpi"><div class="kpi-lbl">↳ parte IA / parte infra (simulado)</div><div class="kpi-val" id="g_split" style="font-size:16px;">—</div></div>
       </div>
     </div>
 
@@ -587,7 +600,7 @@ where tipo_evento = 'execucao_ok' and criado_em >= date_trunc('month', now());</
           <div class="mline"><span>Excedente/lead extra</span><b id="gm4excedente">—</b></div>
         </div>
       </div>
-      <p class="nota">Os 4 modelos são calibrados pra gerar a MESMA margem — a diferença é só como o preço é cobrado e explicado pro cliente.</p>
+      <p class="nota">Os 4 modelos são calibrados pra gerar a MESMA margem — a diferença é só como o preço é cobrado e explicado pro cliente. Usam os valores do Simulador acima (margem, leads esperados), não o bloco de custo real.</p>
     </div>
 
   </div><!-- /tab-panel-gastos -->
@@ -1326,9 +1339,9 @@ const G_KEY = 'rui_gastos_v1';
 function gDefaultState(){
   return {
     custos:{ep:0,sb:0,gh:0,rd:0,wa:0,ou:0,leads:0,
-      iaEntrada:1.00,iaSaida:5.00,iaCache:0.10,iaPctCache:0,iaCambio:5.07,iaTokIn:0,iaTokOut:0,iaMsgs:8,
-      iaRealTotal:null},
-    preco:{margem:30,leads:50,incl:40,modelo:null}
+      iaEntrada:1.00,iaSaida:5.00,iaCache:0.10,iaPctCache:0,iaCambio:5.07,iaTokIn:0,iaTokOut:0,iaMsgs:8},
+    preco:{margem:30,leads:50,incl:40,modelo:null},
+    simuladorPreenchidoAuto:false
   };
 }
 function gLoad(){
@@ -1355,13 +1368,7 @@ function gCustoIAporMensagemBRL(){
 }
 function gCustoIAporLead(){ const msg = gCustoIAporMensagemBRL(); return msg===null ? null : msg*gState.custos.iaMsgs; }
 function gCustoIATotalMensal(){ const perLead = gCustoIAporLead(); return perLead===null ? null : perLead*gState.custos.leads; }
-// Usa o custo real de IA (vindo de ai_usage_log via ENDPOINT_GASTOS_REAL) quando disponível.
-// Sem isso, cai pra estimativa manual (tokens/mensagem x mensagens/lead x leads).
-function gCustoIATotalMensalEfetivo(){
-  if (gState.custos.iaRealTotal != null) return gState.custos.iaRealTotal;
-  return gCustoIATotalMensal();
-}
-function gCustoTotalMensal(){ const ia = gCustoIATotalMensalEfetivo(); return ia===null ? null : gCustoInfraFixa()+ia; }
+function gCustoTotalMensal(){ const ia = gCustoIATotalMensal(); return ia===null ? null : gCustoInfraFixa()+ia; }
 function gCustoPorLead(){ const leads=gState.custos.leads; if(leads<=0) return null; const total=gCustoTotalMensal(); return total===null ? null : total/leads; }
 
 function gRenderCusto(){
@@ -1369,14 +1376,8 @@ function gRenderCusto(){
   document.getElementById('g_total').textContent = total===null ? '—' : gFmtBRL(total);
   const cpl = gCustoPorLead();
   document.getElementById('g_porlead').textContent = cpl===null ? '—' : gFmtBRL(cpl);
-  const iaTotal = gCustoIATotalMensalEfetivo();
+  const iaTotal = gCustoIATotalMensal();
   document.getElementById('g_split').textContent = (iaTotal===null ? '—' : gFmtBRL(iaTotal)) + ' IA · ' + gFmtBRL(gCustoInfraFixa()) + ' infra';
-  const elFonte = document.getElementById('g_total_fonte');
-  if (elFonte) {
-    elFonte.textContent = (gState.custos.iaRealTotal != null)
-      ? 'usando custo real de IA deste mês (ai_usage_log)'
-      : 'usando estimativa manual — preencha os campos acima ou aguarde o custo real carregar';
-  }
 }
 
 function gRenderModelos(){
@@ -1472,23 +1473,29 @@ function atualizarDadosReaisGastos(){
   elE.textContent = (d.total_execucoes!=null) ? d.total_execucoes : '—';
 }
 
-// ===== Custo real do mês (aba Gastos) — soma ai_usage_log + twilio_usage_log via endpoint novo no n8n =====
+// ===== Custo real do mês (aba Gastos) — só dado das views do Supabase, nunca estimativa =====
 // Não busca o Supabase direto do navegador (mesma decisão de segurança do resto do dashboard) — passa pelo
-// endpoint ENDPOINT_GASTOS_REAL, com o mesmo header x-adtsa-secret dos outros.
+// endpoint ENDPOINT_GASTOS_REAL, com o mesmo header x-adtsa-secret dos outros. A concessionária é definida
+// do lado do n8n a partir dessa chave (o navegador nunca manda um slug — evita ver dado de outra loja).
+// Contrato de resposta esperado (ver especificação entregue separadamente pra atualizar o workflow n8n):
+//   { ia:{disponivel,chamadas,leads_distintos,tokens_input_total,tokens_output_total,custo_usd,
+//         custo_por_lead_usd,por_agente:[...],por_dia:[...],por_concessionaria:[...]},
+//     whatsapp:{disponivel,custo_total,moeda},
+//     custo_fixo:{disponivel,valor_brl_mes,itens:[...]} }
+// Cada bloco tem seu próprio "disponivel" — se vier false, ausente, ou a chamada falhar, mostra
+// "Dado indisponível" (ou a variante "— pipeline pendente" pro WhatsApp). Nunca zero/estimativa aqui.
 function gastosRealMarcarErro(){
-  document.getElementById('gr_ia_total').textContent = '—';
-  document.getElementById('gr_wa_total').textContent = '—';
-  document.getElementById('gr_total').textContent = '—';
+  document.getElementById('gr_ia_total').textContent = 'Dado indisponível';
+  document.getElementById('gr_wa_total').textContent = 'Dado indisponível';
+  document.getElementById('gr_total').textContent = 'Dado indisponível';
+  document.getElementById('gr_fixo_total').textContent = 'Dado indisponível';
+  document.getElementById('gr_por_lead').textContent = 'Dado indisponível';
+  document.getElementById('gr_custos_fixos_box').style.display = 'none';
   document.getElementById('gr_por_agente_box').style.display = 'none';
   document.getElementById('gr_por_dia_box').style.display = 'none';
   document.getElementById('gr_por_concessionaria_box').style.display = 'none';
+  document.getElementById('gr_wa_pendente').style.display = 'none';
   document.getElementById('gr_erro').style.display = 'block';
-  const campoWa = document.getElementById('g_wa');
-  campoWa.removeAttribute('readonly');
-  document.getElementById('g_wa_nota').style.display = 'none';
-  // Sem custo real disponível, a Modelo de Cobrança volta a usar a estimativa manual.
-  gState.custos.iaRealTotal = null;
-  gSave(); gRenderCusto(); gRenderModelos();
 }
 
 async function carregarGastosReal(){
@@ -1503,28 +1510,54 @@ async function carregarGastosReal(){
   }
 
   document.getElementById('gr_erro').style.display = 'none';
+  window._ultimoGastosReal = data;
 
   const ia = data.ia || {};
   const wa = data.whatsapp || {};
-  const iaTotal = (ia.total != null) ? Number(ia.total) : null;
-  const waTotal = (wa.total != null) ? Number(wa.total) : null;
+  const fixo = data.custo_fixo || {};
+
+  const iaDisponivel = !!ia.disponivel && ia.custo_usd != null;
+  const waDisponivel = !!wa.disponivel && wa.custo_total != null;
+  const fixoDisponivel = !!fixo.disponivel && fixo.valor_brl_mes != null;
   const waMoeda = wa.moeda || 'USD';
 
-  document.getElementById('gr_ia_total').textContent = (iaTotal != null) ? fmtUsd(iaTotal) : '—';
-  document.getElementById('gr_wa_total').textContent = (waTotal != null) ? (waMoeda === 'BRL' ? gFmtBRL(waTotal) : fmtUsd(waTotal)) : '—';
+  document.getElementById('gr_ia_total').textContent = iaDisponivel ? fmtUsd(ia.custo_usd) : 'Dado indisponível';
+  document.getElementById('gr_por_lead').textContent = (iaDisponivel && ia.custo_por_lead_usd != null) ? fmtUsd(ia.custo_por_lead_usd) : 'Dado indisponível';
+  document.getElementById('gr_fixo_total').textContent = fixoDisponivel ? gFmtBRL(fixo.valor_brl_mes) : 'Dado indisponível';
+
+  document.getElementById('gr_wa_total').textContent = waDisponivel
+    ? (waMoeda === 'BRL' ? gFmtBRL(wa.custo_total) : fmtUsd(wa.custo_total))
+    : 'Dado indisponível — pipeline pendente';
+  document.getElementById('gr_wa_pendente').style.display = waDisponivel ? 'none' : 'block';
 
   const elTotal = document.getElementById('gr_total');
-  if (iaTotal != null && waTotal != null && waMoeda === 'USD') {
-    elTotal.textContent = fmtUsd(iaTotal + waTotal);
+  if (iaDisponivel && waDisponivel && waMoeda === 'USD') {
+    elTotal.textContent = fmtUsd(Number(ia.custo_usd) + Number(wa.custo_total));
+  } else if (iaDisponivel) {
+    elTotal.textContent = fmtUsd(ia.custo_usd) + ' (só IA — WhatsApp indisponível)';
   } else {
-    elTotal.textContent = '—'; // moeda do WhatsApp diferente de USD (ou algum dos dois faltando) — não soma sem câmbio confiável
+    elTotal.textContent = 'Dado indisponível';
+  }
+
+  // Itens de custos_fixos (leitura — edição pendente de webhook novo no n8n)
+  const itens = Array.isArray(fixo.itens) ? fixo.itens : [];
+  const boxItens = document.getElementById('gr_custos_fixos_box');
+  if (itens.length) {
+    document.getElementById('gr_custos_fixos_lista').innerHTML = itens.map(function(it){
+      const valor = (it.moeda === 'USD') ? fmtUsd(it.valor_mensal) : gFmtBRL(it.valor_mensal);
+      const vig = it.vigencia_fim ? (' · até ' + fmtDiaSimples(it.vigencia_fim)) : ' · vigente';
+      return '<div class="mline"><span>' + (it.item || '—') + vig + '</span><b>' + valor + '</b></div>';
+    }).join('');
+    boxItens.style.display = '';
+  } else {
+    boxItens.style.display = 'none';
   }
 
   const porAgente = Array.isArray(ia.por_agente) ? ia.por_agente : [];
   const boxAgente = document.getElementById('gr_por_agente_box');
   if (porAgente.length) {
     document.getElementById('gr_por_agente').innerHTML = porAgente.map(function(a){
-      return '<div class="mline"><span>' + (a.agente || '—') + '</span><b>' + fmtUsd(a.total) + '</b></div>';
+      return '<div class="mline"><span>' + (a.agente || '—') + '</span><b>' + fmtUsd(a.custo_usd) + '</b></div>';
     }).join('');
     boxAgente.style.display = '';
   } else {
@@ -1536,7 +1569,7 @@ async function carregarGastosReal(){
   const boxDia = document.getElementById('gr_por_dia_box');
   if (porDia.length) {
     document.getElementById('gr_por_dia').innerHTML = porDia.map(function(d){
-      return '<div class="mline"><span>' + fmtDiaSimples(d.dia) + '</span><b>' + fmtUsd(d.custo_ia) + '</b></div>';
+      return '<div class="mline"><span>' + fmtDiaSimples(d.dia) + '</span><b>' + fmtUsd(d.custo_usd) + '</b></div>';
     }).join('');
     boxDia.style.display = '';
   } else {
@@ -1548,30 +1581,64 @@ async function carregarGastosReal(){
   const boxConc = document.getElementById('gr_por_concessionaria_box');
   if (porConcessionaria.length) {
     document.getElementById('gr_por_concessionaria').innerHTML = porConcessionaria.map(function(c){
-      return '<div class="mline"><span>' + (c.concessionaria || '—') + '</span><b>' + fmtUsd(c.custo_ia) + '</b></div>';
+      return '<div class="mline"><span>' + (c.concessionaria_slug || '—') + '</span><b>' + fmtUsd(c.custo_usd) + '</b></div>';
     }).join('');
     boxConc.style.display = '';
-    document.getElementById('gr_wa_nao_dividido').style.display = (waTotal != null) ? 'block' : 'none';
   } else {
     boxConc.style.display = 'none';
   }
 
-  // Auto-preenche "WhatsApp R$/mês" (Custos fixos) convertendo pro câmbio já configurado ali, e trava o campo.
-  // Se a busca falhar (catch acima já retornou antes de chegar aqui), o campo permanece editável — fallback manual.
-  if (waTotal != null) {
-    const brl = (waMoeda === 'BRL') ? waTotal : waTotal * gState.custos.iaCambio;
-    const campoWa = document.getElementById('g_wa');
-    campoWa.value = brl.toFixed(2);
-    campoWa.setAttribute('readonly', '');
-    gState.custos.wa = brl;
+  // Pré-preenche o Simulador com o dado real como ponto de partida — só na 1ª vez que houver dado
+  // disponível (nunca sobrescreve de novo sozinho depois disso; o botão abaixo repete manualmente).
+  gTentarPreencherAutomaticoComReal();
+}
+
+// Calcula, a partir do bloco "ia" real, valores médios por mensagem/lead pra usar como ponto de
+// partida do Simulador. Não inventa nada: só divide totais reais (tokens/execuções) já vindos das views.
+function gValoresSimulacaoDeReal(){
+  const d = window._ultimoGastosReal;
+  const ia = d && d.ia;
+  if (!ia || !ia.disponivel || !ia.chamadas) return null;
+  const chamadas = Number(ia.chamadas) || 0;
+  if (chamadas <= 0) return null;
+  const vals = {};
+  if (ia.tokens_input_total != null) vals.tokIn = Math.round(Number(ia.tokens_input_total) / chamadas);
+  if (ia.tokens_output_total != null) vals.tokOut = Math.round(Number(ia.tokens_output_total) / chamadas);
+  if (ia.leads_distintos != null && Number(ia.leads_distintos) > 0) {
+    vals.leads = Number(ia.leads_distintos);
+    vals.msgsPorLead = Math.round((chamadas / vals.leads) * 10) / 10;
+  }
+  const wa = d.whatsapp;
+  // Só preenche o campo "WhatsApp R$/mês" automaticamente quando a view já devolve BRL direto —
+  // converter de USD exigiria usar o câmbio do Simulador, que é um valor de referência, não real.
+  if (wa && wa.disponivel && wa.custo_total != null && wa.moeda === 'BRL') vals.waBrl = Number(wa.custo_total);
+  return Object.keys(vals).length ? vals : null;
+}
+function gAplicarValoresReaisAoSimulador(vals){
+  if (!vals) return;
+  if (vals.tokIn != null) { gState.custos.iaTokIn = vals.tokIn; document.getElementById('g_iatokin').value = vals.tokIn; }
+  if (vals.tokOut != null) { gState.custos.iaTokOut = vals.tokOut; document.getElementById('g_iatokout').value = vals.tokOut; }
+  if (vals.msgsPorLead != null) { gState.custos.iaMsgs = vals.msgsPorLead; document.getElementById('g_iamsgs').value = vals.msgsPorLead; }
+  if (vals.leads != null) { gState.custos.leads = vals.leads; document.getElementById('g_leads').value = vals.leads; }
+  if (vals.waBrl != null) {
+    gState.custos.wa = vals.waBrl;
+    document.getElementById('g_wa').value = vals.waBrl.toFixed(2);
     document.getElementById('g_wa_nota').style.display = 'block';
   }
-
-  // NOVO: a Modelo de Cobrança passa a usar o custo real de IA (não mais só a estimativa manual)
-  // quando ele está disponível — é o que faz o valor cobrado seguir o gasto de verdade do cliente.
-  gState.custos.iaRealTotal = (iaTotal != null) ? (iaTotal * gState.custos.iaCambio) : null;
-
   gSave(); gRenderCusto(); gRenderModelos();
+}
+function gPreencherComReal(){
+  const vals = gValoresSimulacaoDeReal();
+  if (!vals) { alert('Ainda não há dado real de IA disponível pra preencher o simulador.'); return; }
+  gAplicarValoresReaisAoSimulador(vals);
+}
+function gTentarPreencherAutomaticoComReal(){
+  if (gState.simuladorPreenchidoAuto) return;
+  const vals = gValoresSimulacaoDeReal();
+  if (!vals) return;
+  gAplicarValoresReaisAoSimulador(vals);
+  gState.simuladorPreenchidoAuto = true;
+  gSave();
 }
 
 // ============================================================
