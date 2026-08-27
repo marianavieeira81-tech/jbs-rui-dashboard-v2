@@ -718,6 +718,237 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   .sb{width:82vw;max-width:300px;}
   #ciModelCardsGrid{grid-template-columns:1fr !important;}
 }
+
+/* ============================================================
+   CENTRAL OMNICHANNEL — namespaced oc- (evita colidir com o resto do app)
+   ============================================================ */
+.oc-shell{height:calc(100vh - 0px);display:flex;flex-direction:column;overflow:hidden;margin:-24px;width:calc(100% + 48px);background:var(--bg);}
+.oc-topbar{flex:0 0 72px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;border-bottom:1px solid var(--bdr);gap:20px;}
+.oc-topbar-left{display:flex;flex-direction:column;gap:2px;min-width:210px;}
+.oc-title-row{display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
+.oc-title-row h1{font-size:19px;font-weight:800;letter-spacing:-.01em;font-family:'Archivo',sans-serif;}
+.oc-status-pill{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:3px 8px;border-radius:20px;white-space:nowrap;}
+.oc-status-pill.live{color:var(--grn-l);background:var(--grn-bg);border:1px solid rgba(0,160,101,.25);}
+.oc-status-pill.mock{color:var(--ac-l);background:var(--ac-faint);border:1px solid rgba(212,175,55,.25);}
+.oc-sub{font-size:12px;color:var(--tx2);display:flex;align-items:center;gap:6px;}
+.oc-sub .oc-dot{width:5px;height:5px;border-radius:50%;background:var(--ac);flex-shrink:0;}
+.oc-search-wrap{flex:1 1 auto;display:flex;justify-content:center;max-width:640px;}
+.oc-search-box{width:100%;max-width:420px;display:flex;align-items:center;gap:10px;background:var(--s2);border:1px solid var(--bdr);border-radius:var(--rsm);padding:0 12px;height:38px;transition:border-color .15s;}
+.oc-search-box:focus-within{border-color:rgba(212,175,55,.4);}
+.oc-search-box .oc-ic{color:var(--tx3);}
+.oc-search-box input{background:none;border:none;flex:1;font-size:13px;color:var(--tx);font-family:'Archivo',sans-serif;}
+.oc-search-box input::placeholder{color:var(--tx3);}
+.oc-kbd{font-size:10px;font-weight:600;color:var(--tx3);background:var(--s3);border:1px solid var(--s4);border-radius:5px;padding:2px 6px;letter-spacing:.02em;}
+.oc-topbar-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.oc-btn{display:flex;align-items:center;gap:7px;height:38px;padding:0 13px;background:var(--s2);border:1px solid var(--bdr);border-radius:var(--rsm);font-size:12.5px;font-weight:600;color:var(--tx2);transition:.15s;white-space:nowrap;}
+.oc-btn:hover{color:var(--tx);border-color:var(--s4);}
+.oc-btn .oc-ic{color:var(--tx3);}
+.oc-icon-btn{position:relative;width:38px;height:38px;display:flex;align-items:center;justify-content:center;background:var(--s2);border:1px solid var(--bdr);border-radius:var(--rsm);color:var(--tx2);transition:.15s;}
+.oc-icon-btn:hover{color:var(--tx);border-color:var(--s4);}
+.oc-badge-dot{position:absolute;top:-5px;right:-5px;min-width:16px;height:16px;padding:0 4px;background:var(--red);color:#fff;font-size:9.5px;font-weight:800;border-radius:20px;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg);}
+.oc-user-chip{display:flex;align-items:center;gap:9px;padding:4px 10px 4px 4px;border-radius:var(--rsm);transition:.15s;}
+.oc-user-chip:hover{background:var(--s2);}
+.oc-user-av{position:relative;width:34px;height:34px;border-radius:50%;flex-shrink:0;}
+.oc-user-av .oc-online{position:absolute;bottom:-1px;right:-1px;width:10px;height:10px;border-radius:50%;background:var(--grn-l);border:2px solid var(--bg);}
+.oc-user-meta{text-align:left;line-height:1.25;}
+.oc-user-meta .n{font-size:12.5px;font-weight:700;}
+.oc-user-meta .r{font-size:10.5px;color:var(--tx3);}
+.oc-avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-family:'Archivo',sans-serif;flex-shrink:0;}
+.oc-dropdown{position:absolute;top:calc(100% + 8px);right:0;background:var(--s2);border:1px solid var(--s3);border-radius:var(--rsm);box-shadow:var(--sh-md);z-index:200;overflow:hidden;opacity:0;visibility:hidden;transform:translateY(-6px);transition:.15s;}
+.oc-dropdown.open{opacity:1;visibility:visible;transform:translateY(0);}
+.oc-dd-wrap{position:relative;}
+.oc-notif-dd{width:300px;}
+.oc-notif-head{padding:12px 14px;font-size:12px;font-weight:700;border-bottom:1px solid var(--bdr);color:var(--tx2);}
+.oc-notif-item{padding:11px 14px;border-bottom:1px solid var(--bdr);display:flex;gap:10px;}
+.oc-notif-item:last-child{border-bottom:none;}
+.oc-notif-item .nd{width:7px;height:7px;border-radius:50%;background:var(--ac);margin-top:5px;flex-shrink:0;}
+.oc-notif-item .nt{font-size:12px;color:var(--tx);line-height:1.4;}
+.oc-notif-item .ns{font-size:10.5px;color:var(--tx3);margin-top:2px;}
+.oc-user-dd{width:170px;}
+.oc-user-dd button{display:block;width:100%;text-align:left;padding:10px 14px;font-size:12.5px;font-weight:600;color:var(--tx2);background:none;border:none;font-family:'Archivo',sans-serif;cursor:pointer;}
+.oc-user-dd button:hover{background:var(--s3);color:var(--tx);}
+
+.oc-channels{flex:0 0 auto;display:grid;grid-template-columns:repeat(5,1fr);gap:14px;padding:16px 24px;border-bottom:1px solid var(--bdr);}
+.oc-chan-card{position:relative;background:var(--surface);border:1.5px solid var(--bdr);border-radius:var(--r);padding:14px 16px;text-align:left;transition:.15s;overflow:hidden;cursor:pointer;font-family:'Archivo',sans-serif;color:var(--tx);}
+.oc-chan-card:hover{border-color:var(--s4);transform:translateY(-1px);}
+.oc-chan-card.active{border-color:var(--ac);box-shadow:var(--sh-gold);background:linear-gradient(180deg,rgba(212,175,55,.06),var(--surface) 60%);}
+.oc-chan-top{display:flex;align-items:center;gap:9px;margin-bottom:10px;}
+.oc-chan-badge{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;}
+.oc-chan-badge svg{width:14px;height:14px;}
+.oc-chan-name{font-size:12px;font-weight:700;color:var(--tx2);}
+.oc-chan-num{font-size:27px;font-weight:800;letter-spacing:-.02em;line-height:1;}
+.oc-chan-bottom{display:flex;align-items:baseline;justify-content:space-between;margin-top:6px;}
+.oc-chan-lbl{font-size:11px;color:var(--tx3);}
+.oc-chan-delta{font-size:11px;font-weight:700;display:flex;align-items:center;gap:2px;}
+.oc-chan-delta.up{color:var(--grn-l);}
+.oc-chan-delta.down{color:var(--red);}
+.oc-chan-live{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--grn-l);display:flex;align-items:center;gap:4px;}
+.oc-chan-live .d{width:5px;height:5px;border-radius:50%;background:var(--grn-l);animation:oc-blink 2s ease-in-out infinite;}
+@keyframes oc-blink{0%,100%{opacity:1}50%{opacity:.25}}
+
+.oc-body{flex:1 1 auto;display:grid;grid-template-columns:330px 1fr 340px;min-height:0;position:relative;}
+.oc-col-list{display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--bdr);background:var(--bg);}
+.oc-col-head{flex:0 0 auto;padding:16px 18px 10px;}
+.oc-col-head-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.oc-col-head-row h2{font-size:15px;font-weight:800;font-family:'Archivo',sans-serif;}
+.oc-tiny-btn{width:26px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:7px;color:var(--tx3);transition:.15s;background:none;border:none;cursor:pointer;}
+.oc-tiny-btn:hover{color:var(--tx);background:var(--s2);}
+.oc-tabs-row{display:flex;gap:16px;border-bottom:1px solid var(--bdr);margin-bottom:12px;overflow-x:auto;}
+.oc-tab-item{position:relative;padding:0 0 10px;font-size:12px;font-weight:700;color:var(--tx3);display:flex;align-items:center;gap:5px;white-space:nowrap;background:none;border:none;cursor:pointer;font-family:'Archivo',sans-serif;}
+.oc-tab-item .cnt{font-weight:600;color:var(--tx3);}
+.oc-tab-item.active{color:var(--tx);}
+.oc-tab-item.active::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--ac);border-radius:2px;}
+.oc-mini-search{display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--bdr);border-radius:var(--rsm);padding:0 10px;height:34px;}
+.oc-mini-search input{flex:1;background:none;border:none;font-size:12.5px;color:var(--tx);font-family:'Archivo',sans-serif;}
+.oc-mini-search input::placeholder{color:var(--tx3);}
+.oc-mini-search .oc-ic{color:var(--tx3);}
+
+.oc-conv-scroll{flex:1 1 auto;overflow-y:auto;padding:2px 8px 8px;}
+.oc-conv-item{display:flex;gap:11px;padding:11px 10px;border-radius:var(--rsm);cursor:pointer;border-left:3px solid transparent;transition:background .12s;margin-bottom:1px;}
+.oc-conv-item:hover{background:var(--s2);}
+.oc-conv-item.selected{background:var(--s2);border-left-color:var(--ac);}
+.oc-conv-av-wrap{position:relative;flex-shrink:0;}
+.oc-conv-av{width:42px;height:42px;font-size:14px;}
+.oc-conv-chan-badge{position:absolute;bottom:-2px;right:-2px;width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg);color:#fff;}
+.oc-conv-item.selected .oc-conv-chan-badge{border-color:var(--s2);}
+.oc-conv-chan-badge svg{width:9px;height:9px;}
+.oc-conv-body{flex:1;min-width:0;}
+.oc-conv-row1{display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
+.oc-conv-name{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.oc-conv-time{font-size:10.5px;color:var(--tx3);flex-shrink:0;}
+.oc-conv-row2{display:flex;justify-content:space-between;align-items:flex-end;gap:8px;margin-top:3px;}
+.oc-conv-preview{font-size:12px;color:var(--tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;}
+.oc-unread{min-width:18px;height:18px;padding:0 5px;background:var(--ac);color:#161104;font-size:10px;font-weight:800;border-radius:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.oc-status-dot-lbl{font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:20px;flex-shrink:0;white-space:nowrap;}
+.oc-load-more{margin:8px 10px 4px;padding:10px;border:1px solid var(--bdr);border-radius:var(--rsm);font-size:12px;font-weight:700;color:var(--tx2);display:flex;align-items:center;justify-content:center;gap:6px;transition:.15s;cursor:pointer;background:none;width:calc(100% - 20px);font-family:'Archivo',sans-serif;}
+.oc-load-more:hover{border-color:var(--s4);color:var(--tx);}
+.oc-empty{padding:40px 20px;text-align:center;color:var(--tx3);font-size:12.5px;line-height:1.6;}
+
+.oc-col-chat{display:flex;flex-direction:column;min-height:0;background:var(--bg);position:relative;}
+.oc-chat-head{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--bdr);gap:12px;}
+.oc-chat-head-left{display:flex;align-items:center;gap:12px;min-width:0;}
+.oc-chat-head-meta{min-width:0;}
+.oc-chat-head-name-row{display:flex;align-items:center;gap:7px;}
+.oc-chat-head-name-row h3{font-size:14.5px;font-weight:800;font-family:'Archivo',sans-serif;}
+.oc-chan-pill{display:flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:#fff;padding:2px 7px 2px 5px;border-radius:20px;}
+.oc-chan-pill svg{width:8px;height:8px;}
+.oc-chat-head-origin{font-size:11px;color:var(--tx3);margin-top:2px;}
+.oc-chat-head-actions{display:flex;align-items:center;gap:4px;flex-shrink:0;}
+.oc-drawer-toggle{display:none;}
+
+.oc-ai-summary{flex:0 0 auto;margin:14px 20px;padding:14px 16px;background:linear-gradient(135deg,rgba(212,175,55,.07),var(--s2) 55%);border:1px solid rgba(212,175,55,.22);border-radius:var(--rsm);position:relative;}
+.oc-ai-summary-head{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+.oc-ai-summary-head .t{font-size:12.5px;font-weight:800;color:var(--ac-l);display:flex;align-items:center;gap:6px;}
+.oc-new-pill{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#161104;background:var(--ac);padding:2px 6px;border-radius:20px;}
+.oc-ai-summary p{font-size:12.5px;color:var(--tx);line-height:1.55;}
+.oc-ai-summary-link{display:flex;justify-content:flex-end;margin-top:8px;font-size:11.5px;font-weight:700;color:var(--ac-l);align-items:center;gap:3px;cursor:pointer;}
+
+.oc-empty-thread{margin:6px 20px;padding:26px 20px;text-align:center;background:var(--surface);border:1px dashed var(--s4);border-radius:var(--rsm);color:var(--tx3);font-size:12px;line-height:1.7;}
+.oc-empty-thread .em{font-size:20px;margin-bottom:8px;}
+
+.oc-msg-scroll{flex:1 1 auto;overflow-y:auto;padding:6px 20px 14px;display:flex;flex-direction:column;gap:2px;}
+.oc-date-div{display:flex;align-items:center;gap:12px;margin:14px 0 10px;color:var(--tx3);font-size:11px;font-weight:600;}
+.oc-date-div::before,.oc-date-div::after{content:'';flex:1;height:1px;background:var(--bdr);}
+.oc-msg-row{display:flex;margin:4px 0;max-width:74%;}
+.oc-msg-row.in{align-self:flex-start;}
+.oc-msg-row.out{align-self:flex-end;flex-direction:column;align-items:flex-end;}
+.oc-bubble{padding:10px 13px;font-size:13px;line-height:1.5;border-radius:14px;}
+.oc-msg-row.in .oc-bubble{background:#27272A;color:var(--tx);border-bottom-left-radius:4px;}
+.oc-msg-row.out .oc-bubble{background:var(--ac);color:#1a1404;border-bottom-right-radius:4px;font-weight:500;}
+.oc-msg-meta{font-size:10px;color:var(--tx3);margin-top:4px;padding:0 3px;display:flex;align-items:center;gap:4px;}
+.oc-msg-row.in .oc-msg-meta{align-self:flex-start;}
+.oc-msg-row.out .oc-msg-meta{align-self:flex-end;}
+.oc-read-check{color:var(--ac-l);}
+
+.oc-composer{flex:0 0 auto;padding:12px 20px 16px;border-top:1px solid var(--bdr);}
+.oc-composer.disabled{opacity:.45;pointer-events:none;}
+.oc-composer-note{font-size:10.5px;color:var(--tx3);margin-bottom:8px;}
+.oc-composer-row{display:flex;align-items:center;gap:10px;background:var(--s2);border:1px solid var(--bdr);border-radius:var(--rsm);padding:4px 6px 4px 14px;transition:border-color .15s;}
+.oc-composer-row:focus-within{border-color:rgba(212,175,55,.4);}
+.oc-composer-row input{flex:1;background:none;border:none;font-size:13px;height:34px;color:var(--tx);font-family:'Archivo',sans-serif;}
+.oc-composer-row input::placeholder{color:var(--tx3);}
+.oc-send-btn{display:flex;align-items:center;gap:5px;background:var(--ac);color:#1a1404;font-weight:800;font-size:12.5px;padding:0 10px 0 13px;height:32px;border-radius:8px;flex-shrink:0;transition:.15s;border:none;cursor:pointer;font-family:'Archivo',sans-serif;}
+.oc-send-btn:hover{background:var(--ac-l);}
+.oc-composer-toolbar{display:flex;align-items:center;gap:4px;margin-top:8px;}
+.oc-tool-btn{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:7px;color:var(--tx3);transition:.15s;background:none;border:none;cursor:pointer;}
+.oc-tool-btn:hover{color:var(--ac-l);background:var(--ac-faint);}
+
+.oc-col-lead{display:flex;flex-direction:column;min-height:0;border-left:1px solid var(--bdr);background:var(--bg);}
+.oc-lead-scroll{flex:1 1 auto;overflow-y:auto;padding:16px 18px;}
+.oc-lead-head-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.oc-lead-head-row h2{font-size:14px;font-weight:800;font-family:'Archivo',sans-serif;}
+.oc-lead-card{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;}
+.oc-lead-card .oc-avatar{width:52px;height:52px;font-size:17px;}
+.oc-lead-card-name{display:flex;align-items:center;gap:6px;font-size:15.5px;font-weight:800;}
+.oc-lead-contact{margin-top:6px;display:flex;flex-direction:column;gap:4px;}
+.oc-lead-contact-row{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--tx2);}
+.oc-lead-contact-row .oc-ic{color:var(--tx3);}
+.oc-lead-tags{display:flex;gap:7px;margin-bottom:16px;flex-wrap:wrap;}
+.oc-tag-pill{font-size:10.5px;font-weight:700;padding:4px 10px;border-radius:20px;display:flex;align-items:center;gap:4px;}
+.oc-section-lbl{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--tx3);margin:16px 0 9px;display:flex;justify-content:space-between;align-items:center;}
+.oc-section-lbl .see-all{text-transform:none;letter-spacing:0;font-weight:700;color:var(--ac-l);font-size:11.5px;display:flex;align-items:center;gap:2px;cursor:pointer;}
+.oc-vehicle-card{background:var(--surface);border:1px solid var(--bdr);border-radius:var(--rsm);overflow:hidden;}
+.oc-vehicle-photo{height:76px;display:flex;align-items:center;justify-content:center;color:var(--tx3);background:linear-gradient(135deg,var(--s2),var(--s3));}
+.oc-vehicle-info{padding:11px 13px;}
+.oc-vehicle-model{font-size:13.5px;font-weight:800;}
+.oc-vehicle-trim{font-size:11.5px;color:var(--tx2);margin-top:1px;}
+.oc-vehicle-price{font-size:17px;font-weight:800;color:var(--ac-l);margin-top:6px;}
+.oc-vehicle-chips{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap;}
+.oc-chip{font-size:10px;font-weight:700;color:var(--tx2);background:var(--s3);padding:3px 8px;border-radius:6px;}
+.oc-detail-list{display:flex;flex-direction:column;gap:10px;}
+.oc-detail-row{display:flex;align-items:flex-start;gap:9px;}
+.oc-detail-row .oc-ic{color:var(--tx3);margin-top:1px;}
+.oc-detail-k{font-size:10.5px;color:var(--tx3);}
+.oc-detail-v{font-size:12.5px;font-weight:700;color:var(--tx);margin-top:1px;}
+.oc-timeline{display:flex;flex-direction:column;}
+.oc-tl-item{display:flex;gap:10px;padding-bottom:14px;position:relative;}
+.oc-tl-item:last-child{padding-bottom:0;}
+.oc-tl-item::before{content:'';position:absolute;left:4px;top:14px;bottom:0;width:1px;background:var(--bdr);}
+.oc-tl-item:last-child::before{display:none;}
+.oc-tl-dot{width:9px;height:9px;border-radius:50%;margin-top:4px;flex-shrink:0;box-shadow:0 0 0 3px var(--bg);z-index:1;}
+.oc-tl-time{font-size:10px;color:var(--tx3);font-weight:600;}
+.oc-tl-text{font-size:12px;color:var(--tx);margin-top:2px;}
+.oc-report-btn{flex:0 0 auto;margin:12px 18px 16px;padding:13px 14px;background:var(--surface);border:1px solid var(--bdr);border-radius:var(--rsm);display:flex;align-items:center;gap:10px;transition:.15s;cursor:pointer;width:calc(100% - 36px);font-family:'Archivo',sans-serif;color:var(--tx);}
+.oc-report-btn:hover{border-color:var(--ac);background:var(--ac-faint);}
+.oc-report-btn .oc-ic{color:var(--ac-l);}
+.oc-report-btn span{flex:1;text-align:left;font-size:12.5px;font-weight:700;}
+.oc-report-btn .arrow{color:var(--tx3);}
+
+.oc-kpi-bar{flex:0 0 90px;display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--bdr);}
+.oc-kpi-item{padding:0 24px;display:flex;flex-direction:column;justify-content:center;gap:5px;border-right:1px solid var(--bdr);}
+.oc-kpi-item:last-child{border-right:none;}
+.oc-kpi-lbl{font-size:11px;color:var(--tx3);}
+.oc-kpi-val{font-size:22px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;font-family:'Archivo',sans-serif;}
+.oc-kpi-delta{font-size:11px;font-weight:700;display:flex;align-items:center;gap:4px;color:var(--grn-l);}
+.oc-kpi-delta .ctx{color:var(--tx3);font-weight:500;}
+
+.oc-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--s2);border:1px solid var(--s4);color:var(--tx);font-size:12.5px;font-weight:600;padding:11px 18px;border-radius:var(--rsm);box-shadow:var(--sh-md);opacity:0;pointer-events:none;transition:.2s;z-index:999;display:flex;align-items:center;gap:8px;max-width:360px;}
+.oc-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.oc-toast .d{width:6px;height:6px;border-radius:50%;background:var(--ac);flex-shrink:0;}
+.oc-scrim{position:fixed;inset:0;background:rgba(0,0,0,.55);opacity:0;visibility:hidden;transition:.2s;z-index:150;}
+.oc-scrim.open{opacity:1;visibility:visible;}
+
+@media (max-width:1180px){
+  .oc-body{grid-template-columns:300px 1fr;}
+  .oc-col-lead{position:fixed;top:0;right:0;bottom:0;width:340px;max-width:88vw;z-index:160;transform:translateX(100%);transition:transform .22s;box-shadow:var(--sh-md);}
+  .oc-col-lead.open{transform:translateX(0);}
+  .oc-drawer-toggle.oc-lead-toggle{display:flex;}
+}
+@media (max-width:860px){
+  .oc-body{grid-template-columns:1fr;}
+  .oc-col-list{position:fixed;top:72px;left:0;bottom:0;width:300px;max-width:85vw;z-index:160;transform:translateX(-100%);transition:transform .22s;box-shadow:var(--sh-md);}
+  .oc-col-list.open{transform:translateX(0);}
+  .oc-drawer-toggle.oc-list-toggle{display:flex;}
+  .oc-search-wrap{display:none;}
+  .oc-topbar-left{min-width:0;}
+}
+@media (max-width:640px){
+  .oc-channels{grid-template-columns:repeat(2,1fr);}
+  .oc-chan-card:nth-child(n+3){display:none;}
+  .oc-kpi-bar{grid-template-columns:repeat(2,1fr);height:auto;padding:10px 0;}
+  .oc-kpi-item{padding:8px 16px;border-right:none;border-bottom:1px solid var(--bdr);}
+  .oc-btn span{display:none;}
+}
 </style>
 </head>
 <body>
@@ -932,6 +1163,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       <div class="sb-item active" onclick="go('dash')"><i class="sb-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg></i>Painel de Controle</div>
       <div class="sb-item" onclick="go('filaespera')"><i class="sb-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></i>Fila de Espera</div>
       <div class="sb-item" onclick="go('plataformas')"><i class="sb-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></i>Central de Leads</div>
+      <div class="sb-item" onclick="go('omnichannel')"><i class="sb-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg></i>Central Omnichannel</div>
       <div class="sb-item" onclick="go('cobertura')"><i class="sb-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg></i>Cobertura 24/7</div>
     </div>
     <div class="sb-group">
@@ -1335,6 +1567,784 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 </div>
 
 <!-- ============ COBERTURA NOTURNA ============ -->
+<div id="p-omnichannel" style="display:none">
+<div class="oc-shell">
+
+  <header class="oc-topbar">
+    <div class="oc-topbar-left">
+      <div class="oc-title-row">
+        <button class="oc-drawer-toggle oc-list-toggle oc-tiny-btn" id="ocListToggle" style="width:30px;height:30px;" aria-label="Abrir lista de conversas">
+          <span class="oc-ic" data-oc-icon="menu"></span>
+        </button>
+        <h1>Central Omnichannel</h1>
+        <span class="oc-status-pill live">WhatsApp · dados reais</span>
+        <span class="oc-status-pill mock">Outros canais · fictício</span>
+      </div>
+      <div class="oc-sub"><span class="oc-dot"></span>Todos os leads em um único lugar.</div>
+    </div>
+
+    <div class="oc-search-wrap">
+      <div class="oc-search-box">
+        <span class="oc-ic" data-oc-icon="search"></span>
+        <input type="text" id="ocGlobalSearch" placeholder="Buscar leads, veículos ou mensagens...">
+        <span class="oc-kbd">⌘K</span>
+      </div>
+    </div>
+
+    <div class="oc-topbar-right">
+      <button class="oc-btn" id="ocDateBtn"><span class="oc-ic" data-oc-icon="calendar"></span><span>Últimos 7 dias</span></button>
+      <button class="oc-btn" id="ocFilterBtn"><span class="oc-ic" data-oc-icon="filter"></span><span>Filtros</span></button>
+      <div class="oc-dd-wrap">
+        <button class="oc-icon-btn" id="ocBellBtn"><span class="oc-ic" data-oc-icon="bell"></span><span class="oc-badge-dot" id="ocBellCount">3</span></button>
+        <div class="oc-dropdown oc-notif-dd" id="ocNotifDd">
+          <div class="oc-notif-head">Notificações</div>
+          <div class="oc-notif-item"><span class="nd"></span><div><div class="nt">Fictício: novo lead de Webmotors pediu mais detalhes.</div><div class="ns">exemplo</div></div></div>
+          <div class="oc-notif-item"><span class="nd"></span><div><div class="nt">Fictício: conversa parada há mais de 2h (OLX).</div><div class="ns">exemplo</div></div></div>
+          <div class="oc-notif-item"><span class="nd"></span><div><div class="nt">Notificações reais dependem da tabela <code>mensagens</code> no Supabase (ainda não integrada).</div><div class="ns">pendente</div></div></div>
+        </div>
+      </div>
+      <div class="oc-dd-wrap">
+        <button class="oc-user-chip" id="ocUserBtn">
+          <div class="oc-user-av"><div class="oc-avatar" style="width:34px;height:34px;font-size:12px;background:var(--ac-d);" id="ocUserInitials">RS</div><span class="oc-online"></span></div>
+          <div class="oc-user-meta"><div class="n" id="ocUserName">Vendedor</div><div class="r">Vendedor</div></div>
+          <span class="oc-ic" data-oc-icon="chevron-down" style="color:var(--tx3);"></span>
+        </button>
+        <div class="oc-dropdown oc-user-dd" id="ocUserDd">
+          <button type="button" disabled>Meu perfil</button>
+          <button type="button" disabled>Configurações</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="oc-channels" id="ocChannels"></div>
+
+  <div class="oc-body">
+    <div class="oc-col-list" id="ocColList">
+      <div class="oc-col-head">
+        <div class="oc-col-head-row">
+          <h2>Conversas</h2>
+        </div>
+        <div class="oc-tabs-row" id="ocTabsRow"></div>
+        <div class="oc-mini-search">
+          <span class="oc-ic" data-oc-icon="search"></span>
+          <input type="text" id="ocConvSearch" placeholder="Buscar conversas...">
+        </div>
+      </div>
+      <div class="oc-conv-scroll" id="ocConvScroll"></div>
+    </div>
+
+    <div class="oc-col-chat" id="ocColChat">
+      <div class="oc-chat-head">
+        <div class="oc-chat-head-left">
+          <button class="oc-drawer-toggle oc-list-toggle oc-tiny-btn" id="ocListToggle2" style="flex-shrink:0;"><span class="oc-ic" data-oc-icon="menu"></span></button>
+          <div id="ocChatHeadAv"></div>
+          <div class="oc-chat-head-meta">
+            <div class="oc-chat-head-name-row"><h3 id="ocChatHeadName"></h3><span class="oc-chan-pill" id="ocChatHeadChanPill"></span></div>
+            <div class="oc-chat-head-origin" id="ocChatHeadOrigin"></div>
+          </div>
+        </div>
+        <div class="oc-chat-head-actions">
+          <button class="oc-icon-btn" data-tip="Favoritar"><span class="oc-ic" data-oc-icon="star"></span></button>
+          <button class="oc-icon-btn" data-tip="Etiquetar"><span class="oc-ic" data-oc-icon="tag"></span></button>
+          <button class="oc-icon-btn" data-tip="Mais opções" id="ocMoreBtn"><span class="oc-ic" data-oc-icon="more-vertical"></span></button>
+          <button class="oc-drawer-toggle oc-lead-toggle oc-btn" id="ocLeadToggle" style="height:34px;"><span class="oc-ic" data-oc-icon="user-info"></span><span>Lead</span></button>
+        </div>
+      </div>
+
+      <div id="ocAiSummaryWrap"></div>
+      <div class="oc-msg-scroll" id="ocMsgScroll"></div>
+      <div class="oc-composer" id="ocComposer">
+        <div class="oc-composer-note" id="ocComposerNote" style="display:none;"></div>
+        <div class="oc-composer-row">
+          <input type="text" id="ocComposerInput" placeholder="Digite sua mensagem...">
+          <button class="oc-send-btn" id="ocSendBtn"><span>Enviar</span></button>
+        </div>
+        <div class="oc-composer-toolbar">
+          <button class="oc-tool-btn" data-tip="Emoji"><span class="oc-ic" data-oc-icon="smile"></span></button>
+          <button class="oc-tool-btn" data-tip="Anexar arquivo"><span class="oc-ic" data-oc-icon="paperclip"></span></button>
+          <button class="oc-tool-btn" data-tip="Enviar imagem"><span class="oc-ic" data-oc-icon="image"></span></button>
+          <button class="oc-tool-btn" data-tip="Anexar ficha de veículo"><span class="oc-ic" data-oc-icon="car"></span></button>
+          <button class="oc-tool-btn" data-tip="Nota/documento"><span class="oc-ic" data-oc-icon="file-text"></span></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="oc-col-lead" id="ocColLead">
+      <div class="oc-lead-scroll">
+        <div class="oc-lead-head-row">
+          <h2>Informações do Lead</h2>
+          <button class="oc-tiny-btn" id="ocLeadClose"><span class="oc-ic" data-oc-icon="chevron-up"></span></button>
+        </div>
+        <div class="oc-lead-card">
+          <div class="oc-avatar" id="ocLeadAvatar"></div>
+          <div style="flex:1;min-width:0;">
+            <div class="oc-lead-card-name"><span id="ocLeadName"></span></div>
+            <div class="oc-lead-contact" id="ocLeadContact"></div>
+          </div>
+        </div>
+        <div class="oc-lead-tags" id="ocLeadTags"></div>
+        <div class="oc-section-lbl" id="ocVehicleLbl">Veículo de interesse</div>
+        <div class="oc-vehicle-card" id="ocVehicleCard"></div>
+        <div class="oc-section-lbl">Detalhes</div>
+        <div class="oc-detail-list" id="ocDetailList"></div>
+        <div class="oc-section-lbl">Histórico do Lead <span class="see-all" id="ocSeeAll">Ver todos <span class="oc-ic" data-oc-icon="arrow-right" style="width:11px;height:11px;"></span></span></div>
+        <div class="oc-timeline" id="ocTimeline"></div>
+      </div>
+      <button class="oc-report-btn" id="ocReportBtn"><span class="oc-ic" data-oc-icon="bar-chart"></span><span>Ver relatório completo</span><span class="oc-ic arrow" data-oc-icon="arrow-right"></span></button>
+    </div>
+  </div>
+
+  <div class="oc-kpi-bar" id="ocKpiBar"></div>
+
+</div>
+
+<div class="oc-scrim" id="ocScrim"></div>
+<div class="oc-toast" id="ocToast"><span class="d"></span><span id="ocToastMsg"></span></div>
+</div>
+
+<script>
+/* ============================================================
+   CENTRAL OMNICHANNEL — lógica isolada em IIFE (não polui o escopo
+   global do app; só expõe window.ocOnOpen, chamado por go()/refresh()).
+   Canal WhatsApp usa ACTIVE_LEADS de verdade (mesma fonte da Central de
+   Leads). Os outros 4 canais (Instagram/Webmotors/OLX/Chat Site) ainda
+   não têm integração real, então continuam com dados fictícios até
+   existirem de verdade no Supabase.
+   ============================================================ */
+(function(){
+
+  const ICON_PATHS = {
+    search:'<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+    calendar:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+    filter:'<polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>',
+    bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>',
+    star:'<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"/>',
+    tag:'<path d="M20.59 13.41 11 3.83H4v7l9.59 9.59a2 2 0 0 0 2.82 0l4.18-4.18a2 2 0 0 0 0-2.82Z"/><circle cx="7.5" cy="7.5" r="1.2"/>',
+    'more-vertical':'<circle cx="12" cy="5" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="12" cy="19" r="1.2"/>',
+    paperclip:'<path d="M21 11.05 12.3 19.7a5 5 0 0 1-7.07-7.07l8.2-8.2a3.3 3.3 0 0 1 4.7 4.66l-8.24 8.2a1.7 1.7 0 0 1-2.36-2.42l7.67-7.63"/>',
+    image:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>',
+    'file-text':'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/>',
+    smile:'<circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/>',
+    'chevron-down':'<polyline points="6 9 12 15 18 9"/>',
+    'chevron-up':'<polyline points="18 15 12 9 6 15"/>',
+    phone:'<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/>',
+    'map-pin':'<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
+    clock:'<circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/>',
+    car:'<path d="M5 11 6.2 6.9A2 2 0 0 1 8.1 5.5h7.8a2 2 0 0 1 1.9 1.4L19 11"/><rect x="3" y="11" width="18" height="6" rx="2"/><circle cx="7.5" cy="17.5" r="1.6"/><circle cx="16.5" cy="17.5" r="1.6"/>',
+    'bar-chart':'<line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/>',
+    menu:'<line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>',
+    'arrow-right':'<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>',
+    'user-info':'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>',
+    'msg-circle':'<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/>',
+    camera:'<rect x="3" y="7" width="18" height="14" rx="3"/><circle cx="12" cy="14" r="3.6"/><path d="M8.5 7 9.7 4.6A1.6 1.6 0 0 1 11.1 3.7h1.8a1.6 1.6 0 0 1 1.4.9L15.5 7"/>',
+    x:'<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+  };
+  function ocIcon(name,size){
+    size = size||16;
+    const p = ICON_PATHS[name] || ICON_PATHS.x;
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+  }
+
+  const CHANNELS = {
+    whatsapp:{ label:'WhatsApp', bg:'var(--grn-l)', icon:'msg-circle' },
+    instagram:{ label:'Instagram', bg:'linear-gradient(45deg,#F58529,#DD2A7B,#8134AF)', icon:'camera' },
+    webmotors:{ label:'Webmotors', bg:'var(--red)', icon:'car' },
+    olx:{ label:'OLX', bg:'var(--c-premium)', icon:null },
+    chatsite:{ label:'Chat Site', bg:'var(--c-morno)', icon:'msg-circle' },
+  };
+  function chanBadgeHtml(chan,size){
+    size = size||17;
+    const c = CHANNELS[chan];
+    if(chan==='olx') return `<div class="oc-conv-chan-badge" style="background:${c.bg};font-size:${size*0.42}px;font-weight:800;">OLX</div>`;
+    return `<div class="oc-conv-chan-badge" style="background:${c.bg};">${ocIcon(c.icon,size*0.55)}</div>`;
+  }
+  function initials(name){ return (name||'?').split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase(); }
+
+  const TEMP_COLOR = {Premium:'var(--c-premium)',Quente:'var(--c-quente)',Engajado:'var(--c-engajado)',Morno:'var(--c-morno)',Frio:'var(--c-frio)'};
+  const TEMP_EMOJI = {Premium:'💎',Quente:'🔥',Engajado:'⚡',Morno:'🌤️',Frio:'❄️'};
+  const STATUS_COLOR = {'Em andamento':'var(--ac)','Transferido':'var(--grn-l)','Encerrado':'var(--tx3)','Cliente':'var(--grn-l)'};
+
+  /* ---------------- MOCK: Instagram / Webmotors / OLX / Chat Site ---------------- */
+  const MOCK_COLORS = ['var(--c-premium)','var(--c-engajado)','var(--c-morno)','var(--c-frio)'];
+  let MOCK_CONVERSATIONS = [
+    {
+      id:'mariana', real:false, name:'Mariana Costa', channel:'instagram', avColor:MOCK_COLORS[0], unread:1,
+      lastTime:'11:28', lastPreview:'Quais as condições de financiamento?',
+      origin:'Instagram • 21/05/2025 11:02',
+      aiSummary:'Lead conheceu a loja pelo Instagram, tem interesse no Haval H6 e quer entender as condições de financiamento antes de visitar a loja.',
+      messages:[
+        {dir:'in', time:'11:02', text:'Oi! Vi os stories de vocês, o Haval H6 ainda está na promoção?'},
+        {dir:'out', time:'11:05', text:'Oi Mariana! Tudo bem? Está sim, condição válida até o fim do mês 🙂'},
+        {dir:'in', time:'11:28', text:'Quais as condições de financiamento?'},
+      ],
+      lead:{ phone:'(11) 97733-2210', email:'mari.costa@hotmail.com', loc:'Guarulhos, SP', hot:false, novo:true,
+        vehicle:{ model:'Haval H6', trim:'Premium 2024', price:'R$ 189.900', chips:['SUV','Híbrido','Automático'] },
+        details:[
+          {k:'Orçamento estimado', v:'R$ 170.000 – R$ 200.000', icon:'bar-chart'},
+          {k:'Pretende financiar', v:'Sim', icon:'file-text'},
+          {k:'Entrada disponível', v:'Não informado', icon:'tag'},
+          {k:'Troca de carro', v:'Não', icon:'car'},
+          {k:'Melhor horário', v:'Tarde', icon:'clock'},
+        ],
+        timeline:[
+          {time:'21/05/2025 11:02', text:'Lead criado via Instagram', color:'#DD2A7B'},
+          {time:'21/05/2025 11:05', text:'Primeira resposta enviada', color:'var(--ac)'},
+        ] },
+    },
+    {
+      id:'carlos', real:false, name:'Carlos Henrique', channel:'webmotors', avColor:MOCK_COLORS[1], unread:3,
+      lastTime:'11:10', lastPreview:'Tenho interesse no T-Cross 2023',
+      origin:'Webmotors • 21/05/2025 10:40',
+      aiSummary:'Lead qualificado vindo do Webmotors, já sinalizou intenção de compra rápida no T-Cross 2023 e pediu tabela de valores.',
+      messages:[
+        {dir:'in', time:'10:40', text:'Boa tarde, vi o anúncio do T-Cross 2023 no Webmotors'},
+        {dir:'out', time:'10:44', text:'Boa tarde, Carlos! Esse é um dos nossos mais procurados. Posso te passar mais detalhes?'},
+        {dir:'in', time:'10:50', text:'Pode sim, e qual o valor à vista?'},
+        {dir:'out', time:'10:55', text:'À vista sai por R$ 118.500. Também temos condição facilitada de financiamento'},
+        {dir:'in', time:'11:10', text:'Tenho interesse no T-Cross 2023'},
+      ],
+      lead:{ phone:'(11) 96652-4481', email:'carlos.henrique@outlook.com', loc:'São Bernardo do Campo, SP', hot:true, novo:false,
+        vehicle:{ model:'VW T-Cross', trim:'Highline 2023', price:'R$ 118.500', chips:['SUV','Turbo','Flex'] },
+        details:[
+          {k:'Orçamento estimado', v:'R$ 100.000 – R$ 130.000', icon:'bar-chart'},
+          {k:'Pretende financiar', v:'Talvez', icon:'file-text'},
+          {k:'Entrada disponível', v:'R$ 35.000', icon:'tag'},
+          {k:'Troca de carro', v:'Sim', icon:'car'},
+          {k:'Melhor horário', v:'Manhã', icon:'clock'},
+        ],
+        timeline:[
+          {time:'21/05/2025 10:40', text:'Lead criado via Webmotors', color:'var(--red)'},
+          {time:'21/05/2025 10:55', text:'Tabela de valores enviada', color:'var(--ac)'},
+        ] },
+    },
+    {
+      id:'beatriz', real:false, name:'Beatriz Lima', channel:'olx', avColor:MOCK_COLORS[2], unread:0,
+      lastTime:'10:45', lastPreview:'Esse carro ainda está disponível?',
+      origin:'OLX • 21/05/2025 10:45',
+      aiSummary:'Lead vindo do anúncio de um Chevrolet Tracker usado na OLX, ainda em fase inicial de contato, sem dados de orçamento coletados.',
+      messages:[ {dir:'in', time:'10:45', text:'Esse carro ainda está disponível?'} ],
+      lead:{ phone:'(11) 95521-9087', email:'bea.lima@gmail.com', loc:'Santo André, SP', hot:false, novo:true,
+        vehicle:{ model:'Chevrolet Tracker', trim:'LT 2021', price:'R$ 89.900', chips:['SUV','Usado','Flex'] },
+        details:[
+          {k:'Orçamento estimado', v:'Não informado', icon:'bar-chart'},
+          {k:'Pretende financiar', v:'Não informado', icon:'file-text'},
+          {k:'Entrada disponível', v:'Não informado', icon:'tag'},
+          {k:'Troca de carro', v:'Não informado', icon:'car'},
+          {k:'Melhor horário', v:'Não informado', icon:'clock'},
+        ],
+        timeline:[ {time:'21/05/2025 10:45', text:'Lead criado via OLX', color:'var(--c-premium)'} ] },
+    },
+    {
+      id:'joao', real:false, name:'João Paulo Silva', channel:'chatsite', avColor:MOCK_COLORS[3], unread:1,
+      lastTime:'10:30', lastPreview:'Queria mais informações',
+      origin:'Chat Site • 21/05/2025 10:28',
+      aiSummary:'Lead visitante do site, pediu mais informações de forma genérica — ainda não sinalizou qual modelo tem interesse.',
+      messages:[
+        {dir:'in', time:'10:28', text:'Boa tarde'},
+        {dir:'out', time:'10:29', text:'Boa tarde! Em que posso te ajudar hoje?'},
+        {dir:'in', time:'10:30', text:'Queria mais informações'},
+      ],
+      lead:{ phone:'Não informado', email:'Não informado', loc:'Não informado', hot:false, novo:true,
+        vehicle:{ model:'Jeep Renegade', trim:'Sport 2023', price:'R$ 112.900', chips:['SUV','Manual','Flex'] },
+        details:[
+          {k:'Orçamento estimado', v:'Não informado', icon:'bar-chart'},
+          {k:'Pretende financiar', v:'Não informado', icon:'file-text'},
+          {k:'Entrada disponível', v:'Não informado', icon:'tag'},
+          {k:'Troca de carro', v:'Não informado', icon:'car'},
+          {k:'Melhor horário', v:'Não informado', icon:'clock'},
+        ],
+        timeline:[ {time:'21/05/2025 10:28', text:'Lead criado via Chat do Site', color:'var(--c-morno)'} ] },
+    },
+  ];
+  const EXTRA_POOL = [
+    {name:'Rafael Nunes', channel:'webmotors', preview:'Aceita meu carro na troca?'},
+    {name:'Juliana Prado', channel:'instagram', preview:'Tem em outra cor?'},
+    {name:'Marcos Vinícius', channel:'olx', preview:'Qual o km desse aqui?'},
+    {name:'Camila Duarte', channel:'chatsite', preview:'Vocês entregam em outra cidade?'},
+  ];
+  let extraIdx = 0;
+
+  const CHANNEL_META_MOCK = {
+    instagram:{ num:5, label:'Directs', delta:'8%', up:true },
+    webmotors:{ num:18, label:'Leads', delta:'22%', up:true },
+    olx:{ num:4, label:'Interessados', delta:'5%', up:false },
+    chatsite:{ num:9, label:'Visitantes', delta:'12%', up:true },
+  };
+
+  const KPIS = [
+    {lbl:'Tempo médio de resposta (fictício)', val:'1m 32s', delta:'12% mais rápido', up:false},
+    {lbl:'Conversas ativas (fictício)', val:'48', delta:'18% vs período anterior', up:true},
+    {lbl:'Propostas enviadas (fictício)', val:'12', delta:'20%', up:true},
+    {lbl:'Visitas agendadas (fictício)', val:'7', delta:'16%', up:true},
+  ];
+
+  /* ---------------- REAL: WhatsApp via ACTIVE_LEADS ---------------- */
+  function realConversations(){
+    if(typeof ACTIVE_LEADS === 'undefined' || !Array.isArray(ACTIVE_LEADS)) return [];
+    return ACTIVE_LEADS
+      .filter(l => (l.canal||'whatsapp') !== 'presencial')
+      .map(mapRealLead)
+      .sort((a,b) => (b._sort||'').localeCompare(a._sort||''));
+  }
+  function mapRealLead(l){
+    const perguntas = l.perguntas || [];
+    const g1 = perguntas.find(p=>p.num==='G1');
+    const g2 = perguntas.find(p=>p.num==='G2');
+    const b3 = perguntas.find(p=>p.num==='B3');
+    const preview = l.justificativa ? l.justificativa : (l.modelo ? `Interesse em ${l.modelo}` : 'Sem detalhes registrados ainda');
+    return {
+      id: 'wa_'+(l.telefone||l.senderId||l.nome||Math.random().toString(36).slice(2)),
+      real:true, name: l.nome||'Lead sem nome', channel:'whatsapp',
+      senderId: l.senderId || l.telefone || '',
+      avColor: l.temperatura ? TEMP_COLOR[l.temperatura] : 'var(--tx3)',
+      lastTime: l.hora||'', lastPreview: preview, status: l.status||'',
+      _sort: (l.data||'')+'T'+(l.hora||''),
+      origin: 'WhatsApp'+(l.loja?(' • '+l.loja):'')+(l.data?(' • '+new Date(l.data).toLocaleDateString('pt-BR')):''),
+      aiSummary: l.justificativa || null,
+      telefone: l.telefone || 'Não informado',
+      localizacao: l.localizacao || 'Não informado',
+      temperatura: l.temperatura, score: l.score,
+      modelo: l.modelo || null, setor: l.setor || null,
+      pagamento: l.pagamento || null,
+      veicAtual: l.veicAtual || null,
+      decisao: l.decisao || null, codDetalhe: l.codDetalhe||null,
+      quer_reservar: b3 ? b3.resposta : null,
+      condicaoVeiculo: g1 ? g1.resposta : null,
+      unidadePreferida: g2 ? g2.resposta : (l.loja||null),
+      data: l.data, hora: l.hora, qualificadoEm: l.qualificadoEm,
+    };
+  }
+
+  /* ---------------- STATE ---------------- */
+  let state = { channel:null, tab:'todas', search:'', selected:null };
+  let CONVERSATIONS = [];
+
+  function rebuildConversations(){
+    CONVERSATIONS = [...realConversations(), ...MOCK_CONVERSATIONS];
+    if(!CONVERSATIONS.find(c=>c.id===state.selected)){
+      state.selected = CONVERSATIONS.length ? CONVERSATIONS[0].id : null;
+    }
+  }
+
+  function filteredConversations(){
+    return CONVERSATIONS.filter(c=>{
+      if(state.channel && c.channel!==state.channel) return false;
+      if(state.tab==='nao_lidas' && !(c.unread>0)) return false;
+      if(state.search){
+        const q = state.search.toLowerCase();
+        if(!c.name.toLowerCase().includes(q) && !(c.lastPreview||'').toLowerCase().includes(q)) return false;
+      }
+      return true;
+    });
+  }
+
+  /* ---------------- RENDER: CHANNELS ---------------- */
+  function renderChannels(){
+    const waCount = realConversations().length;
+    const el = document.getElementById('ocChannels');
+    const order = ['whatsapp','instagram','webmotors','olx','chatsite'];
+    el.innerHTML = order.map(key=>{
+      const meta = CHANNELS[key];
+      const badgeInner = key==='olx' ? 'OLX' : ocIcon(meta.icon,13);
+      const badgeFont = key==='olx' ? 'font-size:8.5px;font-weight:800;' : '';
+      const isActive = state.channel===key;
+      if(key==='whatsapp'){
+        return `<button class="oc-chan-card${isActive?' active':''}" data-oc-chan="whatsapp">
+          <div class="oc-chan-top"><div class="oc-chan-badge" style="background:${meta.bg};">${badgeInner}</div><div class="oc-chan-name">${meta.label}</div></div>
+          <div class="oc-chan-num">${waCount}</div>
+          <div class="oc-chan-bottom"><span class="oc-chan-lbl">Conversas</span><span class="oc-chan-live"><span class="d"></span>AO VIVO</span></div>
+        </button>`;
+      }
+      const m = CHANNEL_META_MOCK[key];
+      return `<button class="oc-chan-card${isActive?' active':''}" data-oc-chan="${key}">
+        <div class="oc-chan-top"><div class="oc-chan-badge" style="background:${meta.bg};${badgeFont}">${badgeInner}</div><div class="oc-chan-name">${meta.label}</div></div>
+        <div class="oc-chan-num">${m.num}</div>
+        <div class="oc-chan-bottom"><span class="oc-chan-lbl">${m.label}</span><span class="oc-chan-delta ${m.up?'up':'down'}">${m.up?'↗':'↘'} ${m.delta}</span></div>
+      </button>`;
+    }).join('');
+    el.querySelectorAll('[data-oc-chan]').forEach(card=>{
+      card.addEventListener('click',()=>{
+        const chan = card.getAttribute('data-oc-chan');
+        state.channel = state.channel===chan ? null : chan;
+        renderAll();
+      });
+    });
+  }
+
+  /* ---------------- RENDER: TABS ---------------- */
+  const TABS = [
+    {key:'todas', label:'Todas'},
+    {key:'nao_lidas', label:'Não lidas'},
+  ];
+  function renderTabs(){
+    const el = document.getElementById('ocTabsRow');
+    el.innerHTML = TABS.map(t=>{
+      const cnt = t.key==='todas' ? CONVERSATIONS.length : CONVERSATIONS.filter(c=>c.unread>0).length;
+      return `<button class="oc-tab-item${state.tab===t.key?' active':''}" data-oc-tab="${t.key}">${t.label} <span class="cnt">${cnt}</span></button>`;
+    }).join('');
+    el.querySelectorAll('[data-oc-tab]').forEach(b=>{
+      b.addEventListener('click',()=>{ state.tab=b.getAttribute('data-oc-tab'); renderAll(); });
+    });
+  }
+
+  /* ---------------- RENDER: CONVERSATION LIST ---------------- */
+  function renderConvList(){
+    const el = document.getElementById('ocConvScroll');
+    const list = filteredConversations();
+    if(list.length===0){
+      el.innerHTML = `<div class="oc-empty">Nenhuma conversa encontrada.</div>`;
+      return;
+    }
+    el.innerHTML = list.map(c=>{
+      const statusChip = c.real
+        ? (c.status ? `<span class="oc-status-dot-lbl" style="background:rgba(212,175,55,.1);color:${STATUS_COLOR[c.status]||'var(--tx3)'};">${c.status}</span>` : '')
+        : (c.unread>0 ? `<span class="oc-unread">${c.unread}</span>` : '');
+      return `<div class="oc-conv-item${state.selected===c.id?' selected':''}" data-oc-conv="${c.id}">
+        <div class="oc-conv-av-wrap">
+          <div class="oc-avatar oc-conv-av" style="background:${c.avColor};">${initials(c.name)}</div>
+          ${chanBadgeHtml(c.channel)}
+        </div>
+        <div class="oc-conv-body">
+          <div class="oc-conv-row1"><span class="oc-conv-name">${escHtml(c.name)}</span><span class="oc-conv-time">${c.lastTime||''}</span></div>
+          <div class="oc-conv-row2"><span class="oc-conv-preview">${escHtml(c.lastPreview||'')}</span>${statusChip}</div>
+        </div>
+      </div>`;
+    }).join('') + (state.channel===null && state.tab==='todas' ? `<button type="button" class="oc-load-more" id="ocLoadMoreBtn">Carregar mais conversas fictícias ${ocIcon('chevron-down',13)}</button>` : '');
+
+    el.querySelectorAll('[data-oc-conv]').forEach(item=>{
+      item.addEventListener('click',()=>{ selectConversation(item.getAttribute('data-oc-conv')); });
+    });
+    const lm = document.getElementById('ocLoadMoreBtn');
+    if(lm) lm.addEventListener('click', loadMoreMock);
+  }
+  function loadMoreMock(){
+    if(extraIdx>=EXTRA_POOL.length){ showToast('Não há mais conversas fictícias para carregar.'); return; }
+    const item = EXTRA_POOL[extraIdx++];
+    MOCK_CONVERSATIONS.push({
+      id:'extra'+extraIdx, real:false, name:item.name, channel:item.channel,
+      avColor: MOCK_COLORS[extraIdx%MOCK_COLORS.length], unread:0,
+      lastTime:'ontem', lastPreview:item.preview,
+      origin:`${CHANNELS[item.channel].label} • fictício`,
+      aiSummary:'Conversa fictícia carregada agora — sem resumo real disponível.',
+      messages:[{dir:'in', time:'ontem', text:item.preview}],
+      lead:{ phone:'Não informado', email:'Não informado', loc:'Não informado', hot:false, novo:true,
+        vehicle:{model:'—',trim:'—',price:'—',chips:[]},
+        details:[{k:'Orçamento estimado',v:'Não informado',icon:'bar-chart'},{k:'Pretende financiar',v:'Não informado',icon:'file-text'},{k:'Entrada disponível',v:'Não informado',icon:'tag'},{k:'Troca de carro',v:'Não informado',icon:'car'},{k:'Melhor horário',v:'Não informado',icon:'clock'}],
+        timeline:[{time:'fictício', text:`Lead criado via ${CHANNELS[item.channel].label}`, color:'var(--ac)'}] }
+    });
+    CONVERSATIONS.push(MOCK_CONVERSATIONS[MOCK_CONVERSATIONS.length-1]);
+    renderConvList();
+    showToast('Mais conversas fictícias carregadas.');
+  }
+
+  function selectConversation(id){
+    state.selected = id;
+    const c = CONVERSATIONS.find(x=>x.id===id);
+    if(c && !c.real) c.unread = 0;
+    renderConvList();
+    renderChat();
+    renderLeadPanel();
+    closeDrawers();
+  }
+
+  /* ---------------- RENDER: CHAT ---------------- */
+  function renderChat(){
+    const c = CONVERSATIONS.find(x=>x.id===state.selected);
+    const headAv = document.getElementById('ocChatHeadAv');
+    if(!c){
+      headAv.innerHTML = '';
+      document.getElementById('ocChatHeadName').textContent = 'Nenhuma conversa selecionada';
+      document.getElementById('ocChatHeadChanPill').innerHTML = '';
+      document.getElementById('ocChatHeadOrigin').textContent = '';
+      document.getElementById('ocAiSummaryWrap').innerHTML = '';
+      document.getElementById('ocMsgScroll').innerHTML = `<div class="oc-empty">Selecione uma conversa na lista ao lado.</div>`;
+      setComposerEnabled(false, '');
+      return;
+    }
+    const meta = CHANNELS[c.channel];
+    headAv.innerHTML = `<div class="oc-avatar oc-conv-av" style="background:${c.avColor};width:38px;height:38px;">${initials(c.name)}</div>`;
+    document.getElementById('ocChatHeadName').textContent = c.name;
+    const pill = document.getElementById('ocChatHeadChanPill');
+    pill.style.background = meta.bg;
+    pill.innerHTML = `${c.channel==='olx'?'':ocIcon(meta.icon,8)}<span>${meta.label}</span>`;
+    document.getElementById('ocChatHeadOrigin').textContent = c.origin||'';
+
+    const summaryWrap = document.getElementById('ocAiSummaryWrap');
+    if(c.aiSummary){
+      summaryWrap.innerHTML = `<div class="oc-ai-summary">
+        <div class="oc-ai-summary-head"><span class="t">☀️ Resumo da IA</span>${c.real?'':'<span class="oc-new-pill">Novo</span>'}</div>
+        <p>${escHtml(c.aiSummary)}</p>
+      </div>`;
+    } else if(c.real){
+      summaryWrap.innerHTML = `<div class="oc-ai-summary">
+        <div class="oc-ai-summary-head"><span class="t">☀️ Resumo da IA</span></div>
+        <p>O Rui ainda não registrou uma justificativa de qualificação para esse lead.</p>
+      </div>`;
+    } else {
+      summaryWrap.innerHTML = '';
+    }
+
+    const scroll = document.getElementById('ocMsgScroll');
+    if(c.real){
+      setComposerEnabled(false, 'O envio de mensagem por aqui ainda não está disponível para leads reais — a conversa continua acontecendo pelo fluxo automático do Rui no WhatsApp.');
+      renderRealThread(c);
+    } else {
+      scroll.innerHTML = `<div class="oc-date-div">Hoje</div>` + c.messages.map(m=>`
+        <div class="oc-msg-row ${m.dir}">
+          <div class="oc-bubble">${escHtml(m.text)}</div>
+          <div class="oc-msg-meta">${m.dir==='out'?`<span class="oc-read-check">✓✓</span>`:''}<span>${m.time}</span></div>
+        </div>`).join('');
+      scroll.scrollTop = scroll.scrollHeight;
+      setComposerEnabled(true, '');
+    }
+  }
+
+  /* ---------------- REAL: histórico de mensagens (endpoint adtsa-chat-history) ----------------
+     Esse endpoint já estava declarado no app (N8N_CHAT_HISTORY) mas nunca tinha sido usado em
+     nenhuma tela. Seguimos o MESMO padrão defensivo de fetchLeadHistorico() já usado no resto do
+     app: tenta buscar; se o fluxo ainda não existir/estiver ativo no N8N, ou devolver algo em
+     formato inesperado, cai sem quebrar no aviso "histórico ainda não disponível" — nunca inventa
+     mensagem falsa. Não sabemos ainda os nomes exatos dos campos que esse endpoint devolve, então
+     normalizeMsg() tenta várias variações plausíveis (mesma convenção de nomes em português usada
+     no resto do Supabase deste app). Ajustar aqui assim que o formato real for confirmado. */
+  function renderRealThread(c){
+    const scroll = document.getElementById('ocMsgScroll');
+    scroll.innerHTML = `<div class="oc-empty">Carregando mensagens…</div>`;
+    const requestedId = c.id;
+    fetchRealMessages(c.senderId).then(msgs=>{
+      if(state.selected !== requestedId) return; // trocou de conversa antes da resposta chegar
+      if(msgs && msgs.length){
+        scroll.innerHTML = `<div class="oc-date-div">Histórico real · WhatsApp</div>` + msgs.map(m=>`
+          <div class="oc-msg-row ${m.dir}">
+            <div class="oc-bubble">${escHtml(m.text)}</div>
+            <div class="oc-msg-meta">${m.dir==='out'?`<span class="oc-read-check">✓✓</span>`:''}<span>${m.time||''}</span></div>
+          </div>`).join('');
+        scroll.scrollTop = scroll.scrollHeight;
+      } else {
+        scroll.innerHTML = `<div class="oc-empty-thread">
+          <div class="em">💬</div>
+          Histórico de mensagens ainda não disponível aqui.<br>
+          O fluxo de histórico de conversa no N8N ainda não devolveu dados para este lead —
+          mesma pendência já sinalizada na Central de Leads. O que já é real: o resumo da IA
+          acima e os dados ao lado →
+        </div>`;
+      }
+    });
+  }
+  async function fetchRealMessages(senderId){
+    if(!senderId || typeof authFetch!=='function' || typeof N8N_CHAT_HISTORY==='undefined') return [];
+    try{
+      const res = await authFetch(`${N8N_CHAT_HISTORY}?lead_sender_id=${encodeURIComponent(senderId)}`, {method:'GET'});
+      if(!res.ok) return [];
+      const rows = await res.json();
+      if(!Array.isArray(rows)) return [];
+      return rows.map(normalizeMsg).filter(Boolean).sort((a,b)=>(a._ts||0)-(b._ts||0));
+    }catch(e){
+      console.warn('[Omnichannel] fetchRealMessages falhou (endpoint ainda não ativo no N8N?):', e);
+      return [];
+    }
+  }
+  function normalizeMsg(row){
+    if(!row || typeof row!=='object') return null;
+    const text = row.mensagem||row.texto||row.conteudo||row.message||row.content||row.body||row.text||null;
+    if(!text) return null;
+    const tsRaw = row.enviado_em||row.criado_em||row.timestamp||row.data_hora||row.registrado_em||row.created_at||null;
+    const ts = tsRaw ? new Date(tsRaw).getTime() : 0;
+    const time = tsRaw ? new Date(tsRaw).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}) : '';
+    const senderStr = String(row.remetente||row.direcao||row.role||row.sender||row.tipo_remetente||'').toLowerCase();
+    const isOut = row.from_me===true || ['bot','rui','agente','vendedor','assistant','out','saida','ai','atendente'].includes(senderStr);
+    return {dir: isOut?'out':'in', text:String(text), time, _ts:ts};
+  }
+  function setComposerEnabled(enabled, note){
+    const comp = document.getElementById('ocComposer');
+    const noteEl = document.getElementById('ocComposerNote');
+    comp.classList.toggle('disabled', !enabled);
+    if(note){ noteEl.style.display='block'; noteEl.textContent=note; } else { noteEl.style.display='none'; }
+  }
+
+  /* ---------------- RENDER: LEAD PANEL ---------------- */
+  function renderLeadPanel(){
+    const c = CONVERSATIONS.find(x=>x.id===state.selected);
+    if(!c){
+      ['ocLeadAvatar','ocLeadName','ocLeadContact','ocLeadTags','ocVehicleCard','ocDetailList','ocTimeline'].forEach(id=>document.getElementById(id).innerHTML='');
+      return;
+    }
+    document.getElementById('ocLeadAvatar').style.background = c.avColor;
+    document.getElementById('ocLeadAvatar').textContent = initials(c.name);
+    document.getElementById('ocLeadName').textContent = c.name;
+
+    if(c.real){
+      document.getElementById('ocLeadContact').innerHTML = `
+        <div class="oc-lead-contact-row"><span class="oc-ic">${ocIcon('phone',14)}</span><span>${escHtml(c.telefone)}</span></div>
+        <div class="oc-lead-contact-row"><span class="oc-ic">${ocIcon('map-pin',14)}</span><span>${escHtml(c.localizacao)}</span></div>`;
+      const tempTag = c.temperatura ? `<span class="oc-tag-pill" style="background:${TEMP_COLOR[c.temperatura]}22;color:${TEMP_COLOR[c.temperatura]};border:1px solid ${TEMP_COLOR[c.temperatura]}55;">${TEMP_EMOJI[c.temperatura]||''} ${c.temperatura}${c.score?' · '+c.score:''}</span>` : '';
+      const statusTag = c.status ? `<span class="oc-tag-pill" style="background:none;border:1px solid var(--s4);color:var(--tx2);">${c.status}</span>` : '';
+      document.getElementById('ocLeadTags').innerHTML = tempTag+statusTag;
+
+      document.getElementById('ocVehicleLbl').textContent = 'Veículo de interesse';
+      document.getElementById('ocVehicleCard').innerHTML = `
+        <div class="oc-vehicle-photo">${ocIcon('car',26)}</div>
+        <div class="oc-vehicle-info">
+          <div class="oc-vehicle-model">${c.modelo ? escHtml(c.modelo) : 'Não informado'}</div>
+          ${c.setor?`<div class="oc-vehicle-chips"><span class="oc-chip">${escHtml(c.setor)}</span></div>`:''}
+        </div>`;
+
+      const rows = [
+        {k:'Orçamento estimado', v:c.pagamento || 'Não informado', icon:'bar-chart'},
+        {k:'Troca de carro', v:c.veicAtual || 'Não informado', icon:'car'},
+        {k:'Decisão de compra', v:c.decisao ? (c.decisao+(c.codDetalhe?' ('+c.codDetalhe+')':'')) : 'Não informado', icon:'file-text'},
+        {k:'Quer reservar', v:c.quer_reservar===true?'Sim':c.quer_reservar===false?'Não':'Não informado', icon:'tag'},
+        {k:'Condição do veículo', v:c.condicaoVeiculo || 'Não informado', icon:'car'},
+        {k:'Unidade preferida', v:c.unidadePreferida || 'Não informado', icon:'map-pin'},
+      ];
+      document.getElementById('ocDetailList').innerHTML = rows.map(d=>`
+        <div class="oc-detail-row"><span class="oc-ic">${ocIcon(d.icon,15)}</span><div><div class="oc-detail-k">${d.k}</div><div class="oc-detail-v">${escHtml(d.v)}</div></div></div>`).join('');
+
+      document.getElementById('ocSeeAll').style.display = 'none';
+      const tl = [];
+      if(c.qualificadoEm) tl.push({time:fmtDateTime(c.qualificadoEm), text:'Qualificação concluída', color:'var(--grn-l)'});
+      if(c.data) tl.push({time:fmtDateTime(c.data)+(c.hora?' '+c.hora:''), text:'Última atualização · status: '+(c.status||'—'), color:'var(--ac)'});
+      document.getElementById('ocTimeline').innerHTML = tl.length ? tl.map(t=>`
+        <div class="oc-tl-item"><span class="oc-tl-dot" style="background:${t.color};"></span><div><div class="oc-tl-time">${t.time}</div><div class="oc-tl-text">${t.text}</div></div></div>`).join('')
+        : `<div class="oc-empty" style="padding:12px 0;">Sem histórico detalhado disponível ainda.</div>`;
+    } else {
+      const L = c.lead;
+      document.getElementById('ocLeadContact').innerHTML = `
+        <div class="oc-lead-contact-row"><span class="oc-ic">${ocIcon('phone',14)}</span><span>${escHtml(L.phone)}</span></div>
+        <div class="oc-lead-contact-row"><span class="oc-ic">${ocIcon('map-pin',14)}</span><span>${escHtml(L.loc)}</span></div>`;
+      document.getElementById('ocLeadTags').innerHTML =
+        (L.hot?`<span class="oc-tag-pill" style="background:rgba(225,29,72,.15);color:#FF6B85;border:1px solid rgba(225,29,72,.3);">🔥 Lead Quente</span>`:'') +
+        (L.novo?`<span class="oc-tag-pill" style="background:none;border:1px solid var(--s4);color:var(--tx2);">Novo</span>`:'');
+
+      document.getElementById('ocVehicleLbl').textContent = 'Veículo de interesse (fictício)';
+      document.getElementById('ocVehicleCard').innerHTML = `
+        <div class="oc-vehicle-photo">${ocIcon('car',26)}</div>
+        <div class="oc-vehicle-info">
+          <div class="oc-vehicle-model">${escHtml(L.vehicle.model)}</div>
+          <div class="oc-vehicle-trim">${escHtml(L.vehicle.trim)}</div>
+          <div class="oc-vehicle-price">${escHtml(L.vehicle.price)}</div>
+          <div class="oc-vehicle-chips">${L.vehicle.chips.map(ch=>`<span class="oc-chip">${escHtml(ch)}</span>`).join('')}</div>
+        </div>`;
+      document.getElementById('ocDetailList').innerHTML = L.details.map(d=>`
+        <div class="oc-detail-row"><span class="oc-ic">${ocIcon(d.icon,15)}</span><div><div class="oc-detail-k">${d.k}</div><div class="oc-detail-v">${escHtml(d.v)}</div></div></div>`).join('');
+      document.getElementById('ocSeeAll').style.display = '';
+      document.getElementById('ocTimeline').innerHTML = L.timeline.map(t=>`
+        <div class="oc-tl-item"><span class="oc-tl-dot" style="background:${t.color};"></span><div><div class="oc-tl-time">${t.time}</div><div class="oc-tl-text">${t.text}</div></div></div>`).join('');
+    }
+  }
+  function fmtDateTime(v){
+    try{ return new Date(v).toLocaleDateString('pt-BR'); }catch(e){ return v; }
+  }
+
+  /* ---------------- RENDER: KPI FOOTER ---------------- */
+  function renderKpis(){
+    document.getElementById('ocKpiBar').innerHTML = KPIS.map(k=>`
+      <div class="oc-kpi-item">
+        <div class="oc-kpi-lbl">${k.lbl}</div>
+        <div class="oc-kpi-val">${k.val}</div>
+        <div class="oc-kpi-delta">${k.up?'↗':'↘'} <span class="ctx">${k.delta}</span></div>
+      </div>`).join('');
+  }
+
+  function renderAll(){
+    renderChannels();
+    renderTabs();
+    renderConvList();
+    renderChat();
+    renderLeadPanel();
+  }
+
+  /* ---------------- COMPOSER (só conversas fictícias) ---------------- */
+  function sendMessage(){
+    const c = CONVERSATIONS.find(x=>x.id===state.selected);
+    if(!c || c.real) return;
+    const input = document.getElementById('ocComposerInput');
+    const text = input.value.trim();
+    if(!text) return;
+    const now = new Date();
+    const time = String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+    c.messages.push({dir:'out', time, text});
+    c.lastTime = time; c.lastPreview = text;
+    input.value = '';
+    renderChat();
+    renderConvList();
+  }
+
+  /* ---------------- DROPDOWNS / DRAWERS / TOAST ---------------- */
+  function toggleDd(id){
+    document.querySelectorAll('#p-omnichannel .oc-dropdown').forEach(d=>{ if(d.id!==id) d.classList.remove('open'); });
+    document.getElementById(id).classList.toggle('open');
+  }
+  function closeDrawers(){
+    document.getElementById('ocColList').classList.remove('open');
+    document.getElementById('ocColLead').classList.remove('open');
+    document.getElementById('ocScrim').classList.remove('open');
+  }
+  function showToast(msg){
+    const t = document.getElementById('ocToast');
+    document.getElementById('ocToastMsg').textContent = msg;
+    t.classList.add('show');
+    clearTimeout(window._ocToastT);
+    window._ocToastT = setTimeout(()=>t.classList.remove('show'), 2800);
+  }
+  function escHtml(s){
+    return String(s==null?'':s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  /* ---------------- ONE-TIME INIT ---------------- */
+  let initialized = false;
+  function initOnce(){
+    if(initialized) return;
+    initialized = true;
+
+    document.querySelectorAll('#p-omnichannel [data-oc-icon]').forEach(el=>{
+      el.innerHTML = ocIcon(el.getAttribute('data-oc-icon'), 16);
+    });
+
+    const s = (typeof getSession==='function') ? getSession() : null;
+    const tenant = (s && s.concessionaria) ? s.concessionaria : 'Loja';
+    document.getElementById('ocUserName').textContent = tenant;
+    document.getElementById('ocUserInitials').textContent = initials(tenant);
+
+    document.getElementById('ocBellBtn').addEventListener('click', e=>{ e.stopPropagation(); toggleDd('ocNotifDd'); });
+    document.getElementById('ocUserBtn').addEventListener('click', e=>{ e.stopPropagation(); toggleDd('ocUserDd'); });
+    document.addEventListener('click', ()=>{ document.querySelectorAll('#p-omnichannel .oc-dropdown').forEach(d=>d.classList.remove('open')); });
+
+    document.getElementById('ocDateBtn').addEventListener('click',()=>showToast('Seletor de período — em breve nesta aba.'));
+    document.getElementById('ocFilterBtn').addEventListener('click',()=>showToast('Filtros avançados — em breve nesta aba.'));
+    document.getElementById('ocMoreBtn').addEventListener('click',()=>showToast('Mais opções — em breve nesta aba.'));
+    document.getElementById('ocReportBtn').addEventListener('click',()=>{
+      const c = CONVERSATIONS.find(x=>x.id===state.selected);
+      if(c && c.real) showToast('Para o relatório completo desse lead, use a aba Central de Leads.');
+      else showToast('Relatório completo — disponível quando o canal virar real.');
+    });
+    document.getElementById('ocSendBtn').addEventListener('click', sendMessage);
+    document.getElementById('ocComposerInput').addEventListener('keydown', e=>{ if(e.key==='Enter') sendMessage(); });
+    document.getElementById('ocConvSearch').addEventListener('input', e=>{ state.search=e.target.value; renderAll(); });
+    document.getElementById('ocGlobalSearch').addEventListener('input', e=>{ state.search=e.target.value; state.tab='todas'; renderAll(); });
+
+    ['ocListToggle','ocListToggle2'].forEach(id=>document.getElementById(id).addEventListener('click',()=>{
+      document.getElementById('ocColList').classList.add('open');
+      document.getElementById('ocScrim').classList.add('open');
+    }));
+    document.getElementById('ocLeadToggle').addEventListener('click',()=>{
+      document.getElementById('ocColLead').classList.add('open');
+      document.getElementById('ocScrim').classList.add('open');
+    });
+    document.getElementById('ocLeadClose').addEventListener('click', closeDrawers);
+    document.getElementById('ocScrim').addEventListener('click', closeDrawers);
+  }
+
+  window.ocOnOpen = function(){
+    initOnce();
+    rebuildConversations();
+    renderAll();
+    renderKpis();
+  };
+})();
+</script>
+
 <div id="p-cobertura" style="display:none">
   <div class="topbar">
     <div><div class="eye">Principal</div><h1>Cobertura 24/7</h1></div>
@@ -2223,6 +3233,7 @@ function go(id){
   document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
   document.querySelectorAll('.sb-item').forEach(i=>{if(i.getAttribute('onclick')?.includes("'"+id+"'"))i.classList.add('active');});
   if(id==='plataformas'){updateOrbCount();updateCICount();renderLeadsPresenciais();}
+  if(id==='omnichannel' && typeof ocOnOpen==='function') ocOnOpen();
   if(id==='cobertura') buildCobertura();
   if(id==='funil'){ buildFunil(); buildFunilPresencial(); }
   if(id==='filaespera') fetchFilaData();
@@ -4239,11 +5250,12 @@ async function refresh(){
   try {
     await atualizarDashboard();
     // Reconstrói a aba atualmente aberta
-    const pages = ['plataformas','cobertura','funil','diagnostico','checkin'];
+    const pages = ['plataformas','omnichannel','cobertura','funil','diagnostico','checkin'];
     for(const id of pages){
       const el = document.getElementById('p-'+id);
       if(el && el.style.display !== 'none'){
         if(id==='plataformas'){ updateOrbCount(); updateCICount(); renderLeadsPresenciais(); }
+        if(id==='omnichannel' && typeof ocOnOpen==='function') ocOnOpen();
         if(id==='cobertura') buildCobertura();
         if(id==='funil'){ buildFunil(); buildFunilPresencial(); }
         if(id==='diagnostico'){ await fetchDiagnosticoFromSupabase(); buildDiagnostico(); }
