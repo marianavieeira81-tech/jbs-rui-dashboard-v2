@@ -2175,7 +2175,10 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     const ts = tsRaw ? new Date(tsRaw).getTime() : 0;
     const time = tsRaw ? new Date(tsRaw).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}) : '';
     const senderStr = String(row.remetente||row.direcao||row.role||row.sender||row.tipo_remetente||'').toLowerCase();
-    const isOut = row.from_me===true || ['bot','rui','agente','vendedor','assistant','out','saida','ai','atendente'].includes(senderStr);
+    // 'outbound' é o valor real gravado pelo n8n (node "Preparar mensagens para
+    // Supabase") pra resposta do Rui; 'lead'/'inbound' pra mensagem do lead —
+    // sem esses dois, tudo caía como "in" (esquerda), até a resposta do Rui.
+    const isOut = row.from_me===true || ['outbound','bot','rui','agente','vendedor','assistant','out','saida','ai','atendente'].includes(senderStr);
     return {dir: isOut?'out':'in', text:String(text), time, _ts:ts};
   }
   function setComposerEnabled(enabled, note){
