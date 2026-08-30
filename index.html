@@ -2270,6 +2270,13 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   }
 
   function renderAll(){
+    // Reconstrói sempre a partir do ACTIVE_LEADS atual — a página restaura a
+    // aba Omnichannel logo na abertura, antes do carregamento de dados (que é
+    // assíncrono) terminar. Sem isso, a lista de conversas ficava presa vazia
+    // (0) mesmo depois dos dados reais chegarem, enquanto o card do canal
+    // WhatsApp (que sempre recalcula na hora) já mostrava a contagem certa —
+    // os dois ficavam com números diferentes.
+    rebuildConversations();
     renderChannels();
     renderTabs();
     renderConvList();
@@ -2360,8 +2367,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 
   window.ocOnOpen = function(){
     initOnce();
-    rebuildConversations();
-    renderAll();
+    renderAll(); // já reconstrói a lista de conversas sozinho
     renderKpis();
   };
   window.ocOnClose = stopRealThreadPoll;
@@ -6805,6 +6811,10 @@ function startDashboard(){
   setInterval(atualizarDashboard, REFRESH_INTERVAL_MS);
   setInterval(()=>{ if(document.getElementById('p-filaespera').style.display!=='none') fetchFilaData(); }, REFRESH_INTERVAL_MS);
   setInterval(()=>{ if(document.getElementById('p-transferencias').style.display!=='none') fetchTransferenciasData(); }, REFRESH_INTERVAL_MS);
+  // Reconstrói a lista de conversas do Omnichannel (novos leads, prévia da
+  // última mensagem) sempre que essa aba estiver aberta — sem isso, só
+  // atualizava ao trocar de aba e voltar.
+  setInterval(()=>{ if(document.getElementById('p-omnichannel').style.display!=='none' && typeof ocOnOpen==='function') ocOnOpen(); }, REFRESH_INTERVAL_MS);
   // Sem isso, quem deixasse a aba Diagnóstico aberta esperando o pipeline das 23h
   // nunca via os dados aparecerem sozinhos — só ao trocar de aba e voltar.
   setInterval(()=>{ if(document.getElementById('p-diagnostico').style.display!=='none') fetchDiagnosticoFromSupabase().then(buildDiagnostico); }, REFRESH_INTERVAL_MS);
