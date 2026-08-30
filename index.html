@@ -1919,6 +1919,11 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   /* ---------------- STATE ---------------- */
   let state = { channel:null, tab:'todas', search:'', selected:null };
   let CONVERSATIONS = [];
+  let realThreadPollTimer = null;
+  let lastRenderedThreadKey = '';
+  function stopRealThreadPoll(){
+    if(realThreadPollTimer){ clearInterval(realThreadPollTimer); realThreadPollTimer = null; }
+  }
 
   // Por padrão a lista mostra só conversas REAIS (WhatsApp). As fictícias
   // (Instagram/Webmotors/OLX/Chat Site) só entram se alguém clicar em
@@ -2053,6 +2058,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 
   /* ---------------- RENDER: CHAT ---------------- */
   function renderChat(){
+    stopRealThreadPoll();
     const c = CONVERSATIONS.find(x=>x.id===state.selected);
     const headAv = document.getElementById('ocChatHeadAv');
     if(!c){
@@ -2091,7 +2097,15 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     const scroll = document.getElementById('ocMsgScroll');
     if(c.real){
       setComposerEnabled(false, 'O envio de mensagem por aqui ainda não está disponível para leads reais — a conversa continua acontecendo pelo fluxo automático do Rui no WhatsApp.');
+      lastRenderedThreadKey = '';
       renderRealThread(c);
+      // Atualiza a conversa aberta sozinha (sem precisar dar F5), como um chat
+      // de verdade — só enquanto essa conversa real continuar selecionada.
+      realThreadPollTimer = setInterval(()=>{
+        const cur = CONVERSATIONS.find(x=>x.id===state.selected);
+        if(cur && cur.real) renderRealThread(cur, {silent:true});
+        else stopRealThreadPoll();
+      }, 7000);
     } else {
       scroll.innerHTML = `<div class="oc-date-div">Hoje</div>` + c.messages.map(m=>`
         <div class="oc-msg-row ${m.dir}">
@@ -2111,20 +2125,25 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
      mensagem falsa. Não sabemos ainda os nomes exatos dos campos que esse endpoint devolve, então
      normalizeMsg() tenta várias variações plausíveis (mesma convenção de nomes em português usada
      no resto do Supabase deste app). Ajustar aqui assim que o formato real for confirmado. */
-  function renderRealThread(c){
+  function renderRealThread(c, opts){
+    const silent = !!(opts && opts.silent);
     const scroll = document.getElementById('ocMsgScroll');
-    scroll.innerHTML = `<div class="oc-empty">Carregando mensagens…</div>`;
+    if(!silent) scroll.innerHTML = `<div class="oc-empty">Carregando mensagens…</div>`;
     const requestedId = c.id;
     fetchRealMessages(c.senderId).then(msgs=>{
       if(state.selected !== requestedId) return; // trocou de conversa antes da resposta chegar
+      const key = c.id+'|'+(msgs||[]).map(m=>m.dir+':'+m.text+':'+m.time).join('|');
+      if(silent && key===lastRenderedThreadKey) return; // nada novo, não redesenha (evita piscar)
+      lastRenderedThreadKey = key;
       if(msgs && msgs.length){
+        const wasAtBottom = scroll.scrollTop + scroll.clientHeight >= scroll.scrollHeight - 40;
         scroll.innerHTML = `<div class="oc-date-div">Histórico real · WhatsApp</div>` + msgs.map(m=>`
           <div class="oc-msg-row ${m.dir}">
             <div class="oc-bubble">${escHtml(m.text)}</div>
             <div class="oc-msg-meta">${m.dir==='out'?`<span class="oc-read-check">✓✓</span>`:''}<span>${m.time||''}</span></div>
           </div>`).join('');
-        scroll.scrollTop = scroll.scrollHeight;
-      } else {
+        if(!silent || wasAtBottom) scroll.scrollTop = scroll.scrollHeight;
+      } else if(!silent){
         scroll.innerHTML = `<div class="oc-empty-thread">
           <div class="em">💬</div>
           Histórico de mensagens ainda não disponível aqui.<br>
@@ -2345,6 +2364,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     renderAll();
     renderKpis();
   };
+  window.ocOnClose = stopRealThreadPoll;
 })();
 </script>
 
@@ -3231,6 +3251,7 @@ function toggleMobileMenu(force){
 function go(id){
   toggleMobileMenu(false);
   localStorage.setItem('rui_aba_ativa', id);
+  if(id!=='omnichannel' && typeof ocOnClose==='function') ocOnClose();
   document.querySelectorAll('[id^="p-"]').forEach(p=>p.style.display='none');
   document.getElementById('p-'+id).style.display='block';
   document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
