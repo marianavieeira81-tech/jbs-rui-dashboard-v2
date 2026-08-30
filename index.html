@@ -1920,8 +1920,11 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   let state = { channel:null, tab:'todas', search:'', selected:null };
   let CONVERSATIONS = [];
 
+  // Por padrão a lista mostra só conversas REAIS (WhatsApp). As fictícias
+  // (Instagram/Webmotors/OLX/Chat Site) só entram se alguém clicar em
+  // "Carregar mais conversas fictícias" — nunca aparecem sem ação explícita.
   function rebuildConversations(){
-    CONVERSATIONS = [...realConversations(), ...MOCK_CONVERSATIONS];
+    CONVERSATIONS = [...realConversations()];
     if(!CONVERSATIONS.find(c=>c.id===state.selected)){
       state.selected = CONVERSATIONS.length ? CONVERSATIONS[0].id : null;
     }
