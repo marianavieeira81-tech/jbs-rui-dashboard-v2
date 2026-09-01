@@ -447,6 +447,21 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 .lcard-q-resposta{font-size:13px;color:var(--tx);font-weight:500;}
 .lcard-q-resposta.empty{color:var(--tx3);font-style:italic;font-weight:400;}
 
+/* Histórico de conversas — timeline vertical dentro do card do lead.
+   Cada .lc-conv é um episódio de contato; os blocos internos reaproveitam .lcard-q. */
+.lc-conv{position:relative;padding-left:20px;margin-bottom:14px;}
+.lc-conv::before{content:'';position:absolute;left:3px;top:6px;bottom:-14px;width:2px;background:var(--bdr);}
+.lc-conv:last-child::before{display:none;}
+.lc-conv::after{content:'';position:absolute;left:0;top:5px;width:8px;height:8px;border-radius:50%;background:var(--ac);box-shadow:0 0 0 3px var(--surface);}
+.lc-conv-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:4px;}
+.lc-conv-date{font-family:'DM Mono',monospace;font-size:12px;color:var(--tx2);font-weight:500;}
+.lc-conv-score{font-family:'DM Mono',monospace;font-size:13px;font-weight:700;flex-shrink:0;}
+.lc-conv-veic{font-size:13px;color:var(--tx);font-weight:600;margin-bottom:8px;}
+.lc-conv-more{margin:2px 0 6px 20px;background:var(--s2);border:1px solid var(--bdr);color:var(--ac);
+  font-size:11px;font-weight:700;letter-spacing:.03em;padding:6px 12px;border-radius:var(--rsm);
+  cursor:pointer;transition:background .15s;}
+.lc-conv-more:hover{background:var(--s3);}
+
 /* report table */
 .rtbl{width:100%;border-collapse:collapse;font-size:13px;}
 .rtbl th{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx3);text-align:left;padding:0 12px 14px 0;border-bottom:1px solid var(--bdr);font-weight:600;}
@@ -5077,6 +5092,12 @@ function openLeadCard(lead){
         </div>
       `).join('')}
     </div>
+    <!-- HISTÓRICO DE CONVERSAS — episódios de contato anteriores (timeline). Seção NOVA,
+         separada do "estado atual" acima; preenchida de forma assíncrona logo abaixo. -->
+    <div class="lcard-section" id="lc-conversas-section" style="display:none">
+      <div class="lcard-section-title">Histórico de conversas</div>
+      <div id="lc-conversas-body"></div>
+    </div>
     <!-- OBJEÇÃO — sinal captado pelo Rui durante a conversa, dado mais importante pro handoff do consultor -->
     ${lead.objecao?`
     <div class="lcard-section">
@@ -5113,6 +5134,46 @@ function openLeadCard(lead){
         <div style="font-weight:700;color:${scCol};font-family:'DM Mono',monospace">${r.score!=null?r.score:'—'}</div>
       </div>`;
     }).join('');
+    sec.style.display = '';
+  });
+
+  // Histórico de conversas — timeline de episódios anteriores. Mesma busca
+  // assíncrona e defensiva do bloco acima: não trava a abertura do card e, se
+  // não vier nada, a seção continua escondida. Vem colapsada (só a conversa mais
+  // recente + contador "+ N conversas anteriores"), expande ao clicar.
+  const senderIdConv = lead.senderId || lead.telefone;
+  fetchLeadConversas(senderIdConv).then(rows=>{
+    const sec = document.getElementById('lc-conversas-section');
+    const body = document.getElementById('lc-conversas-body');
+    if(!sec || !body) return;
+    if(!rows.length) return; // sem histórico de conversas — mantém escondido
+
+    const blocoHTML = p => (p.resposta==null || p.resposta==='') ? '' : `
+      <div class="lcard-q answered">
+        <div class="lcard-q-label">${p.num} · ${p.tema}</div>
+        <div class="lcard-q-resposta">${p.resposta}</div>
+        ${p.detalhe?`<div style="font-size:11px;color:var(--ac);margin-top:4px;padding-top:4px;border-top:1px solid var(--bdr)">↳ Co-decisor: ${p.detalhe}</div>`:''}
+      </div>`;
+
+    const entradaHTML = (c,i) => {
+      const blocos = buildPerguntasConversa(c).map(blocoHTML).join('');
+      const scoreTag = c.score_final!=null
+        ? `<span class="lc-conv-score" style="color:${scoreColor(c.score_final)}">${c.score_final}</span>` : '';
+      return `<div class="lc-conv${i>0?' lc-conv-extra':''}"${i>0?' style="display:none"':''}>
+        <div class="lc-conv-head">
+          <span class="lc-conv-date">${fmtConversaData(c.iniciada_em||c.ultima_interacao_em)}</span>
+          ${scoreTag}
+        </div>
+        ${c.veiculo_interesse?`<div class="lc-conv-veic">${c.veiculo_interesse}</div>`:''}
+        ${blocos}
+      </div>`;
+    };
+
+    const n = rows.length - 1;
+    const maisBtn = n>0
+      ? `<button type="button" class="lc-conv-more" onclick="toggleConversasHist(this)">+ ${n} ${n===1?'conversa anterior':'conversas anteriores'}</button>`
+      : '';
+    body.innerHTML = entradaHTML(rows[0],0) + maisBtn + rows.slice(1).map((c,i)=>entradaHTML(c,i+1)).join('');
     sec.style.display = '';
   });
 }
@@ -5368,6 +5429,11 @@ const WHATSAPP_COMERCIAL = '5581995090483';
 const N8N_LEADS_QUERY   = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/rui-leads-query';
 const N8N_FILA_QUERY    = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/rui-fila-query';
 const N8N_HISTORICO_QUERY = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/rui-leads-historico-query';
+// Histórico de CONVERSAS (episódios de contato, cada um delimitado por 48h de
+// silêncio) — mesma autenticação Bearer do endpoint acima. Alimenta a timeline
+// "Histórico de conversas" dentro do card do lead. Se o fluxo ainda não estiver
+// ativo/respondendo GET no n8n, a seção simplesmente não aparece (ver fetchLeadConversas).
+const N8N_CONVERSAS_QUERY = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/rui-leads-conversas-query';
 // Fluxo "rui-fila-adicionar" (16/07) — grava de verdade na fila_espera do Supabase.
 // Enquanto ela não importar/ativar esse fluxo no n8n, a chamada abaixo falha
 // silenciosamente e o botão cai no fallback local (ver filaAddFromCheckin).
@@ -5788,6 +5854,70 @@ async function fetchLeadHistorico(senderId){
     console.warn('[RuiAI] fetchLeadHistorico falhou (endpoint ainda não existe?):',e);
     return [];
   }
+}
+
+// Busca o histórico de CONVERSAS de um lead (cada item = um episódio de contato,
+// delimitado por 48h de silêncio) — endpoint rui-leads-conversas-query, mesma
+// autenticação Bearer e mesmo padrão defensivo de fetchLeadHistorico(): se o fluxo
+// falhar, não responder GET ou devolver formato inesperado, volta [] e a seção
+// "Histórico de conversas" fica escondida — nunca trava a abertura do card.
+async function fetchLeadConversas(senderId){
+  if(!senderId) return [];
+  try{
+    const res=await authFetch(`${N8N_CONVERSAS_QUERY}?lead_sender_id=${encodeURIComponent(senderId)}`,{method:'GET'});
+    if(!res.ok) return [];
+    const rows=await res.json();
+    if(!Array.isArray(rows)) return [];
+    // O endpoint já ordena por ultima_interacao_em desc; reforça aqui pra não
+    // depender da ordem de chegada.
+    return rows.sort((a,b)=>new Date(b.ultima_interacao_em||b.iniciada_em||0)-new Date(a.ultima_interacao_em||a.iniciada_em||0));
+  }catch(e){
+    console.warn('[RuiAI] fetchLeadConversas falhou (endpoint ainda não existe?):',e);
+    return [];
+  }
+}
+
+// Mês abreviado + hora no padrão da timeline de Histórico de conversas: "09 jun · 14:32".
+function fmtConversaData(iso){
+  if(!iso) return '—';
+  const d=new Date(iso);
+  if(isNaN(d.getTime())) return '—';
+  const MES=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  const dia=String(d.getDate()).padStart(2,'0');
+  const hh=String(d.getHours()).padStart(2,'0');
+  const mm=String(d.getMinutes()).padStart(2,'0');
+  return `${dia} ${MES[d.getMonth()]} · ${hh}:${mm}`;
+}
+
+// Blocos B1-B4/G1-G2 de UMA conversa do histórico, no mesmo mapeamento do card
+// de qualificação atual (buildPerguntas), com a diferença pedida: B3 aqui é o
+// campo "urgencia" (texto), não "quer_reservar". Campo null => resposta null =>
+// a linha não é renderizada.
+function buildPerguntasConversa(c){
+  const ds=c.decide_sozinho;
+  return [
+    {num:'B1',tema:'Intenção/Modelo',     resposta:c.veiculo_interesse||null},
+    {num:'B2',tema:'Carro atual',         resposta:c.carro_atual||null},
+    {num:'B3',tema:'Urgência',            resposta:c.urgencia||null},
+    {num:'B4',tema:'Decisor',
+      resposta: ds===true ? 'Decide sozinho' : ds===false ? 'Decide com outra pessoa' : null,
+      detalhe:  ds===false ? (c.co_decisor||null) : null},
+    {num:'G1',tema:'Condição do veículo', resposta:c.condicao_veiculo||null},
+    {num:'G2',tema:'Unidade preferida',   resposta:c.unidade_preferida||null},
+  ];
+}
+
+// Expande/recolhe as conversas anteriores da timeline (as .lc-conv-extra ficam
+// escondidas por padrão; só a mais recente aparece + o contador).
+function toggleConversasHist(btn){
+  const sec=document.getElementById('lc-conversas-section');
+  if(!sec) return;
+  const extras=sec.querySelectorAll('.lc-conv-extra');
+  if(!extras.length) return;
+  const abrir=extras[0].style.display==='none';
+  extras.forEach(e=>{ e.style.display=abrir?'':'none'; });
+  const n=extras.length;
+  btn.textContent = abrir ? '− Mostrar menos' : `+ ${n} ${n===1?'conversa anterior':'conversas anteriores'}`;
 }
 
 // Calcula KPIs principais (total, transferidos, scoreMedio, distribuição) a partir de ACTIVE_LEADS
