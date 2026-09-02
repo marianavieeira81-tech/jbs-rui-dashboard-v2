@@ -1181,7 +1181,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       <div class="sb-item active" onclick="go('dash')"><i class="sb-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg></i>Painel de Controle</div>
       <div class="sb-item" onclick="go('filaespera')"><i class="sb-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></i>Fila de Espera</div>
       <div class="sb-item" onclick="go('plataformas')"><i class="sb-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></i>Central de Leads</div>
-      <div class="sb-item" onclick="go('omnichannel')"><i class="sb-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg></i>Central Omnichannel</div>
+      <div class="sb-item" onclick="go('omnichannel')"><i class="sb-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg></i>Multicanais</div>
       <div class="sb-item" onclick="go('cobertura')"><i class="sb-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg></i>Cobertura 24/7</div>
     </div>
     <div class="sb-group">
@@ -1532,8 +1532,8 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   </div>
 
   <!-- CENTRAL DE LEADS UNIFICADA — WhatsApp + Check-in juntos, organizados por Setor.
-       Cada lead traz a tag de origem (WhatsApp/Presencial). Novos/Semi-novos abrem
-       por modelo GWM; os outros 3 setores vão direto pra lista final. -->
+       Cada lead traz a tag de origem (WhatsApp/Presencial). "Carros" (Novos + Semi-novos
+       juntos) abre por modelo GWM; os outros 3 setores vão direto pra lista final. -->
   <div class="sec" style="margin-top:8px;">Leads qualificados · WhatsApp + Check-in</div>
 
   <!-- BUSCA POR TELEFONE OU CPF (check-in) -->
@@ -1565,7 +1565,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     <div class="cat-grid" id="ciSectorCardsGrid"></div>
   </div>
 
-  <!-- ESTADO 2: modelo de carro — só aparece dentro de Novos/Semi-novos -->
+  <!-- ESTADO 2: modelo de carro — só aparece dentro do setor "Carros" -->
   <div id="ciPltModelCards" style="display:none;">
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;">
       <button onclick="backToCISectors()" style="background:var(--s2);border:1px solid var(--bdr);color:var(--tx2);padding:7px 16px;border-radius:var(--rsm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;">&#8592; Setores</button>
@@ -1594,7 +1594,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
         <button class="oc-drawer-toggle oc-list-toggle oc-tiny-btn" id="ocListToggle" style="width:30px;height:30px;" aria-label="Abrir lista de conversas">
           <span class="oc-ic" data-oc-icon="menu"></span>
         </button>
-        <h1>Central Omnichannel</h1>
+        <h1>Multicanais</h1>
         <span class="oc-status-pill live">WhatsApp · dados reais</span>
         <span class="oc-status-pill mock">Outros canais · fictício</span>
       </div>
@@ -3932,6 +3932,31 @@ const CI_SETORES = [
 ];
 
 // ============================================================
+// CENTRAL DE LEADS — "Novos" + "Semi-novos" viram um card só: "Carros"
+// ============================================================
+// Pedido 02/09: na aba Central de Leads a pessoa não escolhe mais entre
+// veículo 0 km e seminovo. Os dois setores aparecem juntos num único card
+// "Carros", com os mesmos modelos GWM dentro (Haval, ORA, Tank, Poer, WEY).
+// Se o lead disser no meio da conversa que quer novo ou seminovo, isso vai
+// pro resumo do Rui — mas não é mais uma pergunta fixa de qualificação.
+// O RESTO do painel (Check-in, Cobertura 24/7, Funil, tabela do Dashboard)
+// continua separando Novos/Semi-novos: só a grade de setores da Central de
+// Leads usa CL_SETORES no lugar de CI_SETORES.
+const CL_CARROS_MERGE = ['Novos', 'Semi-novos'];
+const CL_SETORES = [
+  {nome:'Carros', cor:'#38BDF8', temModelo:true, qualificavel:true},
+  ...CI_SETORES.filter(s => !CL_CARROS_MERGE.includes(s.nome)),
+];
+// setor real gravado no lead -> nome do setor como ele aparece na Central de Leads
+function clSetorDisplay(setor){
+  return CL_CARROS_MERGE.includes(setor) ? 'Carros' : setor;
+}
+// info (cor / temModelo) do setor da Central de Leads; cai pro CI_SETORES nos que não mudaram
+function clSetorInfo(nome){
+  return CL_SETORES.find(s => s.nome === nome) || CI_SETORES.find(s => s.nome === nome) || null;
+}
+
+// ============================================================
 // SETORES CONFIGURÁVEIS (M03) — chips do check-in e dropdown de filtro
 // GERADOS a partir de CI_SETORES acima, em vez de HTML fixo em 2 lugares.
 // Hoje CI_SETORES ainda é só os 5 valores da GWM-PE (nada mudou na
@@ -4052,12 +4077,12 @@ function renderCISectorCards(){
     return `<span style="color:${tempColor(c.t)}">${c.t} ${pct}%</span>`;
   }).join('');
 
-  // Cartões de setor
-  const counts = CI_SETORES.map(s=>({s, n: arr.filter(r=>r.setor===s.nome).length}));
+  // Cartões de setor — Novos + Semi-novos entram juntos no card "Carros" (ver CL_SETORES)
+  const counts = CL_SETORES.map(s=>({s, n: arr.filter(r=>clSetorDisplay(r.setor)===s.nome).length}));
   // Leads (sempre WhatsApp — check-in é obrigatório escolher Setor no formulário) cujo
-  // setor ainda não foi confirmado pelo lead — nunca somar dentro de nenhum dos 5 setores
+  // setor ainda não foi confirmado pelo lead — nunca somar dentro de nenhum dos setores
   // reais sem confirmação, mesmo padrão do card "Outro / não informado" de modelo abaixo.
-  const semSetor = arr.filter(r=>!CI_SETORES.some(s=>s.nome===r.setor)).length;
+  const semSetor = arr.filter(r=>!CL_SETORES.some(s=>s.nome===clSetorDisplay(r.setor))).length;
   container.innerHTML = counts.map(({s,n})=>{
     const pct = total>0?Math.round(n/total*100):0;
     return `<div class="cat-card" onclick="openCISector('${s.nome}')" style="border-color:${s.cor}44;background:${s.cor}14;">
@@ -4074,12 +4099,12 @@ function renderCISectorCards(){
     </div>` : '');
 }
 
-// ESTADO 2 — só existe dentro de Novos/Semi-novos: abre o mesmo grid de
-// modelos GWM que já existia, agora filtrado pelo setor escolhido.
+// ESTADO 2 — só existe dentro do setor "Carros" (Novos + Semi-novos juntos):
+// abre o mesmo grid de modelos GWM que já existia, filtrado pelo setor escolhido.
 function openCISector(setor){
   currentCISetor = setor;
   currentCIModel = null;
-  const info = CI_SETORES.find(s=>s.nome===setor);
+  const info = clSetorInfo(setor);
   if(info && info.temModelo){
     document.getElementById('ciPltCategories').style.display='none';
     document.getElementById('ciPltModelCards').style.display='block';
@@ -4095,9 +4120,9 @@ function renderCIModelCardsForSector(setor){
   const container = document.getElementById('ciModelCardsGrid');
   const titleEl = document.getElementById('ciModelCardsTitle');
   if(!container) return;
-  const info = CI_SETORES.find(s=>s.nome===setor);
+  const info = clSetorInfo(setor);
   if(titleEl) titleEl.innerHTML = `<span style="color:${info?.cor}">${setor}</span> · modelo de interesse`;
-  const arr = [...waLeadsCL(), ...ciLeadsCL()].filter(r=>r.setor===setor);
+  const arr = [...waLeadsCL(), ...ciLeadsCL()].filter(r=>clSetorDisplay(r.setor)===setor);
   const total = arr.length;
   const matchesAlgumModelo = r => CI_GWM_MODELS.some(m=>_modeloBateMarca(r.modelos||r.modelo, m.name));
   const counts = CI_GWM_MODELS.map(m=>({
@@ -4279,7 +4304,7 @@ function renderCILeadList(){
   const setor  = currentCISetor;
   const model  = currentCIModel;
   const setorLabel = setor===CI_SETOR_OUTRO ? 'Não informado' : setor;
-  const sInfo  = CI_SETORES.find(s=>s.nome===setor);
+  const sInfo  = clSetorInfo(setor);
   const gwm    = model===CI_OUTRO_MODELO ? null : CI_GWM_MODELS.find(m=>m.name===model);
   const matchesModel = m => {
     if(!model) return true;
@@ -4288,7 +4313,7 @@ function renderCILeadList(){
   };
   // "Não informado": mesmo sentinela do modelo acima, agora pro setor — pega leads
   // cujo setor ainda não bate com nenhum dos 5 setores reais (não foi confirmado).
-  const matchesSetor = s => setor===CI_SETOR_OUTRO ? !CI_SETORES.some(c=>c.nome===s) : s===setor;
+  const matchesSetor = s => setor===CI_SETOR_OUTRO ? !CL_SETORES.some(c=>c.nome===clSetorDisplay(s)) : clSetorDisplay(s)===setor;
 
   const waLeads = waLeadsCL()
     .filter(l=>matchesSetor(l.setor) && matchesModel(l.modelo))
