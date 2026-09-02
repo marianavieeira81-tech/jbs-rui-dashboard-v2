@@ -452,6 +452,9 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 .lc-conv{position:relative;padding-left:20px;margin-bottom:14px;}
 .lc-conv::before{content:'';position:absolute;left:3px;top:6px;bottom:-14px;width:2px;background:var(--bdr);}
 .lc-conv:last-child::before{display:none;}
+/* Colapsada (padrão): só o episódio mais recente aparece — esconde a risca vertical
+   pra não deixar um traço solto pendurado embaixo do único item à mostra. */
+#lc-conversas-body.collapsed .lc-conv::before{display:none;}
 .lc-conv::after{content:'';position:absolute;left:0;top:5px;width:8px;height:8px;border-radius:50%;background:var(--ac);box-shadow:0 0 0 3px var(--surface);}
 .lc-conv-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:4px;}
 .lc-conv-date{font-family:'DM Mono',monospace;font-size:12px;color:var(--tx2);font-weight:500;}
@@ -5159,6 +5162,7 @@ function openLeadCard(lead){
     const maisBtn = n>0
       ? `<button type="button" class="lc-conv-more" onclick="toggleConversasHist(this)">+ ${n} ${n===1?'conversa anterior':'conversas anteriores'}</button>`
       : '';
+    body.classList.add('collapsed'); // sempre reabre colapsada (só a conversa mais recente)
     body.innerHTML = entradaHTML(rows[0],0) + maisBtn + rows.slice(1).map((c,i)=>entradaHTML(c,i+1)).join('');
     sec.style.display = '';
   });
@@ -5858,10 +5862,13 @@ function fmtConversaData(iso){
   return `${dia} ${MES[d.getMonth()]} · ${hh}:${mm}`;
 }
 
-// Blocos B1-B4/G2 de UMA conversa do histórico, no mesmo mapeamento do card
+// Blocos B1-B4/G1-G2 de UMA conversa do histórico, no mesmo mapeamento do card
 // de qualificação atual (buildPerguntas), com a diferença pedida: B3 aqui é o
 // campo "urgencia" (texto), não "quer_reservar". Campo null => resposta null =>
-// a linha não é renderizada.
+// a linha não é renderizada. G1 (condicao_veiculo) saiu do fluxo atual do Rui
+// (commit 208cc39), mas continua aqui pro histórico: conversas antigas que
+// capturaram esse dado ainda mostram a linha; as novas simplesmente não têm o
+// campo, então G1 não aparece nelas.
 function buildPerguntasConversa(c){
   const ds=c.decide_sozinho;
   return [
@@ -5871,6 +5878,7 @@ function buildPerguntasConversa(c){
     {num:'B4',tema:'Decisor',
       resposta: ds===true ? 'Decide sozinho' : ds===false ? 'Decide com outra pessoa' : null,
       detalhe:  ds===false ? (c.co_decisor||null) : null},
+    {num:'G1',tema:'Condição do veículo', resposta:c.condicao_veiculo||null},
     {num:'G2',tema:'Unidade preferida',   resposta:c.unidade_preferida||null},
   ];
 }
@@ -5880,10 +5888,12 @@ function buildPerguntasConversa(c){
 function toggleConversasHist(btn){
   const sec=document.getElementById('lc-conversas-section');
   if(!sec) return;
+  const body=document.getElementById('lc-conversas-body');
   const extras=sec.querySelectorAll('.lc-conv-extra');
   if(!extras.length) return;
   const abrir=extras[0].style.display==='none';
   extras.forEach(e=>{ e.style.display=abrir?'':'none'; });
+  if(body) body.classList.toggle('collapsed', !abrir); // recolhido => esconde a risca do único item visível
   const n=extras.length;
   btn.textContent = abrir ? '− Mostrar menos' : `+ ${n} ${n===1?'conversa anterior':'conversas anteriores'}`;
 }
