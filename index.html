@@ -5070,11 +5070,6 @@ function openLeadCard(lead){
     </div>
     <!-- ATENDIMENTO — só presencial (vendedor do check-in); no WhatsApp o vendedor já aparece acima, em Identificação -->
     ${buildAtendimentoSectionHTML(lead)}
-    <!-- HISTÓRICO DE CONTATOS ANTERIORES -->
-    <div class="lcard-section" id="lc-historico-section" style="display:none">
-      <div class="lcard-section-title">Histórico de contatos anteriores</div>
-      <div id="lc-historico-body" style="font-size:12px;color:var(--tx3)">Carregando...</div>
-    </div>
     <!-- 5 PERGUNTAS -->
     <div class="lcard-section">
       <div class="lcard-section-title">Qualificação — 5 Perguntas do Rui</div>
@@ -5087,8 +5082,9 @@ function openLeadCard(lead){
         </div>
       `).join('')}
     </div>
-    <!-- HISTÓRICO DE CONVERSAS — episódios de contato anteriores (timeline). Seção NOVA,
-         separada do "estado atual" acima; preenchida de forma assíncrona logo abaixo. -->
+    <!-- HISTÓRICO DE CONVERSAS — seção ÚNICA de histórico do lead. Preenchida de forma
+         assíncrona logo abaixo: timeline de episódios de contato quando existem; senão,
+         cai no histórico compacto antigo (leads_historico) dentro desta mesma seção. -->
     <div class="lcard-section" id="lc-conversas-section" style="display:none">
       <div class="lcard-section-title">Histórico de conversas</div>
       <div id="lc-conversas-body"></div>
@@ -5105,37 +5101,37 @@ function openLeadCard(lead){
   document.getElementById('lcardOverlay').classList.add('show');
   document.getElementById('leadCardFull').classList.add('show');
 
-  // Histórico de contatos anteriores — busca assíncrona, não trava a abertura do card
-  const senderIdHist = lead.senderId || lead.telefone;
-  fetchLeadHistorico(senderIdHist).then(rows=>{
-    const sec = document.getElementById('lc-historico-section');
-    const body = document.getElementById('lc-historico-body');
-    if(!sec || !body) return;
-    if(!rows.length) return; // mantém escondido — sem histórico anterior
-    body.innerHTML = rows.map(r=>{
-      const scCol = scoreColor(r.score||0);
-      const dt = r.registrado_em ? new Date(r.registrado_em).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
-      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-top:1px solid var(--bdr)">
-        <div>
-          <div style="color:var(--tx2);font-size:12px">${dt}</div>
-          <div style="color:var(--tx3);font-size:11px">${r.modelo_interesse||'—'} · ${r.etapa||'—'}</div>
-        </div>
-        <div style="font-weight:700;color:${scCol};font-family:'DM Mono',monospace">${r.score!=null?r.score:'—'}</div>
-      </div>`;
-    }).join('');
-    sec.style.display = '';
-  });
-
-  // Histórico de conversas — timeline de episódios anteriores. Mesma busca
-  // assíncrona e defensiva do bloco acima: não trava a abertura do card e, se
-  // não vier nada, a seção continua escondida. Vem colapsada (só a conversa mais
-  // recente + contador "+ N conversas anteriores"), expande ao clicar.
+  // Histórico de conversas — seção ÚNICA de histórico do lead. Busca assíncrona e
+  // defensiva: não trava a abertura do card. Prioridade: timeline de episódios de
+  // contato (rui-leads-conversas-query); se o lead não tiver nenhum episódio, cai
+  // no histórico compacto antigo (fetchLeadHistorico / tabela leads_historico)
+  // DENTRO desta mesma seção — nada em nenhum dos dois => seção fica escondida.
+  // A timeline vem colapsada (só a conversa mais recente + "+ N conversas
+  // anteriores"), expande ao clicar.
   const senderIdConv = lead.senderId || lead.telefone;
-  fetchLeadConversas(senderIdConv).then(rows=>{
+  fetchLeadConversas(senderIdConv).then(async rows=>{
     const sec = document.getElementById('lc-conversas-section');
     const body = document.getElementById('lc-conversas-body');
     if(!sec || !body) return;
-    if(!rows.length) return; // sem histórico de conversas — mantém escondido
+    if(!rows.length){
+      // Sem episódios de conversa — fallback pro histórico compacto antigo, na
+      // mesma seção, pra não perder registros anteriores ao sistema de episódios.
+      const antigos = await fetchLeadHistorico(senderIdConv);
+      if(!antigos.length) return; // nada em lugar nenhum — seção continua escondida
+      body.innerHTML = antigos.map(r=>{
+        const scCol = scoreColor(r.score||0);
+        const dt = r.registrado_em ? new Date(r.registrado_em).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-top:1px solid var(--bdr)">
+          <div>
+            <div style="color:var(--tx2);font-size:12px">${dt}</div>
+            <div style="color:var(--tx3);font-size:11px">${r.modelo_interesse||'—'} · ${r.etapa||'—'}</div>
+          </div>
+          <div style="font-weight:700;color:${scCol};font-family:'DM Mono',monospace">${r.score!=null?r.score:'—'}</div>
+        </div>`;
+      }).join('');
+      sec.style.display = '';
+      return;
+    }
 
     const blocoHTML = p => (p.resposta==null || p.resposta==='') ? '' : `
       <div class="lcard-q answered">
@@ -5811,10 +5807,11 @@ async function fetchDiagnosticoFromSupabase(){
   }
 }
 
-// Busca o histórico de contatos anteriores de um lead (tabela leads_historico) —
-// usado no popup de detalhe. Endpoint novo (rui-leads-historico-query), ainda pode
-// não existir no n8n; se falhar ou não vier nada, a seção de histórico simplesmente
-// não aparece — não trava o resto do card.
+// Busca o histórico compacto de um lead (tabela leads_historico) — hoje é só o
+// FALLBACK da seção "Histórico de conversas" no card: usado quando o lead não tem
+// nenhum episódio em rui-leads-conversas-query (ver openLeadCard). Endpoint
+// rui-leads-historico-query; se falhar ou não vier nada, o fallback não renderiza
+// e a seção continua escondida — não trava o resto do card.
 async function fetchLeadHistorico(senderId){
   if(!senderId) return [];
   try{
