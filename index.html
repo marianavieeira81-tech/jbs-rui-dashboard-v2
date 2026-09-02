@@ -1904,7 +1904,6 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   }
   function mapRealLead(l){
     const perguntas = l.perguntas || [];
-    const g1 = perguntas.find(p=>p.num==='G1');
     const g2 = perguntas.find(p=>p.num==='G2');
     const b3 = perguntas.find(p=>p.num==='B3');
     const preview = l.justificativa ? l.justificativa : (l.modelo ? `Interesse em ${l.modelo}` : 'Sem detalhes registrados ainda');
@@ -1925,7 +1924,6 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       veicAtual: l.veicAtual || null,
       decisao: l.decisao || null, codDetalhe: l.codDetalhe||null,
       quer_reservar: b3 ? b3.resposta : null,
-      condicaoVeiculo: g1 ? g1.resposta : null,
       unidadePreferida: g2 ? g2.resposta : (l.loja||null),
       data: l.data, hora: l.hora, qualificadoEm: l.qualificadoEm,
     };
@@ -2235,7 +2233,6 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
         {k:'Troca de carro', v:c.veicAtual || 'Não informado', icon:'car'},
         {k:'Decisão de compra', v:c.decisao ? (c.decisao+(c.codDetalhe?' ('+c.codDetalhe+')':'')) : 'Não informado', icon:'file-text'},
         {k:'Quer reservar', v:c.quer_reservar===true?'Sim':c.quer_reservar===false?'Não':'Não informado', icon:'tag'},
-        {k:'Condição do veículo', v:c.condicaoVeiculo || 'Não informado', icon:'car'},
         {k:'Unidade preferida', v:c.unidadePreferida || 'Não informado', icon:'map-pin'},
       ];
       document.getElementById('ocDetailList').innerHTML = rows.map(d=>`
@@ -3126,7 +3123,7 @@ const LEADS = [
 
 // ============================================================
 // DADOS SIMULADOS COMPLETOS — Agente de IA · Dados Fictícios
-// Inclui as 6 perguntas de qualificação + todos os campos extraídos
+// Inclui as 5 perguntas de qualificação + todos os campos extraídos
 // ============================================================
 const ALL_LEADS_NAMES=["Carlos Menezes","Ricardo Albuquerque","Felipe Siqueira","Eduardo Lima","Marcos Pinheiro","André Cavalcante","Bruno Tavares","Gustavo Ferreira","Henrique Costa","Igor Nunes","João Rodrigues","Lucas Moura","Mateus Araújo","Nathan Barbosa","Otávio Ribeiro","Paulo Souza","Rafael Alves","Samuel Carvalho","Thiago Dias","Victor Hugo","Wagner Leal","Xavier Martins","Yuri Oliveira","Zé Carlos","Adriano Melo","Bernardo Lima","Cássio Pereira","Diego Fonseca","Emerson Vaz","Fábio Torres","Geraldo Cunha","Humberto Paiva","Ivan Ramos","Jonas Freitas","Kleberson Luz","Leonardo Prado","Murilo Rangel","Nicolas Brito","Otávio Cardoso","Pedro Machado","Quésia Andrade","Roberto Neto","Sérgio Campos","Tadeu Lopes","Ulisses Gama","Valdeci Rocha","Wanderson Cruz","Ximenes Porto","Yago Simões","Zacarias Mendes"];
 const LEAD_SCORES=[87,72,54,41,22,91,68,79,35,83,76,63,88,29,82,74,61,57,45,90,38,71,65,48,86,55,77,33,69,52,84,42,78,67,31,80,59,93,44,73,66,50,85,27,75,60,49,88,36,70];
@@ -3146,7 +3143,6 @@ function buildLeadData(nome,score,i){
   const _dt=["2026-05-09","2026-05-09","2026-05-09","2026-05-09","2026-05-08","2026-05-08","2026-05-08","2026-05-07","2026-05-07","2026-05-06","2026-05-06","2026-05-05","2026-05-05","2026-05-04","2026-05-04","2026-05-03","2026-05-03","2026-05-02","2026-05-02","2026-05-01","2026-04-30","2026-04-29","2026-04-28","2026-04-27","2026-04-26","2026-04-25","2026-04-24","2026-04-23","2026-04-22","2026-04-21","2026-04-20","2026-04-19","2026-04-18","2026-04-17","2026-04-16","2026-04-15","2026-04-14","2026-04-13","2026-04-12","2026-04-11","2026-04-10","2026-04-09","2026-04-08","2026-04-07","2026-04-06","2026-04-05","2026-04-04","2026-04-03","2026-04-02","2026-04-01"];
   const _fn=["(81) 99100-1234","(81) 98200-5678",null,"(81) 99300-9012","(81) 98400-3456",null,"(81) 99500-7890","(81) 98600-1234","(81) 99700-5678",null,"(81) 99800-9012","(81) 98900-3456","(81) 99000-7890",null,"(81) 99100-1111","(81) 98200-2222","(81) 99300-3333",null,"(81) 99400-4444","(81) 98500-5555",null,"(81) 99600-6666","(81) 98700-7777","(81) 99800-8888",null,"(81) 99900-9999","(81) 98000-0000","(81) 99100-1010",null,"(81) 99200-2020"];
   const _ur=["Sim, pode separar!","Prefere aguardar um pouco antes de decidir","Quer ver mais opções antes de decidir","Sim, quer garantir logo","Prefere decidir depois de ver pessoalmente","Sim, pode reservar","Ainda quer pesquisar mais um pouco","Sim, tem interesse em garantir agora"];
-  const _cv=["0 km (novo)","Seminovo"];
   const _un=["Boa Viagem","Parnamirim","Caruaru"];
   const sc=score;
   const modelo=_m[i%_m.length];
@@ -3160,7 +3156,6 @@ function buildLeadData(nome,score,i){
   const codTipo=envolveOutro?(_cc[i%_cc.length]||"financeiro"):null;
   const codDetalhe=codTipo===null?null:codTipo==="financeiro"?"Focado principalmente no lado financeiro":codTipo==="escolha"?"Focado na escolha do veículo":"Envolvido em ambos os aspectos";
   const urgencia=_ur[i%_ur.length];
-  const condicaoVeic=_cv[i%_cv.length];
   const unidade=_un[i%_un.length];
   const temperatura=sc>85?"Premium":sc>=71?"Quente":sc>=51?"Engajado":sc>=26?"Morno":"Frio";
   const sentimento=_sn[i%_sn.length];
@@ -3190,9 +3185,6 @@ function buildLeadData(nome,score,i){
        pergunta:"Você costuma tomar esse tipo de decisão sozinho?",
        resposta:respP1a5||respAll?decisao:null,
        detalhe:(respP1a5||respAll)&&envolveOutro?codDetalhe:null},
-      {num:"G1",tema:"Condição do veículo",
-       pergunta:"Você procura um veículo 0 km (novo) ou um seminovo?",
-       resposta:respP1a3||respP1a5||respAll?condicaoVeic:null},
       {num:"G2",tema:"Unidade preferida",
        pergunta:"Em qual das nossas unidades você deseja nos visitar?",
        resposta:respP1a5||respAll?unidade:null},
@@ -3220,7 +3212,7 @@ const SELLERS = [
 const FUNNEL = [
   {lbl:"Leads recebidos",c:"#D4AF37",n:1000,p:100,tip:"Total de leads atendidos pelo Rui no mês via WhatsApp.",waCount:1000},
   {lbl:"Iniciaram fluxo",c:"#A88820",n:680,p:68,tip:"Responderam ao Rui e começaram a qualificação. 68% de engajamento inicial.",waCount:680},
-  {lbl:"Qualificação completa",c:"#606060",n:460,p:46,tip:"Responderam as 6 perguntas do Rui. Score calculado e classificado.",waCount:460},
+  {lbl:"Qualificação completa",c:"#606060",n:460,p:46,tip:"Responderam as 5 perguntas do Rui. Score calculado e classificado.",waCount:460},
   {lbl:"Score > 85 · Leads premium",c:"#D4AF37",n:260,p:26,tip:"Transferidos ao vendedor com prioridade máxima. Score acima de 85.",waCount:260}
 ];
 
@@ -4226,7 +4218,7 @@ function ciHiCardHTML(r){
 // Card de um lead de WhatsApp dentro da Central de Leads unificada — mesma
 // família visual do check-in (ci-hi), com a tag WhatsApp e nota sempre
 // preenchida (o bot qualifica todo mundo). Clicar abre o card completo já
-// usado no resto do painel (mesmas 6 perguntas do funil de qualificação).
+// usado no resto do painel (mesmas 5 perguntas do funil de qualificação).
 // idx referencia window._ciUnifiedLeads (evita serializar o objeto no HTML).
 function waHiCardHTML(l, idx){
   const cor    = ciAvatarColor(l.nome||'?');
@@ -5034,7 +5026,7 @@ function initNetwork(){
 
 
 // ============================================================
-// CARD COMPLETO DO LEAD — 6 perguntas + todos os campos
+// CARD COMPLETO DO LEAD — 5 perguntas + todos os campos
 // ============================================================
 function openLeadCard(lead){
   window._lcCurrentLead = lead; // referência p/ re-render depois de atribuir vendedor
@@ -5080,9 +5072,9 @@ function openLeadCard(lead){
       <div class="lcard-section-title">Histórico de contatos anteriores</div>
       <div id="lc-historico-body" style="font-size:12px;color:var(--tx3)">Carregando...</div>
     </div>
-    <!-- 7 PERGUNTAS -->
+    <!-- 5 PERGUNTAS -->
     <div class="lcard-section">
-      <div class="lcard-section-title">Qualificação — 6 Perguntas do Rui</div>
+      <div class="lcard-section-title">Qualificação — 5 Perguntas do Rui</div>
       ${lead.perguntas.map(p=>`
         <div class="lcard-q ${p.resposta?'answered':'skipped'}">
           <div class="lcard-q-label">${p.num} · ${p.tema}</div>
@@ -5098,12 +5090,6 @@ function openLeadCard(lead){
       <div class="lcard-section-title">Histórico de conversas</div>
       <div id="lc-conversas-body"></div>
     </div>
-    <!-- OBJEÇÃO — sinal captado pelo Rui durante a conversa, dado mais importante pro handoff do consultor -->
-    ${lead.objecao?`
-    <div class="lcard-section">
-      <div class="lcard-section-title">Objeção identificada pelo Rui</div>
-      <div class="lcard-q-resposta">${objecaoLabel(lead.objecao)}</div>
-    </div>`:''}
     <!-- PERFIL DE USO — interpretação da IA, não é resposta literal a nenhuma pergunta -->
     ${lead.intencao?`
     <div class="lcard-section">
@@ -5688,27 +5674,11 @@ function buildPerguntas(l){
     {num:'B4',tema:'Decisor',             pergunta:'Você costuma tomar esse tipo de decisão sozinho?',
       resposta: decideSozinho===true ? 'Decide sozinho' : decideSozinho===false ? 'Decide com outra pessoa' : null,
       detalhe:  decideSozinho===false ? (l.co_decisor||null) : null},
-    {num:'G1',tema:'Condição do veículo', pergunta:'Você procura um veículo 0 km (novo) ou um seminovo?',
-      resposta: l.condicao_veiculo||null},
     {num:'G2',tema:'Unidade preferida',   pergunta:'Em qual das nossas unidades você deseja nos visitar?',
       // unidade_preferida é o campo dedicado a essa resposta (G2); loja/loja_slug/unidade
       // continuam como fallback só para leads antigos que não tinham esse campo ainda.
       resposta: l.unidade_preferida||l.loja||l.loja_slug||l.unidade||null},
   ];
-}
-
-function objecaoLabel(v){
-  if(!v) return null;
-  const t = v.toLowerCase();
-  if(t.startsWith('sem objeç')||t.startsWith('sem objec')) return 'Sem objeção';
-  if(t.startsWith('não_identificada')||t.startsWith('nao_identificada')||t.startsWith('não identificada')) return 'Não identificada';
-  if(t.startsWith('ver_pessoalmente')||t.startsWith('ver pessoalmente')) return 'Quer ver o carro pessoalmente';
-  if(t.startsWith('preço')||t.startsWith('preco')) return 'Objeção de preço';
-  if(t.startsWith('concorr')){
-    const resto = v.replace(/^concorr[eê]ncia[\s:—-]*/i,'').trim();
-    return 'Comparando com concorrente'+(resto?': '+resto:'');
-  }
-  return v;
 }
 
 // Sinal alternativo de "qualificação concluída" para quando NEM qualificado_em
@@ -5773,7 +5743,6 @@ function mapLead(l){
     carteiraRaw: l.carteira_potencial||0,
     prazo:       l.urgencia||'',
     intencao:    l.perfil_uso||'',
-    objecao:     l.objecao_final||'',
     veicAtual:   l.tem_veiculo_troca
                    ? ('Possui veículo para troca'+(l.carro_troca&&l.carro_troca!=='a confirmar'?': '+l.carro_troca:''))
                    : 'Sem troca',
@@ -5889,7 +5858,7 @@ function fmtConversaData(iso){
   return `${dia} ${MES[d.getMonth()]} · ${hh}:${mm}`;
 }
 
-// Blocos B1-B4/G1-G2 de UMA conversa do histórico, no mesmo mapeamento do card
+// Blocos B1-B4/G2 de UMA conversa do histórico, no mesmo mapeamento do card
 // de qualificação atual (buildPerguntas), com a diferença pedida: B3 aqui é o
 // campo "urgencia" (texto), não "quer_reservar". Campo null => resposta null =>
 // a linha não é renderizada.
@@ -5902,7 +5871,6 @@ function buildPerguntasConversa(c){
     {num:'B4',tema:'Decisor',
       resposta: ds===true ? 'Decide sozinho' : ds===false ? 'Decide com outra pessoa' : null,
       detalhe:  ds===false ? (c.co_decisor||null) : null},
-    {num:'G1',tema:'Condição do veículo', resposta:c.condicao_veiculo||null},
     {num:'G2',tema:'Unidade preferida',   resposta:c.unidade_preferida||null},
   ];
 }
