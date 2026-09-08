@@ -522,6 +522,10 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 /* FUNIL — CHIP COM TELEFONE */
 .lchip-phone{font-size:9px;color:var(--tx3);font-family:'DM Mono',monospace;margin-top:2px;}
 
+/* ETIQUETA DE LEAD REINCIDENTE — pessoa que já entrou em contato mais de uma vez */
+.rebadge{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px;background:rgba(212,175,55,.14);color:var(--ac);border:1px solid rgba(212,175,55,.35);white-space:nowrap;vertical-align:middle;line-height:1.4;}
+.rebadge.sm{font-size:9px;padding:1px 6px;gap:2px;margin-top:2px;}
+
 /* ============================================================
    FILA DE LEADS — novos componentes
    ============================================================ */
@@ -3627,7 +3631,10 @@ function ciPresencialLeadsRaw(){
         // pendente: colunas ainda não gravadas pelo n8n (ver ciSave) — já lendo
         // aqui pra funcionar sozinho assim que existirem no Supabase.
         data_retorno:        l.data_retorno_prevista || '',
-        motivo_desistencia:  l.motivo_desistencia || ''
+        motivo_desistencia:  l.motivo_desistencia || '',
+        // contagem de contatos anteriores — etiqueta de lead reincidente
+        qtdConversas:        l.qtd_conversas ?? null,
+        qtdCheckins:         l.qtd_visitas_presenciais ?? null
       };
       // A nota é sempre a temperatura que o vendedor escolheu no formulário —
       // só existe quando o setor é qualificável (Novos/Semi-novos). Os demais
@@ -4219,6 +4226,7 @@ function ciHiCardHTML(r){
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex-shrink:0;">
         <span class="ptag pr" style="margin-top:0;">Presencial</span>
         ${r.vend?`<span class="filtro-cl-opt sel" style="cursor:default;">${r.vend}</span>`:''}
+        ${reincidenteBadge(r)}
         ${notaBadge}
         <span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;${iSty}">${r.intencao||'—'}</span>
         <span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;${dSty}">${r.desfecho||'—'}</span>
@@ -4289,6 +4297,7 @@ function waHiCardHTML(l, idx){
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex-shrink:0;" onclick="event.stopPropagation()">
         ${(l.telefone||'').replace(/\D/g,'')?`<a href="https://wa.me/55${(l.telefone||'').replace(/\D/g,'')}" target="_blank" rel="noopener" class="ptag wa" style="margin-top:0;text-decoration:none;">WhatsApp</a>`:`<span class="ptag wa" style="margin-top:0;">WhatsApp</span>`}
         <span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;color:${tempColor(l.temperatura)};border:1px solid ${tempColor(l.temperatura)}44;background:${tempColor(l.temperatura)}1a;">${l.score}/100 · ${l.temperatura}</span>
+        ${reincidenteBadge(l)}
         ${statusHtml}
       </div>
     </div>
@@ -4718,7 +4727,7 @@ function buildTable(){
       const stCls = cat==='urgente' ? 'transf-urgente' : cat==='comercial' ? 'transf-comercial' : (stM[l.status]||'st-i');
       const stTitle = transf ? ` title="Motivo: ${transf.motivo.replace(/"/g,'&quot;')}"` : '';
       return `<tr>
-      <td><strong>${l.nome}</strong></td>
+      <td><strong>${l.nome}</strong> ${reincidenteBadge(l,'sm')}</td>
       <td>${canalPill(l)}</td>
       <td><span class="sp ${scC(l.score)}">${l.score}/100</span></td>
       <td>${l.modelo||'—'}</td>
@@ -4835,6 +4844,7 @@ function buildFunil(){
         <span class="ptag ${ptc(lead.canal)}">${lead.canal||'WhatsApp'}</span>
         ${ph?`<div class="lchip-phone">${ph}</div>`:''}
         ${lead.score>0?`<div style="font-size:9px;font-weight:700;color:${scoreCol};margin-top:1px">Score ${lead.score}</div>`:''}
+        ${reincidenteBadge(lead,'sm')}
       </div>
     </div>`;
   }
@@ -5052,6 +5062,32 @@ function initNetwork(){
   // função mantida para compatibilidade mas não utilizada
 }
 
+// ============================================================
+// ETIQUETA DE LEAD REINCIDENTE
+// Aparece sempre que a MESMA pessoa já teve mais de um contato — soma das
+// conversas de WhatsApp (leads.qtd_conversas) com as visitas presenciais
+// (leads.qtd_visitas_presenciais). Essas duas colunas são mantidas por um
+// gatilho no Supabase; enquanto não existirem, a contagem fica 0 e nenhuma
+// etiqueta aparece — nada quebra. No card aberto, se a contagem do banco não
+// vier, usa o total real devolvido por fetchLeadConversas() como reforço
+// (lead._conversasCount). O lead continua aparecendo UMA vez em cada lista —
+// a etiqueta só sinaliza que há histórico anterior dentro do card.
+// ============================================================
+function totalContatosLead(lead){
+  if(!lead) return 0;
+  const wa = Number(lead.qtdConversas) || 0;
+  const pr = Number(lead.qtdCheckins)  || 0;
+  const t  = wa + pr;
+  if(t) return t;
+  return Number(lead._conversasCount) || 0;
+}
+function reincidenteBadge(lead, size){
+  const n = totalContatosLead(lead);
+  if(n < 2) return '';
+  const cls = size==='sm' ? 'rebadge sm' : 'rebadge';
+  return `<span class="${cls}" title="Este lead já entrou em contato ${n} vezes — as conversas anteriores estão no histórico abaixo">↩ ${n}º contato</span>`;
+}
+
 
 // ============================================================
 // CARD COMPLETO DO LEAD — 5 perguntas + todos os campos
@@ -5070,6 +5106,7 @@ function openLeadCard(lead){
     ${lcTel?`<a href="https://wa.me/55${lcTel}" target="_blank" rel="noopener" class="ptag wa" style="text-decoration:none;">WhatsApp</a>`:`<span class="ptag wa">WhatsApp</span>`}
     <span style="font-size:11px;font-weight:700;padding:2px 9px;border-radius:4px;background:${lead.status==='Transferido'?'rgba(212,175,55,.12)':lead.status==='Encerrado'?'var(--red-bg)':'rgba(30,80,200,.12)'};color:${stCol}">${lead.status}</span>
     <span style="font-size:11px;padding:2px 9px;border-radius:4px;background:${isHuman?'var(--grn-bg)':'rgba(212,175,55,.08)'};color:${isHuman?'var(--grn-l)':'var(--ac)'};font-weight:600">${isHuman?'Horário humano':'Fora do horário'}</span>
+    ${reincidenteBadge(lead)}
   `;
   document.getElementById('lc-body').innerHTML=`
     <!-- SCORE -->
@@ -5111,7 +5148,7 @@ function openLeadCard(lead){
          assíncrona logo abaixo: timeline de episódios de contato quando existem; senão,
          cai no histórico compacto antigo (leads_historico) dentro desta mesma seção. -->
     <div class="lcard-section" id="lc-conversas-section" style="display:none">
-      <div class="lcard-section-title">Histórico de conversas</div>
+      <div class="lcard-section-title">Histórico de conversas<span id="lc-conversas-count" style="color:var(--ac);font-weight:700"></span></div>
       <div id="lc-conversas-body"></div>
     </div>
     <!-- PERFIL DE USO — interpretação da IA, não é resposta literal a nenhuma pergunta -->
@@ -5134,6 +5171,18 @@ function openLeadCard(lead){
   // A timeline vem colapsada (só a conversa mais recente + "+ N conversas
   // anteriores"), expande ao clicar.
   const senderIdConv = lead.senderId || lead.telefone;
+  // Atualiza a etiqueta de reincidente do cabeçalho e o contador da seção a
+  // partir do total real de conversas (reforço para quando o banco ainda não
+  // tem a coluna qtd_conversas — a contagem verdadeira vem do endpoint de
+  // histórico de conversas, que já é 1 linha por episódio de contato).
+  const marcarReincidente = (total)=>{
+    if(!(total>=2)) return;
+    lead._conversasCount = total;
+    const cnt=document.getElementById('lc-conversas-count');
+    if(cnt) cnt.textContent = ` · ${total} contatos`;
+    const meta=document.getElementById('lc-meta');
+    if(meta && !meta.querySelector('.rebadge')) meta.insertAdjacentHTML('beforeend', ' '+reincidenteBadge(lead));
+  };
   fetchLeadConversas(senderIdConv).then(async rows=>{
     const sec = document.getElementById('lc-conversas-section');
     const body = document.getElementById('lc-conversas-body');
@@ -5186,6 +5235,7 @@ function openLeadCard(lead){
     body.classList.add('collapsed'); // sempre reabre colapsada (só a conversa mais recente)
     body.innerHTML = entradaHTML(rows[0],0) + maisBtn + rows.slice(1).map((c,i)=>entradaHTML(c,i+1)).join('');
     sec.style.display = '';
+    marcarReincidente(rows.length);
   });
 }
 
@@ -5790,6 +5840,10 @@ function mapLead(l){
     qualificadoEm: l.qualificado_em||l.transferido_em||(todosBlocosConcluidos(l)?(l.atualizado_em||null):null),
     blocoParou:   l.bloco_parou||null,
     inicouFluxo:  !!(l.bloco_parou&&l.bloco_parou!=='abertura'),
+    // Contagem de contatos anteriores — alimenta a etiqueta de lead reincidente.
+    // Colunas mantidas por gatilho no Supabase (ver reincidenteBadge). Ausentes => null => sem etiqueta.
+    qtdConversas: l.qtd_conversas ?? null,
+    qtdCheckins:  l.qtd_visitas_presenciais ?? null,
     perguntas:   buildPerguntas(l)
   };
 }
