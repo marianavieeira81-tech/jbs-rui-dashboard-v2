@@ -5209,7 +5209,7 @@ function openLeadCard(lead){
 
     const blocoHTML = p => (p.resposta==null || p.resposta==='') ? '' : `
       <div class="lcard-q answered">
-        <div class="lcard-q-label">${p.num} · ${p.tema}</div>
+        <div class="lcard-q-label">${p.num?p.num+' · ':''}${p.tema}</div>
         <div class="lcard-q-resposta">${p.resposta}</div>
         ${p.detalhe?`<div style="font-size:11px;color:var(--ac);margin-top:4px;padding-top:4px;border-top:1px solid var(--bdr)">↳ Co-decisor: ${p.detalhe}</div>`:''}
       </div>`;
@@ -5218,9 +5218,15 @@ function openLeadCard(lead){
       const blocos = buildPerguntasConversa(c).map(blocoHTML).join('');
       const scoreTag = c.score_final!=null
         ? `<span class="lc-conv-score" style="color:${scoreColor(c.score_final)}">${c.score_final}</span>` : '';
+      // Cada episódio de contato traz o canal (conversa de WhatsApp ou visita
+      // presencial de check-in). Presencial só aparece aqui depois que o fluxo
+      // de check-in passar a gravar em leads_conversas (canal='presencial').
+      const isPres = (c.canal||'').toLowerCase()==='presencial';
+      const canalTag = `<span class="ptag ${isPres?'pr':'wa'}" style="margin-top:0;font-size:9px">${isPres?'Presencial':'WhatsApp'}</span>`;
       return `<div class="lc-conv${i>0?' lc-conv-extra':''}"${i>0?' style="display:none"':''}>
         <div class="lc-conv-head">
           <span class="lc-conv-date">${fmtConversaData(c.iniciada_em||c.ultima_interacao_em)}</span>
+          ${canalTag}
           ${scoreTag}
         </div>
         ${c.veiculo_interesse?`<div class="lc-conv-veic">${c.veiculo_interesse}</div>`:''}
@@ -5947,15 +5953,17 @@ function fmtConversaData(iso){
 // campo, então G1 não aparece nelas.
 function buildPerguntasConversa(c){
   const ds=c.decide_sozinho;
+  const isPres=(c.canal||'').toLowerCase()==='presencial';
   return [
     {num:'B1',tema:'Intenção/Modelo',     resposta:c.veiculo_interesse||null},
     {num:'B2',tema:'Carro atual',         resposta:c.carro_atual||null},
-    {num:'B3',tema:'Urgência',            resposta:c.urgencia||null},
+    {num:isPres?'':'B3',tema:isPres?'Intenção de compra':'Urgência', resposta:c.urgencia||null},
     {num:'B4',tema:'Decisor',
       resposta: ds===true ? 'Decide sozinho' : ds===false ? 'Decide com outra pessoa' : null,
       detalhe:  ds===false ? (c.co_decisor||null) : null},
     {num:'G1',tema:'Condição do veículo', resposta:c.condicao_veiculo||null},
-    {num:'G2',tema:'Unidade preferida',   resposta:c.unidade_preferida||null},
+    {num:'G2',tema:isPres?'Unidade':'Unidade preferida', resposta:c.unidade_preferida||null},
+    {num:'',tema:'Setor',                resposta:isPres?(c.setor||null):null},
   ];
 }
 
