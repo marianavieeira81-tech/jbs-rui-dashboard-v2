@@ -874,7 +874,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 .oc-msg-row{display:flex;margin:4px 0;max-width:74%;}
 .oc-msg-row.in{align-self:flex-start;}
 .oc-msg-row.out{align-self:flex-end;flex-direction:column;align-items:flex-end;}
-.oc-bubble{padding:10px 13px;font-size:13px;line-height:1.5;border-radius:14px;box-shadow:0 1px 1.5px rgba(0,0,0,.3);}
+.oc-bubble{padding:10px 13px;font-size:13px;line-height:1.5;border-radius:14px;box-shadow:0 1px 1.5px rgba(0,0,0,.3);white-space:pre-wrap;overflow-wrap:anywhere;}
 .oc-msg-row.in .oc-bubble{background:#27272A;color:var(--tx);border-bottom-left-radius:4px;}
 .oc-msg-row.out .oc-bubble{background:var(--ac);color:#1a1404;border-bottom-right-radius:4px;font-weight:500;}
 .oc-msg-meta{font-size:10px;color:var(--tx3);margin-top:4px;padding:0 3px;display:flex;align-items:center;gap:4px;}
@@ -3958,6 +3958,25 @@ const CL_SETORES = [
 function clSetorDisplay(setor){
   return CL_CARROS_MERGE.includes(setor) ? 'Carros' : setor;
 }
+// Setor EFETIVO do lead na Central de Leads (o que a grade "Demanda por setor" usa).
+// Regra, nesta ordem:
+//   1. Se o n8n já gravou um setor real (Novos/Semi-novos/Oficina/Reclamações/Peças),
+//      usa ele — clSetorDisplay junta Novos+Semi-novos em "Carros".
+//   2. Se NÃO veio setor, mas o Rui capturou um veículo de interesse (veiculo_interesse,
+//      que aqui vira o campo `modelo`), o lead está no funil de venda de carro -> "Carros".
+//      Desde 02/09 o Rui não pergunta mais "novo ou seminovo" (bloco G1 saiu da
+//      qualificação), então a coluna `setor` quase nunca chega preenchida para lead de
+//      WhatsApp — sem esta regra, TODO lead de carro caía em "Não informado" mesmo com
+//      interesse claro (ex.: lead Lorena Buarque, modelo "ora3", 09/09/2026).
+//   3. Sem setor e sem veículo de interesse -> null (cai no card "Não informado",
+//      pra ela continuar enxergando quem realmente não foi identificado).
+function clSetorEfetivo(lead){
+  const real = clSetorDisplay(lead && lead.setor);
+  if(CL_SETORES.some(s => s.nome === real)) return real;
+  const modeloTxt = String((lead && (lead.modelo || lead.modelos)) || '').trim();
+  if(modeloTxt) return 'Carros';
+  return null;
+}
 // info (cor / temModelo) do setor da Central de Leads; cai pro CI_SETORES nos que não mudaram
 function clSetorInfo(nome){
   return CL_SETORES.find(s => s.nome === nome) || CI_SETORES.find(s => s.nome === nome) || null;
@@ -4084,12 +4103,13 @@ function renderCISectorCards(){
     return `<span style="color:${tempColor(c.t)}">${c.t} ${pct}%</span>`;
   }).join('');
 
-  // Cartões de setor — Novos + Semi-novos entram juntos no card "Carros" (ver CL_SETORES)
-  const counts = CL_SETORES.map(s=>({s, n: arr.filter(r=>clSetorDisplay(r.setor)===s.nome).length}));
-  // Leads (sempre WhatsApp — check-in é obrigatório escolher Setor no formulário) cujo
-  // setor ainda não foi confirmado pelo lead — nunca somar dentro de nenhum dos setores
-  // reais sem confirmação, mesmo padrão do card "Outro / não informado" de modelo abaixo.
-  const semSetor = arr.filter(r=>!CL_SETORES.some(s=>s.nome===clSetorDisplay(r.setor))).length;
+  // Cartões de setor — Novos + Semi-novos entram juntos no card "Carros" (ver CL_SETORES).
+  // clSetorEfetivo: usa o setor gravado quando existe; senão, infere "Carros" pra quem
+  // tem veículo de interesse capturado (ver comentário da função).
+  const counts = CL_SETORES.map(s=>({s, n: arr.filter(r=>clSetorEfetivo(r)===s.nome).length}));
+  // Leads que continuam sem setor E sem veículo de interesse — vão pro card "Não
+  // informado", mesmo padrão do card "Outro / não informado" de modelo abaixo.
+  const semSetor = arr.filter(r=>clSetorEfetivo(r)===null).length;
   container.innerHTML = counts.map(({s,n})=>{
     const pct = total>0?Math.round(n/total*100):0;
     return `<div class="cat-card" onclick="openCISector('${s.nome}')" style="border-color:${s.cor}44;background:${s.cor}14;">
@@ -4129,7 +4149,7 @@ function renderCIModelCardsForSector(setor){
   if(!container) return;
   const info = clSetorInfo(setor);
   if(titleEl) titleEl.innerHTML = `<span style="color:${info?.cor}">${setor}</span> · modelo de interesse`;
-  const arr = [...waLeadsCL(), ...ciLeadsCL()].filter(r=>clSetorDisplay(r.setor)===setor);
+  const arr = [...waLeadsCL(), ...ciLeadsCL()].filter(r=>clSetorEfetivo(r)===setor);
   const total = arr.length;
   const matchesAlgumModelo = r => CI_GWM_MODELS.some(m=>_modeloBateMarca(r.modelos||r.modelo, m.name));
   const counts = CI_GWM_MODELS.map(m=>({
@@ -4320,15 +4340,15 @@ function renderCILeadList(){
     if(model===CI_OUTRO_MODELO) return !CI_GWM_MODELS.some(gm=>(m||'').toLowerCase().includes(gm.name.toLowerCase()));
     return (m||'').toLowerCase().includes(model.toLowerCase());
   };
-  // "Não informado": mesmo sentinela do modelo acima, agora pro setor — pega leads
-  // cujo setor ainda não bate com nenhum dos 5 setores reais (não foi confirmado).
-  const matchesSetor = s => setor===CI_SETOR_OUTRO ? !CL_SETORES.some(c=>c.nome===clSetorDisplay(s)) : clSetorDisplay(s)===setor;
+  // "Não informado": pega os leads que continuam sem setor efetivo (nem gravado
+  // pelo n8n, nem inferido por veículo de interesse — ver clSetorEfetivo).
+  const matchesSetor = r => setor===CI_SETOR_OUTRO ? clSetorEfetivo(r)===null : clSetorEfetivo(r)===setor;
 
   const waLeads = waLeadsCL()
-    .filter(l=>matchesSetor(l.setor) && matchesModel(l.modelo))
+    .filter(l=>matchesSetor(l) && matchesModel(l.modelo))
     .map(l=>({...l, _origem:'whatsapp'}));
   const ciLeads = ciLeadsCL()
-    .filter(r=>matchesSetor(r.setor) && matchesModel(r.modelos))
+    .filter(r=>matchesSetor(r) && matchesModel(r.modelos))
     .map(r=>({...r, _origem:'presencial'}));
   const leads = [...waLeads, ...ciLeads].sort((a,b)=>{
     const da = a._origem==='whatsapp' ? (a.data||'') : (a.dt||'');
