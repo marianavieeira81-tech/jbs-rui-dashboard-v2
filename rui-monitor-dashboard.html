@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Rui — Monitor de Eventos</title>
+<title>IAn — Monitor de Eventos</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&family=Bebas+Neue&display=swap" rel="stylesheet"/>
 <style>
 :root{
@@ -15,6 +15,8 @@
   --sh:0 2px 20px rgba(0,0,0,.6);--sh-md:0 8px 40px rgba(0,0,0,.7);
   --stripe:3px;
 }
+.brand-ia{color:var(--ac);}
+.brand-n{color:var(--tx);}
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;}
 body::before{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);background:linear-gradient(90deg,#E11D48 0%,#D4AF37 35%,#D4AF37 65%,#004225 100%);z-index:200;}
@@ -180,7 +182,7 @@ textarea.sql{font-family:'DM Mono',monospace;font-size:11.5px;line-height:1.55;b
 
 <div class="login-overlay" id="login-overlay">
   <div class="login-box">
-    <div class="eye">GWM · Agente Rui</div>
+    <div class="eye">GWM · Agente <span class="brand-ia">IA</span><span class="brand-n">n</span></div>
     <h1>Acesso ao Monitor</h1>
     <p class="login-sub">Digite a chave de acesso para continuar.</p>
     <input type="password" id="login-input" placeholder="Chave de acesso" autocomplete="off">
@@ -193,7 +195,7 @@ textarea.sql{font-family:'DM Mono',monospace;font-size:11.5px;line-height:1.55;b
 
   <div class="topbar">
     <div>
-      <div class="eye">GWM · Agente Rui</div>
+      <div class="eye">GWM · Agente <span class="brand-ia">IA</span><span class="brand-n">n</span></div>
       <h1>Monitor de Eventos</h1>
     </div>
     <div style="display:flex;align-items:center;">
@@ -434,10 +436,10 @@ textarea.sql{font-family:'DM Mono',monospace;font-size:11.5px;line-height:1.55;b
 
       <div class="subsec">Tom / identidade do agente</div>
       <div class="field" style="margin-bottom:6px;">
-        <label>Como o Rui se apresenta pra esse cliente</label>
-        <textarea id="cfg_tom" rows="3" placeholder="Ex.: Sou o Rui, atendente virtual da [nome do cliente]..."></textarea>
+        <label>Como o <span class="brand-ia">IA</span><span class="brand-n">n</span> se apresenta pra esse cliente</label>
+        <textarea id="cfg_tom" rows="3" placeholder="Ex.: Sou o IAn, atendente virtual da [nome do cliente]..."></textarea>
       </div>
-      <p class="hint">Isto é um exemplo pra editar — enquanto ficar vazio, o Rui continua usando o texto padrão que já está em produção.</p>
+      <p class="hint">Isto é um exemplo pra editar — enquanto ficar vazio, o <span class="brand-ia">IA</span><span class="brand-n">n</span> continua usando o texto padrão que já está em produção.</p>
 
       <div class="subsec">Setores de atendimento</div>
       <div class="checks" id="cfgSetoresPadraoBox"></div>
@@ -636,7 +638,7 @@ where tipo_evento = 'execucao_ok' and criado_em >= date_trunc('month', now());</
 
     <div class="sec">Contrato</div>
     <div class="callout" style="margin-top:0;">
-      <b>Base:</b> o texto abaixo é o seu contrato real (Contrato_Agente_RUI_v4), com os campos que mudam de cliente para cliente transformados em espaços de preenchimento — nenhuma cláusula foi reescrita. Testemunhas, rubricas e "Local e data" continuam em branco pra preencher à mão na assinatura.
+      <b>Base:</b> o texto abaixo é o seu contrato real (Contrato_Agente_<span class="brand-ia">IA</span><span class="brand-n">n</span>_v4), com os campos que mudam de cliente para cliente transformados em espaços de preenchimento — nenhuma cláusula foi reescrita. Testemunhas, rubricas e "Local e data" continuam em branco pra preencher à mão na assinatura.
     </div>
 
     <div class="card" style="margin-bottom:16px;">
@@ -653,7 +655,7 @@ where tipo_evento = 'execucao_ok' and criado_em >= date_trunc('month', now());</
     </div>
 
     <div class="card" style="margin-bottom:16px;">
-      <div class="card-title">Clientes (concessionárias que contrataram o Rui)</div>
+      <div class="card-title">Clientes (concessionárias que contrataram o <span class="brand-ia">IA</span><span class="brand-n">n</span>)</div>
       <div class="filters">
         <select id="ctrCliSelect" onchange="ctrSelecionarCliente(this.value)">
           <option value="">— Novo cliente —</option>
@@ -746,7 +748,7 @@ where tipo_evento = 'execucao_ok' and criado_em >= date_trunc('month', now());</
 
       <div class="field" style="margin-bottom:16px;">
         <label>O que foi relatado</label>
-        <textarea id="supDescricao" rows="3" placeholder="Ex.: Rui parou de responder no WhatsApp desde as 14h"></textarea>
+        <textarea id="supDescricao" rows="3" placeholder="Ex.: IAn parou de responder no WhatsApp desde as 14h"></textarea>
       </div>
 
       <div class="subsec">Prioridade</div>
@@ -1779,7 +1781,7 @@ const CTR_KEY_CLIENTE_SEL = 'rui_contrato_cliente_sel_v1';
 
 const CTR_MODELO_PADRAO = `CONTRATO DE LICENÇA DE USO DE
 AGENTE DE INTELIGÊNCIA ARTIFICIAL
-Sistema Rui — Qualificação Inteligente de Leads
+Sistema IAn — Qualificação Inteligente de Leads
 
 IDENTIFICAÇÃO DAS PARTES
 
@@ -1802,8 +1804,8 @@ CPF do Representante: [CONTRATANTE_CPF_REPRESENTANTE]
 As partes acima qualificadas, doravante denominadas simplesmente FORNECEDORA e CONTRATANTE, celebram o presente Contrato de Licença de Uso de Agente de Inteligência Artificial, que se regerá pelas cláusulas e condições a seguir.
 
 CLÁUSULA 1ª — OBJETO DO CONTRATO
-1.1. O presente contrato tem por objeto a concessão, pela FORNECEDORA à CONTRATANTE, de licença de uso não exclusiva, intransferível e não sublicenciável do Agente de Inteligência Artificial denominado RUI (doravante "o Agente"), sistema automatizado de qualificação de leads desenvolvido e de propriedade exclusiva da FORNECEDORA.
-1.2. O Agente RUI opera nos canais de comunicação WhatsApp Business e Instagram Direct da CONTRATANTE, além de interface web proprietária (Interface RUI), realizando atendimento automatizado, triagem, qualificação e roteamento de potenciais clientes (leads) por meio de tecnologia de inteligência artificial.
+1.1. O presente contrato tem por objeto a concessão, pela FORNECEDORA à CONTRATANTE, de licença de uso não exclusiva, intransferível e não sublicenciável do Agente de Inteligência Artificial denominado IAn (doravante "o Agente"), sistema automatizado de qualificação de leads desenvolvido e de propriedade exclusiva da FORNECEDORA.
+1.2. O Agente IAn opera nos canais de comunicação WhatsApp Business e Instagram Direct da CONTRATANTE, além de interface web proprietária (Interface IAn), realizando atendimento automatizado, triagem, qualificação e roteamento de potenciais clientes (leads) por meio de tecnologia de inteligência artificial.
 1.3. A concessão da licença abrange exclusivamente o uso do Agente, não implicando cessão, transferência de titularidade, acesso ao código-fonte, documentação técnica interna, modelos de linguagem, fluxos de automação ou qualquer outro ativo intelectual pertencente à FORNECEDORA.
 1.4. A CONTRATANTE é responsável por fornecer e manter ativos e vinculados ao Agente os acessos à sua conta de WhatsApp Business e ao seu perfil do Instagram, sendo tais credenciais de sua exclusiva responsabilidade.
 1.5. O escopo técnico e funcional detalhado da licença — incluindo canais habilitados, volume mensal de interações incluído e funcionalidades padrão contempladas — está descrito no Anexo Técnico de Escopo, parte integrante e inseparável deste contrato. Qualquer funcionalidade não listada no referido Anexo será tratada como alteração, nos termos da Cláusula 5ª.
@@ -1825,7 +1827,7 @@ CLÁUSULA 3ª — PERÍODO DE TESTE GRATUITO
 3.4. Ao optar pela contratação após o período de teste, a CONTRATANTE declara ter avaliado o Agente e estar ciente de suas funcionalidades, aceitando integralmente as condições do presente contrato.
 
 CLÁUSULA 4ª — VALORES, PAGAMENTO E CONDIÇÕES FINANCEIRAS
-4.1. A contratação do Agente RUI implica o pagamento dos seguintes valores, definidos entre as partes e registrados neste instrumento:
+4.1. A contratação do Agente IAn implica o pagamento dos seguintes valores, definidos entre as partes e registrados neste instrumento:
 Taxa de Setup (implantação): R$ [VALOR_SETUP]
 Mensalidade (licença de uso): R$ [VALOR_MENSALIDADE]
 Valor por Alteração (a partir do 2º mês): R$ [VALOR_ALTERACAO]
@@ -1834,7 +1836,7 @@ Valor por Alteração (a partir do 2º mês): R$ [VALOR_ALTERACAO]
 4.4. O não pagamento por período superior a 15 (quinze) dias corridos autorizará a FORNECEDORA a suspender imediatamente o acesso ao Agente, sem necessidade de notificação prévia, sem prejuízo da cobrança de todos os valores devidos, inclusive multas e encargos.
 
 CLÁUSULA 5ª — POLÍTICA DE ALTERAÇÕES NO AGENTE
-5.1. Entende-se por "alteração" qualquer modificação técnica, funcional ou comportamental no Agente RUI solicitada pela CONTRATANTE, incluindo, exemplificativamente: alteração de roteiros de atendimento, adição ou remoção de perguntas de qualificação, modificação de fluxos de roteamento, ajustes de personalidade ou tom do Agente, integrações adicionais, e alterações nas perguntas ou critérios de qualificação.
+5.1. Entende-se por "alteração" qualquer modificação técnica, funcional ou comportamental no Agente IAn solicitada pela CONTRATANTE, incluindo, exemplificativamente: alteração de roteiros de atendimento, adição ou remoção de perguntas de qualificação, modificação de fluxos de roteamento, ajustes de personalidade ou tom do Agente, integrações adicionais, e alterações nas perguntas ou critérios de qualificação.
 5.2. DURANTE O PRIMEIRO MÊS: A CONTRATANTE tem direito a 1 (uma) alteração sem custo adicional, já coberta pelos valores de setup e primeira mensalidade pagos. Essa solicitação deve ser feita formalmente — por e-mail ou WhatsApp — até o 30º (trigésimo) dia corrido de funcionamento do Agente. A aplicabilidade da alteração gratuita será analisada e decidida em conjunto pelas partes, de boa-fé, com base nos seguintes motivos reconhecidos: (i) comportamento funcional do Agente divergente do escopo acordado; (ii) necessidade de ajuste em perguntas ou fluxos de qualificação inadequados à realidade operacional da CONTRATANTE; (iii) incompatibilidade verificável entre o funcionamento do Agente e processos internos previamente informados à FORNECEDORA. Em caso de divergência, as partes comprometem-se a resolver amigavelmente antes de qualquer medida formal. Após confirmação mútua do escopo, a FORNECEDORA terá prazo de 7 (sete) a 10 (dez) dias úteis para implementar a alteração.
 5.3. A PARTIR DO SEGUNDO MÊS: Toda e qualquer alteração será cobrada pelo valor unitário definido no Anexo de Proposta Comercial, parte integrante deste contrato. A FORNECEDORA apresentará confirmação escrita (e-mail ou mensagem) do escopo e do valor antes de iniciar os trabalhos, e a CONTRATANTE deverá aprovar formalmente. O prazo de execução será de 7 (sete) a 10 (dez) dias úteis após aprovação e confirmação do pagamento.
 5.4. Apenas a FORNECEDORA detém autorização técnica e jurídica para realizar alterações no Agente. Qualquer tentativa pela CONTRATANTE de modificar, acessar, replicar, engenharia reversa ou interferir tecnicamente no Agente sem autorização prévia e expressa da FORNECEDORA constituirá violação grave deste contrato, sujeitando a infratora às penalidades previstas na Cláusula 11ª.
@@ -1849,7 +1851,7 @@ EXEMPLO ILUSTRATIVO — Cláusula 6.3: Mensalidade = R$ 1.500,00. Se o cancelame
 6.6. REAJUSTE ANUAL: Os valores de mensalidade e de alteração definidos no Anexo de Proposta Comercial serão reajustados automaticamente a cada renovação anual do contrato, com base na variação acumulada do Índice Nacional de Preços ao Consumidor Amplo (IPCA), apurado pelo IBGE no período de 12 (doze) meses imediatamente anterior à data de renovação. O novo valor será comunicado à CONTRATANTE junto ao e-mail de renovação previsto na Cláusula 6.1, com antecedência mínima de 48 (quarenta e oito) horas. A ausência de manifestação contrária no prazo previsto implica aceitação tácita do reajuste. A taxa de setup, por ser cobrada uma única vez, não está sujeita a este reajuste.
 
 CLÁUSULA 7ª — PROPRIEDADE INTELECTUAL E SIGILO TECNOLÓGICO
-7.1. O Agente RUI, incluindo toda a sua arquitetura técnica, fluxos de automação, lógica de qualificação, modelos de linguagem configurados, prompts de sistema, bases de dados proprietárias, código-fonte, interfaces e qualquer outro componente, é de propriedade exclusiva e intransferível da FORNECEDORA, protegido pela Lei nº 9.609/1998 (Lei do Software), Lei nº 9.610/1998 (Lei de Direitos Autorais) e demais normas aplicáveis.
+7.1. O Agente IAn, incluindo toda a sua arquitetura técnica, fluxos de automação, lógica de qualificação, modelos de linguagem configurados, prompts de sistema, bases de dados proprietárias, código-fonte, interfaces e qualquer outro componente, é de propriedade exclusiva e intransferível da FORNECEDORA, protegido pela Lei nº 9.609/1998 (Lei do Software), Lei nº 9.610/1998 (Lei de Direitos Autorais) e demais normas aplicáveis.
 7.2. É expressamente vedado à CONTRATANTE, direta ou indiretamente, por si ou por terceiros:
 Copiar, reproduzir, distribuir, sublicenciar ou comercializar o Agente ou qualquer de seus componentes;
 Realizar engenharia reversa, decompilar, desmontar ou tentar extrair o código-fonte ou a lógica operacional do Agente;
@@ -1867,13 +1869,13 @@ CLÁUSULA 8ª — CONFIDENCIALIDADE E PROTEÇÃO DE DADOS
 8.6. Para fins de atendimento a solicitações relacionadas à proteção de dados pessoais no âmbito da operação do Agente, a FORNECEDORA disponibiliza como canal de contato o e-mail cadastrado no preâmbulo deste contrato.
 
 CLÁUSULA 9ª — INTEGRIDADE DO AGENTE E TENTATIVAS DE VIOLAÇÃO
-9.1. O Agente RUI é dotado de mecanismos de monitoramento e registro de interações. Qualquer tentativa, bem-sucedida ou não, de: (i) burlar as regras de operação do Agente; (ii) induzir o Agente a comportamentos não autorizados por meio de técnicas de prompt injection, jailbreak ou similares; (iii) acessar indevidamente a infraestrutura técnica subjacente; ou (iv) extrair informações proprietárias da FORNECEDORA por meio do Agente — será considerada violação grave deste contrato.
+9.1. O Agente IAn é dotado de mecanismos de monitoramento e registro de interações. Qualquer tentativa, bem-sucedida ou não, de: (i) burlar as regras de operação do Agente; (ii) induzir o Agente a comportamentos não autorizados por meio de técnicas de prompt injection, jailbreak ou similares; (iii) acessar indevidamente a infraestrutura técnica subjacente; ou (iv) extrair informações proprietárias da FORNECEDORA por meio do Agente — será considerada violação grave deste contrato.
 9.2. A FORNECEDORA reserva-se o direito de monitorar, registrar e auditar as interações com o Agente para fins de segurança, qualidade e proteção de seus ativos intelectuais, sendo tal monitoramento parte integrante do serviço prestado.
 9.3. Em caso de detecção de tentativa de violação, a FORNECEDORA poderá: (i) suspender imediatamente o acesso ao Agente; (ii) rescindir o contrato sem reembolso; (iii) ingressar com as medidas judiciais cabíveis, incluindo ação por danos materiais e morais, bem como notícia-crime perante as autoridades competentes, com fundamento na Lei nº 12.737/2012 (Lei Carolina Dieckmann), na Lei nº 9.609/1998 e no Código Penal.
 9.4. Entende-se por "tentativa de violação" não apenas ações diretas da CONTRATANTE, mas também ações praticadas por seus colaboradores, prepostos, representantes ou qualquer terceiro que tenha tido acesso ao Agente por autorização da CONTRATANTE.
 
 CLÁUSULA 10ª — NÃO CONCORRÊNCIA E PROTEÇÃO COMERCIAL
-10.1. Em razão do acesso privilegiado a informações estratégicas, operacionais e comerciais da CONTRATANTE obtido durante a vigência deste contrato — incluindo conhecimento sobre seu processo de qualificação de leads, perfil de clientes, estratégias de atendimento e dados de funil de vendas — a CONTRATANTE obriga-se, pelo prazo de 6 (seis) meses contados da data de encerramento ou rescisão deste contrato, a não: (i) desenvolver, contratar, financiar ou apoiar o desenvolvimento de sistema de inteligência artificial de qualificação de leads com funcionalidades equivalentes às do Agente RUI; (ii) contratar diretamente qualquer fornecedor indicado pela FORNECEDORA durante a vigência do contrato para serviço similar ao aqui prestado; (iii) utilizar os conhecimentos adquiridos sobre a operação do Agente RUI para replicar, interna ou externamente, o sistema ou qualquer de suas funcionalidades essenciais.
+10.1. Em razão do acesso privilegiado a informações estratégicas, operacionais e comerciais da CONTRATANTE obtido durante a vigência deste contrato — incluindo conhecimento sobre seu processo de qualificação de leads, perfil de clientes, estratégias de atendimento e dados de funil de vendas — a CONTRATANTE obriga-se, pelo prazo de 6 (seis) meses contados da data de encerramento ou rescisão deste contrato, a não: (i) desenvolver, contratar, financiar ou apoiar o desenvolvimento de sistema de inteligência artificial de qualificação de leads com funcionalidades equivalentes às do Agente IAn; (ii) contratar diretamente qualquer fornecedor indicado pela FORNECEDORA durante a vigência do contrato para serviço similar ao aqui prestado; (iii) utilizar os conhecimentos adquiridos sobre a operação do Agente IAn para replicar, interna ou externamente, o sistema ou qualquer de suas funcionalidades essenciais.
 10.2. A restrição prevista nesta cláusula fundamenta-se na proteção dos ativos intelectuais, metodologia proprietária e segredo de negócio da FORNECEDORA, não configurando limitação abusiva à atividade empresarial da CONTRATANTE, que permanece livre para contratar quaisquer outros serviços de tecnologia não relacionados à qualificação automatizada de leads por inteligência artificial no formato aqui descrito.
 10.3. O descumprimento sujeitará a CONTRATANTE ao pagamento de multa equivalente a 6 (seis) vezes o valor da mensalidade vigente ao tempo do cancelamento, sem prejuízo de perdas e danos adicionais comprovados e de medidas judiciais cabíveis, incluindo tutela inibitória.
 
@@ -1889,7 +1891,7 @@ Descumprimento de qualquer outra obrigação essencial deste contrato, não sana
 11.2. Em caso de rescisão por justa causa imputável à CONTRATANTE, a FORNECEDORA poderá exigir, a título de indenização, o maior valor entre: (i) a integralidade dos valores devidos até o final do período de 12 (doze) meses vigente; ou (ii) a multa rescisória prevista na Cláusula 6.3, incidente sobre o mesmo período — não sendo tais valores exigíveis cumulativamente entre si. Aplicar-se-á o critério mais elevado entre as duas hipóteses, sem prejuízo de eventuais perdas e danos adicionais apurados e de demais medidas judiciais cabíveis.
 
 CLÁUSULA 12ª — LIMITAÇÃO DE RESPONSABILIDADE E GARANTIAS
-12.1. O Agente RUI é fornecido "como está" (as is), sendo desenvolvido e calibrado para o escopo comercial da CONTRATANTE. A FORNECEDORA não garante que o Agente será isento de erros, que operará de forma ininterrupta ou que atenderá a expectativas não expressamente previstas neste contrato.
+12.1. O Agente IAn é fornecido "como está" (as is), sendo desenvolvido e calibrado para o escopo comercial da CONTRATANTE. A FORNECEDORA não garante que o Agente será isento de erros, que operará de forma ininterrupta ou que atenderá a expectativas não expressamente previstas neste contrato.
 12.2. Em nenhuma hipótese a FORNECEDORA será responsável por: (i) lucros cessantes ou danos indiretos decorrentes da indisponibilidade do Agente; (ii) perda de negócios, leads ou oportunidades comerciais; (iii) respostas do Agente que não tenham agradado ou convertido leads específicos; (iv) falhas atribuíveis a serviços de terceiros, conforme Cláusula 2.3.
 12.3. A responsabilidade total da FORNECEDORA, em qualquer hipótese, ficará limitada ao valor equivalente a 3 (três) mensalidades pagas pela CONTRATANTE.
 12.4. Caso a FORNECEDORA seja acionada por terceiro — incluindo leads ou potenciais clientes da CONTRATANTE — em razão de conteúdo, instrução ou conduta de responsabilidade da CONTRATANTE, incluindo informações incorretas fornecidas por esta para configuração do Agente, uso do Agente fora do escopo contratado ou violação de direitos de terceiros pela CONTRATANTE, a CONTRATANTE se compromete a indenizar e isentar a FORNECEDORA de todos os custos, perdas e danos daí decorrentes, incluindo honorários advocatícios razoavelmente incorridos.
@@ -1945,8 +1947,8 @@ RECOMENDAÇÃO: Para maior segurança jurídica, recomenda-se o reconhecimento d
 
 
 ANEXO TÉCNICO DE ESCOPO
-Parte integrante e inseparável do Contrato de Licença de Uso do Agente RUI
-Este Anexo delimita o escopo técnico e funcional do Agente RUI efetivamente contratado pela CONTRATANTE, para fins de definição do que está incluído na licença e do que será tratado como alteração, nos termos da Cláusula 5ª do contrato principal. Este documento somente terá validade se assinado na mesma data do contrato principal.
+Parte integrante e inseparável do Contrato de Licença de Uso do Agente IAn
+Este Anexo delimita o escopo técnico e funcional do Agente IAn efetivamente contratado pela CONTRATANTE, para fins de definição do que está incluído na licença e do que será tratado como alteração, nos termos da Cláusula 5ª do contrato principal. Este documento somente terá validade se assinado na mesma data do contrato principal.
 Canais habilitados: [CANAIS_HABILITADOS]
 Volume mensal de interações incluído: [VOLUME_MENSAL_INTERACOES]
 Funcionalidades padrão incluídas (ex.: qualificação de leads, roteamento, follow-up automático, dashboard de acompanhamento): [FUNCIONALIDADES_PADRAO]
@@ -1961,7 +1963,7 @@ CONTRATANTE — Assinatura e rubrica
 
 
 ANEXO DE PROPOSTA COMERCIAL
-Parte integrante e inseparável do Contrato de Licença de Uso do Agente RUI
+Parte integrante e inseparável do Contrato de Licença de Uso do Agente IAn
 Este Anexo formaliza os valores comerciais acordados entre as partes, tendo a mesma força jurídica do contrato ao qual está vinculado. Os valores aqui registrados somente poderão ser alterados mediante aditivo contratual assinado por ambas as partes.
 Data de assinatura deste Anexo: [DATA_ASSINATURA_ANEXO]
 Data de ativação do Agente (início da vigência): [DATA_ATIVACAO]

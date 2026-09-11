@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Rui — Dashboard de IA</title>
+<title>IAn — Dashboard de IA</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&family=Bebas+Neue&display=swap" rel="stylesheet"/>
 <style>
 :root{
@@ -30,6 +30,8 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 .sb-eye{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--tx3);margin-bottom:5px;font-weight:600;}
 .sb-brand{font-size:22px;font-weight:700;letter-spacing:-.03em;color:var(--tx);}
 .sb-brand span{color:var(--ac);font-family:'Archivo',cursive;font-size:28px;letter-spacing:.05em;}
+.brand-ia{color:var(--ac);}
+.brand-n{color:var(--tx);}
 .sb-pill{margin-top:12px;display:inline-flex;align-items:center;gap:7px;background:var(--s2);border-radius:20px;padding:5px 13px;border:1px solid var(--bdr);}
 .sb-pill .dot{width:7px;height:7px;border-radius:50%;background:var(--grn-l);box-shadow:0 0 8px var(--grn-l);animation:blink 2.2s ease-in-out infinite;}
 .sb-pill span{font-size:11px;color:var(--tx2);font-weight:500;}
@@ -982,7 +984,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   <div class="login-box" id="accessGate">
     <div class="login-brand">
       <div class="login-eye">BEM-VINDO</div>
-      <div class="sb-brand">RUI <span>AI</span></div>
+      <div class="sb-brand"><span>IA</span>n</div>
     </div>
     <div class="gate-sub">Como você quer entrar?</div>
     <div class="gate-options">
@@ -991,8 +993,8 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
         <div class="gate-opt-desc">Acessar o painel da minha concessionária</div>
       </button>
       <button type="button" class="gate-opt" onclick="showAccessView('signup')">
-        <div class="gate-opt-title">Quero contratar o Rui</div>
-        <div class="gate-opt-desc">Fazer parte da comunidade de clientes do Rui</div>
+        <div class="gate-opt-title">Quero contratar o <span class="brand-ia">IA</span><span class="brand-n">n</span></div>
+        <div class="gate-opt-desc">Fazer parte da comunidade de clientes do <span class="brand-ia">IA</span><span class="brand-n">n</span></div>
       </button>
     </div>
   </div>
@@ -1002,7 +1004,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     <button type="button" class="gate-back" onclick="showAccessView('gate')">← Voltar</button>
     <div class="login-brand">
       <div class="login-eye">ACESSO RESTRITO</div>
-      <div class="sb-brand">RUI <span>AI</span></div>
+      <div class="sb-brand"><span>IA</span>n</div>
     </div>
     <div class="login-field">
       <div class="modal-label">Usuário</div>
@@ -1025,8 +1027,8 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   <form class="login-box signup-box" id="signupForm" style="display:none" onsubmit="return submitCadastroInteresse(event)">
     <button type="button" class="gate-back" onclick="showAccessView('gate')">← Voltar</button>
     <div class="login-brand">
-      <div class="login-eye">QUERO CONHECER O RUI</div>
-      <div class="sb-brand">RUI <span>AI</span></div>
+      <div class="login-eye">QUERO CONHECER O <span class="brand-ia">IA</span><span class="brand-n">n</span></div>
+      <div class="sb-brand"><span>IA</span>n</div>
     </div>
     <div class="signup-intro">Preencha seus dados — nossa equipe entra em contato para marcar uma reunião rápida.</div>
 
@@ -1086,7 +1088,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       </div>
     </div>
     <div class="ci-field">
-      <div class="modal-label">Como conheceu o Rui</div>
+      <div class="modal-label">Como conheceu o <span class="brand-ia">IA</span><span class="brand-n">n</span></div>
       <div class="ci-chips" id="cad-origem">
         <div class="ci-chip" data-val="Indicação" onclick="ciChip(this,'cad-origem','sel-gold')">Indicação</div>
         <div class="ci-chip" data-val="Instagram" onclick="ciChip(this,'cad-origem','sel-gold')">Instagram</div>
@@ -1175,7 +1177,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 <aside class="sb">
   <div class="sb-top">
     <div class="sb-eye">DEMO</div>
-    <div class="sb-brand">RUI <span>AI</span></div>
+    <div class="sb-brand"><span>IA</span>n</div>
     <div class="sb-pill"><span class="dot"></span><span>Agente ativo · 24h</span></div>
     <div class="mode-badge demo" id="modeBadge"><span class="mode-dot"></span><span id="modeLabel">Dados fictícios</span></div>
   </div>
@@ -1214,7 +1216,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 <!-- ============ DASHBOARD PRINCIPAL ============ -->
 <div id="p-dash">
   <div class="topbar">
-    <div><div class="eye">Painel de Controle</div><h1>Performance do Agente Rui</h1></div>
+    <div><div class="eye">Painel de Controle</div><h1>Performance do Agente <span class="brand-ia">IA</span><span class="brand-n">n</span></h1></div>
     <div class="topbar-r">
       <span class="loja-hint">⚠ leads ainda sem loja marcada no n8n</span>
       <select class="loja-select" onchange="setLojaFilter(this.value)">
@@ -1243,7 +1245,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     <div class="diag-items" id="diagItems"></div>
   </div>
 
-  <div class="sec">Indicadores da semana · gerados automaticamente pelo Agente Rui</div>
+  <div class="sec">Indicadores da semana · gerados automaticamente pelo Agente <span class="brand-ia">IA</span><span class="brand-n">n</span></div>
   <div class="kpi-grid kpi-grid-5">
     <div class="kpi c-premium">
       <div class="kpi-top"><span class="kpi-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 1 0-16 0"/><circle cx="12" cy="7" r="4"/></svg></span><div class="kpi-tag">WhatsApp + Check-in</div></div>
@@ -1253,7 +1255,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       <div class="kpi-sub"><span class="pill nu">aguardando dados</span></div>
     </div>
     <div class="kpi c-engajado">
-      <div class="kpi-top"><span class="kpi-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><div class="kpi-tag">Rui qualificou</div></div>
+      <div class="kpi-top"><span class="kpi-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><div class="kpi-tag"><span class="brand-ia">IA</span><span class="brand-n">n</span> qualificou</div></div>
       <div class="kpi-lbl">Qualificação completa</div>
       <div class="kpi-val" data-count="0" data-kpi="qualificados">—</div>
       <svg class="kpi-spark" width="100%" height="26" viewBox="0 0 100 26" preserveAspectRatio="none"><polyline points="0,19 20,16 40,14 60,13 80,10 100,7" fill="none" stroke="#fff" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>
@@ -1267,7 +1269,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       <div class="kpi-sub"><span class="pill nu">aguardando dados</span></div>
     </div>
     <div class="kpi c-frio">
-      <div class="kpi-top"><span class="kpi-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/></svg></span><div class="kpi-tag">Score médio Rui</div></div>
+      <div class="kpi-top"><span class="kpi-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/></svg></span><div class="kpi-tag">Score médio <span class="brand-ia">IA</span><span class="brand-n">n</span></div></div>
       <div class="kpi-lbl">Score médio</div>
       <div class="kpi-val" data-count="0" data-kpi="scoreMedio">—</div>
       <svg class="kpi-spark" width="100%" height="26" viewBox="0 0 100 26" preserveAspectRatio="none"><polyline points="0,14 20,13 40,15 60,12 80,11 100,9" fill="none" stroke="#fff" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>
@@ -1281,10 +1283,10 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     </div>
   </div>
 
-  <div class="sec">Últimos leads atendidos pelo Rui</div>
+  <div class="sec">Últimos leads atendidos pelo <span class="brand-ia">IA</span><span class="brand-n">n</span></div>
   <div class="card" data-tabela="leads">
     <table class="ltbl">
-      <thead><tr><th>Lead</th><th>Canal</th><th>Score Rui</th><th>Modelo buscado</th><th>Status</th><th>Setor</th></tr></thead>
+      <thead><tr><th>Lead</th><th>Canal</th><th>Score <span class="brand-ia">IA</span><span class="brand-n">n</span></th><th>Modelo buscado</th><th>Status</th><th>Setor</th></tr></thead>
       <tbody id="ltbody"></tbody>
     </table>
   </div>
@@ -1387,7 +1389,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       </div>
       <div style="padding:14px 22px;border-top:1px solid var(--bdr);">
         <button class="btn-ref" style="width:100%;justify-content:center;background:transparent;border:1px solid var(--s4);color:var(--tx2);border-radius:var(--rsm);padding:11px;font-size:12px;display:flex;align-items:center;gap:7px;">
-          Como o Rui prioriza notifica&ccedil;&otilde;es &#8599;
+          Como o <span class="brand-ia">IA</span><span class="brand-n">n</span> prioriza notifica&ccedil;&otilde;es &#8599;
         </button>
       </div>
     </div>
@@ -1397,7 +1399,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   <div class="card" style="padding:0;overflow:hidden;">
     <div style="padding:18px 24px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--bdr);">
       <span style="font-size:14px;">&#129302;</span>
-      <span class="ctitle" style="margin:0;">Atividade Recente do Rui</span>
+      <span class="ctitle" style="margin:0;">Atividade Recente do <span class="brand-ia">IA</span><span class="brand-n">n</span></span>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;">
       <div style="padding:18px 24px;border-right:1px solid var(--bdr);">
@@ -2108,7 +2110,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     } else if(c.real){
       summaryWrap.innerHTML = `<div class="oc-ai-summary">
         <div class="oc-ai-summary-head"><span class="t">☀️ Resumo da IA</span></div>
-        <p>O Rui ainda não registrou uma justificativa de qualificação para esse lead.</p>
+        <p>O <span class="brand-ia">IA</span><span class="brand-n">n</span> ainda não registrou uma justificativa de qualificação para esse lead.</p>
       </div>`;
     } else {
       summaryWrap.innerHTML = '';
@@ -2116,7 +2118,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 
     const scroll = document.getElementById('ocMsgScroll');
     if(c.real){
-      setComposerEnabled(false, 'O envio de mensagem por aqui ainda não está disponível para leads reais — a conversa continua acontecendo pelo fluxo automático do Rui no WhatsApp.');
+      setComposerEnabled(false, 'O envio de mensagem por aqui ainda não está disponível para leads reais — a conversa continua acontecendo pelo fluxo automático do IAn no WhatsApp.');
       lastRenderedThreadKey = '';
       renderRealThread(c);
       // Atualiza a conversa aberta sozinha (sem precisar dar F5), como um chat
@@ -2419,23 +2421,23 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   </div>
   <div style="font-size:13px;color:var(--tx2);margin-bottom:24px;line-height:1.7;max-width:640px">
     Horário humano: <strong style="color:var(--tx)">Seg–Sex 08h–19h</strong> · <strong style="color:var(--tx)">Sáb 08h–14h</strong> · <strong style="color:var(--red)">Dom fechado</strong>.
-    Fora desses horários — incluindo madrugada, domingo e feriados — o Rui opera sozinho. Qualifica, responde e transfere leads que de outra forma perderiam o timing sem nenhuma resposta até o dia seguinte.
+    Fora desses horários — incluindo madrugada, domingo e feriados — o <span class="brand-ia">IA</span><span class="brand-n">n</span> opera sozinho. Qualifica, responde e transfere leads que de outra forma perderiam o timing sem nenhuma resposta até o dia seguinte.
   </div>
   <div class="cob-grid">
     <div class="cob-card" data-tip="Leads atendidos quando nenhum vendedor estava disponível esta semana — a maioria na madrugada.">
       <div class="cob-val" data-kpi="cobLeads">—</div>
       <div class="cob-lbl">Leads fora do horário</div>
-      <div class="cob-sub">atendidos pelo Rui esta semana, incl. madrugada</div>
+      <div class="cob-sub">atendidos pelo <span class="brand-ia">IA</span><span class="brand-n">n</span> esta semana, incl. madrugada</div>
     </div>
     <div class="cob-card" data-tip="Percentual de todos os leads da semana que chegaram fora do horário humano — incluindo madrugada (00h–06h).">
       <div class="cob-val" data-kpi="cobPct">—</div>
       <div class="cob-lbl">Do total semanal</div>
       <div class="cob-sub">mais da metade vem fora do horário comercial</div>
     </div>
-    <div class="cob-card" data-tip="Valor potencial dos leads qualificados fora do horário humano esta semana — sem o Rui, todos perderiam o timing.">
+    <div class="cob-card" data-tip="Valor potencial dos leads qualificados fora do horário humano esta semana — sem o IAn, todos perderiam o timing.">
       <div class="cob-val" data-kpi="cobCarteira" style="font-size:28px">—</div>
       <div class="cob-lbl">Carteira potencial 24/7</div>
-      <div class="cob-sub">em leads qualificados pelo Rui fora do horário</div>
+      <div class="cob-sub">em leads qualificados pelo <span class="brand-ia">IA</span><span class="brand-n">n</span> fora do horário</div>
     </div>
   </div>
 
@@ -2470,7 +2472,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     </div>
     <div class="ctitle" id="cobMesTitle">Total de leads por hora do dia</div>
     <div style="font-size:11px;color:var(--tx3);margin-bottom:4px">
-      Total de leads atendidos pelo Rui em cada hora do dia ao longo do mês selecionado
+      Total de leads atendidos pelo <span class="brand-ia">IA</span><span class="brand-n">n</span> em cada hora do dia ao longo do mês selecionado
     </div>
     <div class="cob-hour-grid" id="cobHourGridMes"></div>
     <div class="cob-hour-grid" id="cobHourLabelsMes" style="margin-top:0"></div>
@@ -3217,9 +3219,9 @@ const SELLERS = [
 ];
 
 const FUNNEL = [
-  {lbl:"Leads recebidos",c:"#D4AF37",n:1000,p:100,tip:"Total de leads atendidos pelo Rui no mês via WhatsApp.",waCount:1000},
-  {lbl:"Iniciaram fluxo",c:"#A88820",n:680,p:68,tip:"Responderam ao Rui e começaram a qualificação. 68% de engajamento inicial.",waCount:680},
-  {lbl:"Qualificação completa",c:"#606060",n:460,p:46,tip:"Responderam as 5 perguntas do Rui. Score calculado e classificado.",waCount:460},
+  {lbl:"Leads recebidos",c:"#D4AF37",n:1000,p:100,tip:"Total de leads atendidos pelo IAn no mês via WhatsApp.",waCount:1000},
+  {lbl:"Iniciaram fluxo",c:"#A88820",n:680,p:68,tip:"Responderam ao IAn e começaram a qualificação. 68% de engajamento inicial.",waCount:680},
+  {lbl:"Qualificação completa",c:"#606060",n:460,p:46,tip:"Responderam as 5 perguntas do IAn. Score calculado e classificado.",waCount:460},
   {lbl:"Score > 85 · Leads premium",c:"#D4AF37",n:260,p:26,tip:"Transferidos ao vendedor com prioridade máxima. Score acima de 85.",waCount:260}
 ];
 
@@ -4552,8 +4554,8 @@ function handleTagVendedorPopup(nome, vendedor){
 // ============================================================
 function buildDiagnostico(){
   const items = [
-    {icon:'⚠️', text:'<strong>Maior abandono no funil: Pergunta 4 (forma de pagamento)</strong> — 7 leads pararam aqui esta semana. Considere ajustar a abordagem do Rui nessa etapa.'},
-    {icon:'🌙', text:'<strong>62% dos leads chegaram fora do horário humano</strong> — sem o Rui, 47 conversas teriam ficado sem resposta, muitas delas na madrugada.'},
+    {icon:'⚠️', text:'<strong>Maior abandono no funil: Pergunta 4 (forma de pagamento)</strong> — 7 leads pararam aqui esta semana. Considere ajustar a abordagem do <span class="brand-ia">IA</span><span class="brand-n">n</span> nessa etapa.'},
+    {icon:'🌙', text:'<strong>62% dos leads chegaram fora do horário humano</strong> — sem o <span class="brand-ia">IA</span><span class="brand-n">n</span>, 47 conversas teriam ficado sem resposta, muitas delas na madrugada.'},
     {icon:'💰', text:'<strong>18 leads qualificados entregues ao time</strong> — carteira potencial de R$ 6,3M em leads ativos esta semana (18 × R$ 350k).'},
     {icon:'⚡', text:'<strong>Leads premium esta semana: 6</strong> — Score 86–100. Requerem acionamento do gerente com prioridade máxima.'},
   ];
@@ -4690,9 +4692,9 @@ function cobBuildRelatorio(){
   const fmtM=ym=>{const[y,m]=ym.split('-');return`${meses[parseInt(m)-1]} ${y}`;};
   el.innerHTML=`
     <div style="margin-bottom:24px">
-      <div style="font-size:13px;color:var(--tx2);margin-bottom:14px">Agente Rui em operação desde <strong style="color:var(--ac)">${fmtM(months[0])}</strong>. Total de leads atendidos:</div>
+      <div style="font-size:13px;color:var(--tx2);margin-bottom:14px">Agente <span class="brand-ia">IA</span><span class="brand-n">n</span> em operação desde <strong style="color:var(--ac)">${fmtM(months[0])}</strong>. Total de leads atendidos:</div>
       <div style="font-size:52px;font-weight:800;font-family:'DM Mono',monospace;color:var(--ac-l);line-height:1">${total}</div>
-      <div style="font-size:12px;color:var(--tx3);margin-top:6px">leads atendidos pelo Rui desde o início do contrato</div>
+      <div style="font-size:12px;color:var(--tx3);margin-top:6px">leads atendidos pelo <span class="brand-ia">IA</span><span class="brand-n">n</span> desde o início do contrato</div>
     </div>
     <div style="display:grid;gap:32px">
       ${months.map(ym=>{
@@ -4712,7 +4714,7 @@ function cobBuildRelatorio(){
         </div>`;
       }).join('')}
     </div>
-    <div style="margin-top:18px;font-size:11px;color:var(--tx3)">Histórico real gerado a partir dos leads processados pelo agente Rui.</div>
+    <div style="margin-top:18px;font-size:11px;color:var(--tx3)">Histórico real gerado a partir dos leads processados pelo agente <span class="brand-ia">IA</span><span class="brand-n">n</span>.</div>
   `;
   months.forEach(ym=>{
     cobRenderHourChart('cobRelHourGrid-'+ym,'cobRelHourLbl-'+ym,hourByMonth[ym]||Array(24).fill(0),null);
@@ -4756,7 +4758,7 @@ function buildTable(){
     </tr>`;
     }).join('');
   } else {
-    tb.innerHTML='<tr><td colspan="6" style="text-align:center;padding:40px 20px;color:var(--tx3);font-size:13px">Aguardando primeiros leads do agente Rui...</td></tr>';
+    tb.innerHTML='<tr><td colspan="6" style="text-align:center;padding:40px 20px;color:var(--tx3);font-size:13px">Aguardando primeiros leads do agente <span class="brand-ia">IA</span><span class="brand-n">n</span>...</td></tr>';
   }
 }
 
@@ -4788,7 +4790,7 @@ function buildFunil(){
   if(DATA_MODE !== 'production' || ACTIVE_LEADS.length === 0){
     wrap.innerHTML = `<div style="text-align:center;padding:80px 0;color:var(--tx3)">
       <div style="font-size:42px;margin-bottom:16px">📊</div>
-      <div style="font-size:15px;font-weight:600;color:var(--tx2);margin-bottom:8px">Aguardando dados do agente Rui</div>
+      <div style="font-size:15px;font-weight:600;color:var(--tx2);margin-bottom:8px">Aguardando dados do agente <span class="brand-ia">IA</span><span class="brand-n">n</span></div>
       <div style="font-size:13px;line-height:1.7;max-width:380px;margin:0 auto">O funil será preenchido automaticamente quando os leads chegarem pelo N8N.<br>Clique em <strong style="color:var(--ac)">↺ Atualizar</strong> para tentar novamente.</div>
     </div>`;
     return;
@@ -4818,16 +4820,16 @@ function buildFunil(){
     {
       lbl: 'Leads recebidos',
       c: '#D4AF37',
-      tip: 'Todos os leads que entraram em contato com o Rui.',
+      tip: 'Todos os leads que entraram em contato com o IAn.',
       leads: todos,
       nextLeads: iniciaram,
-      dropLabel: 'Não responderam ao Rui',
+      dropLabel: 'Não responderam ao <span class="brand-ia">IA</span><span class="brand-n">n</span>',
       isLast: false
     },
     {
       lbl: 'Iniciaram o fluxo',
       c: '#A88820',
-      tip: 'Responderam ao Rui e iniciaram as perguntas de qualificação.',
+      tip: 'Responderam ao IAn e iniciaram as perguntas de qualificação.',
       leads: iniciaram,
       nextLeads: completos,
       dropLabel: 'Pararam antes de concluir a qualificação',
@@ -4836,7 +4838,7 @@ function buildFunil(){
     {
       lbl: 'Qualificação completa',
       c: '#606060',
-      tip: 'Responderam todas as perguntas do Rui. Score calculado.',
+      tip: 'Responderam todas as perguntas do IAn. Score calculado.',
       leads: completos,
       nextLeads: quentes,
       dropLabel: 'Score < 60 · encaminhados para nutrição',
@@ -5154,7 +5156,7 @@ function openLeadCard(lead){
     ${buildAtendimentoSectionHTML(lead)}
     <!-- 5 PERGUNTAS -->
     <div class="lcard-section">
-      <div class="lcard-section-title">Qualificação — 5 Perguntas do Rui</div>
+      <div class="lcard-section-title">Qualificação — 5 Perguntas do <span class="brand-ia">IA</span><span class="brand-n">n</span></div>
       ${lead.perguntas.map(p=>`
         <div class="lcard-q ${p.resposta?'answered':'skipped'}">
           <div class="lcard-q-label">${p.num} · ${p.tema}</div>
@@ -5315,7 +5317,7 @@ function openPopup(lead){
   const sc = lead.score;
   const col = sc>=81?'#EF4444':sc>=61?'#F97316':sc>=41?'#EAB308':sc>=21?'#22c55e':'#38BDF8';
   document.getElementById('pRows').innerHTML=`
-    <div class="popup-row"><div class="popup-key">Score Rui</div><div class="popup-val" style="color:${col}">${sc}/100</div></div>
+    <div class="popup-row"><div class="popup-key">Score <span class="brand-ia">IA</span><span class="brand-n">n</span></div><div class="popup-val" style="color:${col}">${sc}/100</div></div>
     <div style="padding-left:110px;margin-top:4px;margin-bottom:10px"><div class="popup-score-bar"><div class="popup-score-fill" style="width:${sc}%;background:${col}"></div></div></div>
     <div class="popup-row"><div class="popup-key">Temperatura</div><div class="popup-val" style="color:${tempColor(lead.temperatura)}">${lead.temperatura}</div></div>
     <div class="popup-row"><div class="popup-key">Modelo</div><div class="popup-val">${lead.modelo||'—'}</div></div>
@@ -6448,13 +6450,13 @@ function buildFilaEspera(){
     const lead=fila[0];
     const nome=(lead.nome||'Cliente').split(' ')[0];
     const modelo=lead.modelo||'modelo solicitado';
-    previaEl.innerHTML=`<strong style="color:var(--ac)">Rui →</strong> "Olá, <strong style="color:var(--tx)">${nome}</strong>! Tudo bem? Sou o Rui, assistente da concessionária. Passando pra te avisar que o <strong style="color:var(--tx)">${modelo}</strong> que você estava aguardando acabou de chegar ao nosso estoque. Posso reservar a sua unidade? Fico à disposição para agendar uma visita quando preferir."`;
+    previaEl.innerHTML=`<strong style="color:var(--ac)"><span class="brand-ia">IA</span><span class="brand-n">n</span> →</strong> "Olá, <strong style="color:var(--tx)">${nome}</strong>! Tudo bem? Sou o <span class="brand-ia">IA</span><span class="brand-n">n</span>, assistente da concessionária. Passando pra te avisar que o <strong style="color:var(--tx)">${modelo}</strong> que você estava aguardando acabou de chegar ao nosso estoque. Posso reservar a sua unidade? Fico à disposição para agendar uma visita quando preferir."`;
   } else if(previaEl&&fila.length===0){
     previaEl.innerHTML='<span style="color:var(--tx3);font-size:12px">Nenhum lead na fila no momento.</span>';
   }
 
   if(fila.length===0){
-    wrap.innerHTML=`<div class="fila-empty"><div class="fila-empty-ico">⏳</div><div>Nenhum cliente na fila de espera no momento.</div><div style="margin-top:8px;font-size:12px;color:var(--tx3)">O Rui registra automaticamente quando um cliente aceita entrar na fila.</div></div>`;
+    wrap.innerHTML=`<div class="fila-empty"><div class="fila-empty-ico">⏳</div><div>Nenhum cliente na fila de espera no momento.</div><div style="margin-top:8px;font-size:12px;color:var(--tx3)">O <span class="brand-ia">IA</span><span class="brand-n">n</span> registra automaticamente quando um cliente aceita entrar na fila.</div></div>`;
     return;
   }
 
@@ -6490,7 +6492,7 @@ function buildFilaEspera(){
     const perfToggle=perfsHtml?`
       <button class="fila-perfil-toggle" id="fpbtn-${i}" onclick="toggleFilaPerfil(${i})">▼ Ver qualificação completa (${perfs.length} perguntas)</button>
       <div class="fila-perfil-body" id="fp-${i}">
-        <div style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx3);font-weight:700;margin-bottom:8px">Perfilação pelo Rui · ${perfs.length} pergunta${perfs.length!==1?'s':''}</div>
+        <div style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx3);font-weight:700;margin-bottom:8px">Perfilação pelo <span class="brand-ia">IA</span><span class="brand-n">n</span> · ${perfs.length} pergunta${perfs.length!==1?'s':''}</div>
         ${perfsHtml}
       </div>`:'';
     const filaTel=(c.telefone||'').replace(/\D/g,'');
@@ -6691,7 +6693,7 @@ function buildFilaTransferencias(){
   set('transfKpiAtendimento',  ACTIVE_TRANSFERENCIAS.filter(t=>t.status_transferencia==='em_atendimento').length);
 
   if(ativos.length===0){
-    wrap.innerHTML=`<div class="fila-empty"><div class="fila-empty-ico">✅</div><div>Nenhuma transferência pendente no momento.</div><div style="margin-top:8px;font-size:12px;color:var(--tx3)">O Rui registra automaticamente quando encaminha um lead pra atendimento humano.</div></div>`;
+    wrap.innerHTML=`<div class="fila-empty"><div class="fila-empty-ico">✅</div><div>Nenhuma transferência pendente no momento.</div><div style="margin-top:8px;font-size:12px;color:var(--tx3)">O <span class="brand-ia">IA</span><span class="brand-n">n</span> registra automaticamente quando encaminha um lead pra atendimento humano.</div></div>`;
     return;
   }
 
@@ -7170,7 +7172,7 @@ function buildDiagnostico(){
   if(kpiGrid) kpiGrid.innerHTML=`
     <div class="kpi gold"><div class="kpi-lbl">Total Esfriados</div>
       <div class="kpi-val" style="color:var(--tx3)">—</div>
-      <div class="kpi-sub">aguardando dados do Rui</div></div>
+      <div class="kpi-sub">aguardando dados do <span class="brand-ia">IA</span><span class="brand-n">n</span></div></div>
     <div class="kpi"><div class="kpi-lbl">Diagnóstico Concluído</div>
       <div class="kpi-val" style="color:var(--tx3)">—</div><div class="kpi-sub">—</div></div>
     <div class="kpi"><div class="kpi-lbl">Motivo Principal</div>
@@ -7182,7 +7184,7 @@ function buildDiagnostico(){
   if(areaEl)  areaEl.innerHTML='';
   if(tl)      tl.textContent='— leads analisados';
   container.innerHTML=`<div style="text-align:center;padding:60px 0;color:var(--tx3);font-size:13px;line-height:2.2">
-    Aguardando diagnóstico do Agente Rui<br>
+    Aguardando diagnóstico do Agente <span class="brand-ia">IA</span><span class="brand-n">n</span><br>
     <span style="font-size:11px">Os dados aparecem automaticamente após o pipeline de diagnóstico executar (23h)</span></div>`;
 
   // Sem leads carregados para a aba Diagnóstico (DIAGNOSTICO_LEADS, já filtrados pela loja) → mantém estado vazio
