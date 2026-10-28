@@ -1922,7 +1922,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       lastTime: l.hora||'', lastPreview: preview, status: l.status||'',
       _sort: (l.data||'')+'T'+(l.hora||''),
       origin: 'WhatsApp'+(l.loja?(' • '+l.loja):'')+(l.data?(' • '+new Date(l.data).toLocaleDateString('pt-BR')):''),
-      aiSummary: l.justificativa || null,
+      aiSummary: l.justificativa || l.intencao || null,
       telefone: l.telefone || 'Não informado',
       localizacao: l.localizacao || 'Não informado',
       temperatura: l.temperatura, score: l.score,
@@ -2157,11 +2157,16 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       lastRenderedThreadKey = key;
       if(msgs && msgs.length){
         const wasAtBottom = scroll.scrollTop + scroll.clientHeight >= scroll.scrollHeight - 40;
-        scroll.innerHTML = `<div class="oc-date-div">Histórico real · WhatsApp</div>` + msgs.map(m=>`
+        let _diaAnterior = '';
+        scroll.innerHTML = `<div class="oc-date-div">Histórico real · WhatsApp</div>` + msgs.map(m=>{
+          const _dia = m._ts ? new Date(m._ts).toLocaleDateString('pt-BR',{timeZone:'America/Recife'}) : '';
+          const _sep = (_dia && _dia!==_diaAnterior) ? `<div class="oc-date-div">${_dia}</div>` : '';
+          if(_dia) _diaAnterior = _dia;
+          return _sep + `
           <div class="oc-msg-row ${m.dir}">
             <div class="oc-bubble">${escHtml(m.text)}</div>
             <div class="oc-msg-meta">${m.dir==='out'?`<span class="oc-read-check">✓✓</span>`:''}<span>${m.time||''}</span></div>
-          </div>`).join('');
+          </div>`;}).join('');
         if(!silent || wasAtBottom) scroll.scrollTop = scroll.scrollHeight;
       } else if(!silent){
         scroll.innerHTML = `<div class="oc-empty-thread">
@@ -2239,7 +2244,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
         {k:'Orçamento estimado', v:c.pagamento || 'Não informado', icon:'bar-chart'},
         {k:'Troca de carro', v:c.veicAtual || 'Não informado', icon:'car'},
         {k:'Decisão de compra', v:c.decisao ? (c.decisao+(c.codDetalhe?' ('+c.codDetalhe+')':'')) : 'Não informado', icon:'file-text'},
-        {k:'Quer reservar', v:c.quer_reservar===true?'Sim':c.quer_reservar===false?'Não':'Não informado', icon:'tag'},
+        {k:'Urgência / reserva', v:c.quer_reservar||'Não informado', icon:'tag'},
         {k:'Unidade preferida', v:c.unidadePreferida || 'Não informado', icon:'map-pin'},
       ];
       document.getElementById('ocDetailList').innerHTML = rows.map(d=>`
@@ -2418,7 +2423,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     </div>
   </div>
   <div style="font-size:13px;color:var(--tx2);margin-bottom:24px;line-height:1.7;max-width:640px">
-    Horário humano: <strong style="color:var(--tx)">Seg–Sex 08h–19h</strong> · <strong style="color:var(--tx)">Sáb 08h–14h</strong> · <strong style="color:var(--red)">Dom fechado</strong>.
+    Horário humano: <strong style="color:var(--tx)">Seg–Sex 08h–18h</strong> · <strong style="color:var(--tx)">Sáb 08h–13h</strong> · <strong style="color:var(--red)">Dom fechado</strong>.
     Fora desses horários — incluindo madrugada, domingo e feriados — o <span class="brand-ia">IA</span><span class="brand-n">n</span> opera sozinho. Qualifica, responde e transfere leads que de outra forma perderiam o timing sem nenhuma resposta até o dia seguinte.
   </div>
   <div class="cob-grid">
@@ -3229,10 +3234,15 @@ const CONV_DATA = [
 
 // Volume de leads por hora (0-23)
 const HOUR_VOLUMES = [4,6,3,5,2,1,1,2,8,12,14,11,10,9,13,12,8,11,15,14,10,9,7,6];
-// Horário humano: seg-sex 08-19h, sab 08-14h, dom fechado
+// Data/hora sempre no fuso da loja (Recife). toISOString() é UTC e, depois das 21h,
+// já cai no dia seguinte — por isso não é usado para datas de lead.
+function _dataLocalISO(d){ return new Date(d).toLocaleDateString('en-CA',{timeZone:'America/Recife'}); }
+function _horaLocal(d){ return new Date(d).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Recife'}); }
+function _hojeLocal(){ return _dataLocalISO(new Date()); }
+// Horário humano (igual ao cadastrado para o IAn): seg-sex 08-18h, sab 08-13h, dom fechado
 function isHumanHour(h, dateStr){
-  if(dateStr){ const d=new Date(dateStr+'T12:00:00'); const dow=d.getDay(); if(dow===0) return false; if(dow===6) return h>=8&&h<14; }
-  return h>=8&&h<19;
+  if(dateStr){ const d=new Date(dateStr+'T12:00:00'); const dow=d.getDay(); if(dow===0) return false; if(dow===6) return h>=8&&h<13; }
+  return h>=8&&h<18;
 }
 
 // ============================================================
@@ -4337,8 +4347,9 @@ function renderCILeadList(){
   const gwm    = model===CI_OUTRO_MODELO ? null : CI_GWM_MODELS.find(m=>m.name===model);
   const matchesModel = m => {
     if(!model) return true;
-    if(model===CI_OUTRO_MODELO) return !CI_GWM_MODELS.some(gm=>(m||'').toLowerCase().includes(gm.name.toLowerCase()));
-    return (m||'').toLowerCase().includes(model.toLowerCase());
+    // Mesma regra dos cards de modelo (_modeloBateMarca entende apelidos, ex.: "h6" = Haval)
+    if(model===CI_OUTRO_MODELO) return !CI_GWM_MODELS.some(gm=>_modeloBateMarca(m, gm.name));
+    return _modeloBateMarca(m, model);
   };
   // "Não informado": pega os leads que continuam sem setor efetivo (nem gravado
   // pelo n8n, nem inferido por veículo de interesse — ver clSetorEfetivo).
@@ -4567,12 +4578,12 @@ function buildDiagnostico(){
 // ============================================================
 function buildCobertura(){
   const picker = document.getElementById('cobDayPicker');
-  if(picker && !picker.value) picker.value = new Date().toISOString().split('T')[0];
+  if(picker && !picker.value) picker.value = _hojeLocal();
   // Popula dropdown de meses a partir dos leads reais carregados
   const mp = document.getElementById('cobMonthPicker');
   if(mp){
     const months = [...new Set(ACTIVE_LEADS.map(l=>l.data?l.data.slice(0,7):null).filter(Boolean))].sort();
-    const curMonth = new Date().toISOString().slice(0,7);
+    const curMonth = _hojeLocal().slice(0,7);
     if(months.length === 0) months.push(curMonth);
     const ptBR = {1:'Janeiro',2:'Fevereiro',3:'Março',4:'Abril',5:'Maio',6:'Junho',7:'Julho',8:'Agosto',9:'Setembro',10:'Outubro',11:'Novembro',12:'Dezembro'};
     mp.innerHTML = months.map(m=>{
@@ -4610,9 +4621,9 @@ function cobRenderHourChart(gridId, labelsId, hourCounts, dateStr){
     if(dateStr){
       const d=new Date(dateStr+'T12:00:00'),dow=d.getDay();
       if(dow===0) human=false;
-      else if(dow===6) human=h>=8&&h<14;
-      else human=h>=8&&h<19;
-    } else { human=h>=8&&h<19; }
+      else if(dow===6) human=h>=8&&h<13;
+      else human=h>=8&&h<18;
+    } else { human=h>=8&&h<18; }
     const pct=Math.max(10,Math.round((v/max)*100));
     const col=v>0?(human?'var(--grn-l)':'var(--ac)'):'var(--bdr)';
     const div=document.createElement('div');
@@ -4630,7 +4641,7 @@ function cobRenderHourChart(gridId, labelsId, hourCounts, dateStr){
 
 function cobBuildDia(){
   const picker=document.getElementById('cobDayPicker');
-  const selDate=picker?picker.value:new Date().toISOString().split('T')[0];
+  const selDate=picker&&picker.value?picker.value:_hojeLocal();
   const title=document.getElementById('cobDiaTitle');
   if(title&&selDate){
     const d=new Date(selDate+'T12:00:00');
@@ -4648,7 +4659,7 @@ function cobBuildDia(){
 
 function cobBuildMes(){
   const picker=document.getElementById('cobMonthPicker');
-  const selMonth=picker?picker.value:new Date().toISOString().slice(0,7);
+  const selMonth=picker&&picker.value?picker.value:_hojeLocal().slice(0,7);
   const title=document.getElementById('cobMesTitle');
   if(title){
     const [y,m]=selMonth.split('-');
@@ -5767,11 +5778,13 @@ function buildPerguntas(l){
                : (l.carro_troca && l.carro_troca!=='a confirmar') ? l.carro_troca
                : l.tem_veiculo_troca===true  ? 'Sim'
                : l.tem_veiculo_troca===false ? 'Não' : null},
-    {num:'B3',tema:'Urgência real',       pergunta:'Quer que eu já separe esse para você enquanto vemos os detalhes?',
-      // quer_reservar é booleano no Supabase (true/false/null) — precisa virar Sim/Não
-      // explicitamente, senão "false" (recusou reservar) cai no "||null" e aparece como
-      // "não respondeu esta pergunta", mesmo bug que a resposta de B1 tinha.
-      resposta: l.quer_reservar===true ? 'Sim' : l.quer_reservar===false ? 'Não' : null},
+    // B3: com o carro disponível o IAn pergunta se pode separar (quer_reservar).
+    // Com o carro indisponível ele não pergunta — a urgência é a data do test drive (urgencia).
+    (l.quer_reservar===true || l.quer_reservar===false)
+      ? {num:'B3',tema:'Urgência real',   pergunta:'Quer que eu já separe esse para você enquanto vemos os detalhes?',
+          resposta: l.quer_reservar ? 'Sim' : 'Não'}
+      : {num:'B3',tema:'Urgência real',   pergunta:'Carro indisponível — urgência pelo test drive agendado',
+          resposta: l.urgencia||null},
     {num:'B4',tema:'Decisor',             pergunta:'Você costuma tomar esse tipo de decisão sozinho?',
       resposta: decideSozinho===true ? 'Decide sozinho' : decideSozinho===false ? 'Decide com outra pessoa' : null,
       detalhe:  decideSozinho===false ? (l.co_decisor||null) : null},
@@ -5836,8 +5849,8 @@ function mapLead(l){
     temperatura: !isPresencial ? calcTemperatura(scoreFinal) : (qualificavel && scoreFinal ? calcTemperatura(scoreFinal) : null),
     justificativa: l.justificativa_temperatura||l.justificativa||'',
     status:      getStatus(l),
-    hora:        l.atualizado_em?new Date(l.atualizado_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'',
-    data:        l.atualizado_em?l.atualizado_em.split('T')[0]:'',
+    hora:        l.atualizado_em?_horaLocal(l.atualizado_em):'',
+    data:        l.atualizado_em?_dataLocalISO(l.atualizado_em):'',
     modelo:      l.veiculo_interesse||'',
     setor:       l.setor||'',
     pagamento:   l.carteira_potencial>0?'R$ '+(l.carteira_potencial>=1000?Math.round(l.carteira_potencial/1000)+'k':l.carteira_potencial):'',
@@ -6054,8 +6067,8 @@ function calcCoberturaFromLeads(force){
     const h=parseInt((horaStr||'').split(':')[0]);
     if(isNaN(h)) return false;
     if(dow===0) return true;                      // Domingo: sempre fora
-    if(dow===6) return !(h>=8&&h<14);             // Sábado: 08h–14h
-    return !(h>=8&&h<19);                          // Seg–Sex: 08h–19h
+    if(dow===6) return !(h>=8&&h<13);             // Sábado: 08h–13h
+    return !(h>=8&&h<18);                          // Seg–Sex: 08h–18h
   }
   const fora=leadsDaLoja.filter(l=>isForaHorario(l.data,l.hora));
   const cobLeads=fora.length;
@@ -6128,8 +6141,8 @@ function localCheckinsAsLeads(){
         nome: r.nome||'', telefone: r.wa||'', canal:'presencial', loja: r.loja||'',
         score: r.score??null, temperatura: r.temperatura??null, justificativa: r.justificativa||'',
         status: ciGetStatus(r),
-        hora: r.dt?new Date(r.dt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'',
-        data: r.dt?r.dt.split('T')[0]:'',
+        hora: r.dt?_horaLocal(r.dt):'',
+        data: r.dt?_dataLocalISO(r.dt):'',
         modelo: r.modelos||'', setor: r.setor||'', pagamento:'', carteiraRaw:0,
         prazo:'', intencao: r.intencao||'',
         veicAtual: r.troca==='S'?'Possui veículo para troca':'Sem troca',
