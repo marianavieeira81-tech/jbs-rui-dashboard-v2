@@ -987,6 +987,31 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 .av-card .av-acts{display:flex;gap:8px;margin-top:10px}
 .av-card button{border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--s4);background:var(--s3);color:var(--tx)}
 .av-card button.av-ver{background:var(--ac);border-color:var(--ac);color:#111}
+.av-vend{margin-top:10px}
+.av-vlbl{font-size:11px;color:var(--tx2);margin-bottom:6px}
+.av-chips{display:flex;flex-wrap:wrap;gap:6px}
+.av-dono{font-size:12px;color:var(--grn-l)}
+/* [VENDEDOR_LEAD_31_10] tela Desempenho por Vendedor */
+.vd-top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:16px}
+.vd-top input[type=month]{background:var(--s2);color:var(--tx);border:1px solid var(--s4);border-radius:8px;padding:8px 10px;font:inherit;color-scheme:dark}
+.vd-resumo{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px}
+.vd-resumo .card{padding:14px 18px;min-width:180px;flex:1}
+.vd-resumo .k{font-size:11px;color:var(--tx2);text-transform:uppercase;letter-spacing:.06em}
+.vd-resumo .v{font-size:18px;font-weight:700;margin-top:4px}
+.vd-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.vd-tbl th{text-align:left;font-size:11px;color:var(--tx2);font-weight:600;padding:10px 12px;border-bottom:1px solid var(--bdr)}
+.vd-tbl td{padding:10px 12px;border-bottom:1px solid var(--bdr);vertical-align:top}
+.vd-tbl td.n{text-align:right;font-variant-numeric:tabular-nums}
+.vd-tbl th.n{text-align:right}
+.vd-det{margin-top:8px;display:none}
+.vd-det.open{display:block}
+.vd-lead{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:6px 0;border-top:1px dashed var(--bdr);font-size:12px}
+.vd-lead .s{color:var(--tx2)}
+.vd-lead button{border-radius:8px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--s4);background:var(--s3);color:var(--tx)}
+.vd-lead button.ok{border-color:var(--grn-l);color:var(--grn-l)}
+.vd-lead button.no{border-color:var(--red);color:var(--red)}
+.vd-ver{background:none;border:none;color:var(--ac);cursor:pointer;font-size:12px;padding:0}
+.vd-scroll{overflow-x:auto}
 @keyframes avIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.av-card{animation:none}}
 </style>
@@ -1211,6 +1236,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     </div>
     <div class="sb-group">
       <div class="sb-lbl">Vendedor</div>
+      <div class="sb-item" onclick="go('vendedores')"><i class="sb-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M17 5h3v2a3 3 0 0 1-3 3"/><path d="M7 5H4v2a3 3 0 0 0 3 3"/></svg></i>Desempenho por Vendedor</div>
       <div class="sb-item" onclick="go('checkin')"><i class="sb-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><path d="m9 13.5 2 2 4-4.5"/></svg></i>Check-in</div>
       <div class="sb-item" onclick="go('agenda')"><i class="sb-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M16 2.5v4M8 2.5v4M3 10h18"/></svg></i>Agenda - em construção 🚧</div>
       <div class="sb-item" onclick="go('omnichannel')"><i class="sb-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg></i>Multicanais - em construção 🚧</div>
@@ -2915,6 +2941,33 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   </div>
 </div>
 
+<!-- ============ DESEMPENHO POR VENDEDOR [VENDEDOR_LEAD_31_10] ============ -->
+<div id="p-vendedores" style="display:none">
+  <div class="topbar">
+    <div><div class="eye">Vendedor</div><h1>Desempenho por Vendedor</h1></div>
+    <div class="topbar-r">
+      <button class="btn-ref" onclick="vdCarregar()">↺ Atualizar</button>
+    </div>
+  </div>
+  <div class="vd-top">
+    <label for="vdMes" style="font-size:13px;color:var(--tx2)">Mês</label>
+    <input type="month" id="vdMes" onchange="vdCarregar()">
+    <span id="vdStatus" style="font-size:12px;color:var(--tx2)"></span>
+  </div>
+  <div class="vd-resumo" id="vdResumo"></div>
+  <div class="card" style="padding:0;overflow:hidden;margin-bottom:20px;">
+    <div class="vd-scroll">
+      <table class="vd-tbl">
+        <thead><tr><th>#</th><th>Vendedor</th><th class="n">Leads pegos</th><th class="n">Vendas</th><th class="n">Não vendeu</th><th class="n">Aguardando</th><th class="n">Taxa de venda</th></tr></thead>
+        <tbody id="vdBody"><tr><td colspan="7" style="color:var(--tx2)">Carregando…</td></tr></tbody>
+      </table>
+    </div>
+    <div style="padding:10px 16px;font-size:11px;color:var(--tx3);border-top:1px solid var(--bdr);">
+      Ordem: quem mais vendeu primeiro. "Leads pegos" = leads que o vendedor assumiu no mês (clicando no nome dele). "Aguardando" = ainda não foi marcado se vendeu — clique em "ver leads" para marcar.
+    </div>
+  </div>
+</div>
+
 <!-- ============ AGENDA ============ -->
 <div id="p-agenda" style="display:none">
   <div class="topbar">
@@ -3335,6 +3388,7 @@ function go(id){
   if(id==='transferencias') fetchTransferenciasData();
   if(id==='diagnostico'){ buildDiagnostico(); fetchDiagnosticoFromSupabase().then(buildDiagnostico); }
   if(id==='checkin') ciInit();
+  if(id==='vendedores') vdCarregar();
   if(id==='agenda') agInit();
   if(DR_TABS.includes(id)) drBuild(id);
 }
@@ -4528,6 +4582,14 @@ function updateOrbCount(){
 // registros antigos (de antes dessa mudança) continuam funcionando, só sem
 // vendedor/horário (aparecem como "não atribuído" na visão por vendedor).
 function getLeadState(nome){
+  // [VENDEDOR_LEAD_31_10] lead do WhatsApp com vendedor gravado no banco: vale o banco (mesmo em outro aparelho)
+  try{
+    const lb = (typeof ACTIVE_LEADS!=='undefined' && Array.isArray(ACTIVE_LEADS)) ? ACTIVE_LEADS.find(l=>l.nome===nome && l.vendedorResponsavel) : null;
+    if(lb) return {
+      state: lb.vendaStatus==='vendeu' ? 'cliente' : lb.vendaStatus==='nao_vendeu' ? 'nao-fechou' : 'atendendo',
+      vendedor: lb.vendedorResponsavel, atendido_em: lb.vendedorAssumiuEm||null
+    };
+  }catch(e){}
   const raw = localStorage.getItem('adtsa_lead_'+nome);
   if(!raw) return {state:'aguardando', vendedor:null, atendido_em:null};
   try{
@@ -4559,6 +4621,9 @@ function leadAttend(nome, vendedor){
   // chegar duplicado (ex: clique duplo, JS mais lento que o dedo).
   if(!vendedor) return;
   if(cooldownRestanteMin(vendedor)>0) return;
+  // [VENDEDOR_LEAD_31_10] lead do WhatsApp: grava no banco (trava + conta para o vendedor)
+  const _leadBanco = ACTIVE_LEADS.find(l=>l.nome===nome && (l.canal||'whatsapp')!=='presencial' && l.senderId);
+  if(_leadBanco){ vendedorAssumirLead(_leadBanco, vendedor); return; }
   setLeadState(nome,'atendendo',vendedor,new Date().toISOString());
   registrarCooldown(vendedor);
   const leadInfo = ACTIVE_LEADS.find(l=>l.nome===nome);
@@ -4566,6 +4631,9 @@ function leadAttend(nome, vendedor){
   refreshCurrentCIList();
 }
 function leadOutcome(nome,outcome){
+  // [VENDEDOR_LEAD_31_10] venda marcada no banco (entra no relatório do mês)
+  const _leadBanco = ACTIVE_LEADS.find(l=>l.nome===nome && l.vendedorResponsavel && l.senderId);
+  if(_leadBanco){ vendedorMarcarVenda(_leadBanco, outcome==='cliente' ? 'vendeu' : 'nao_vendeu'); return; }
   setLeadState(nome,outcome);
   refreshCurrentCIList();
 }
@@ -5619,6 +5687,126 @@ function registrarAtendimentoVendedor(vendedor, canal, leadNome, leadTelefone, c
 }
 
 // ============================================================
+// [VENDEDOR_LEAD_31_10] VENDEDOR ASSUME O LEAD / MARCA VENDA / RELATÓRIO DO MÊS
+// Tudo gravado no banco pelo n8n (função ian_vendedor_acao): o primeiro clique trava o
+// lead para aquele vendedor em todos os aparelhos; regra dos 15 min vale no servidor.
+// ============================================================
+const N8N_VENDEDOR_LEAD = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/vendedor-lead-mt';
+async function vendedorApi(campos){
+  try{
+    const res = await fetch(N8N_VENDEDOR_LEAD, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(Object.assign({token: authToken()}, campos))
+    });
+    if(res.status===401){ handleUnauthorized(); return {ok:false, motivo:'sessao'}; }
+    const data = await res.json().catch(()=>null);
+    return data || {ok:false, motivo:'erro'};
+  }catch(e){ return {ok:false, motivo:'erro'}; }
+}
+function vendedorAvisarResultado(r, vendedor){
+  if(r.ok) return;
+  if(r.motivo==='ja_assumido') transfToast(`Esse lead já foi assumido por ${r.vendedor}.`);
+  else if(r.motivo==='cooldown') transfToast(`${vendedor} só pode pegar outro lead em ${r.minutos} min.`);
+  else if(r.motivo==='sessao') transfToast('Sessão expirada — entre de novo.');
+  else transfToast('Não foi possível salvar agora. Tente de novo.');
+}
+function vendedorRedesenhar(){
+  try{ if(typeof refreshCurrentCIList==='function') refreshCurrentCIList(); }catch(e){}
+  try{ if(window._lcCurrentLead && document.getElementById('lcardOverlay')?.classList.contains('show')) openLeadCard(window._lcCurrentLead); }catch(e){}
+  try{ if(typeof avisoAtualizarCartoes==='function') avisoAtualizarCartoes(); }catch(e){}
+  try{ if(document.getElementById('p-vendedores')?.style.display==='block') vdCarregar(); }catch(e){}
+}
+async function vendedorAssumirLead(lead, vendedor){
+  if(!lead || !vendedor) return {ok:false};
+  if(!confirm(`Confirmar: ${vendedor} vai atender ${lead.nome||lead.telefone||'este lead'}?`)) return {ok:false, motivo:'cancelado'};
+  const r = await vendedorApi({acao:'assumir', sender_id: lead.senderId, vendedor});
+  if(r.ok){
+    lead.vendedorResponsavel = r.vendedor || vendedor; lead.vendedorAssumiuEm = new Date().toISOString(); lead.vendaStatus = null;
+    try{ registrarCooldown(vendedor); }catch(e){}
+    transfToast(`✓ ${vendedor} assumiu ${lead.nome||'o lead'}.`);
+  } else if(r.motivo==='ja_assumido'){
+    lead.vendedorResponsavel = r.vendedor;
+  }
+  if(r.motivo!=='cancelado') vendedorAvisarResultado(r, vendedor);
+  vendedorRedesenhar();
+  return r;
+}
+async function vendedorMarcarVenda(lead, status){
+  if(!lead) return;
+  const txt = status==='vendeu' ? 'VENDEU' : 'NÃO VENDEU';
+  if(!confirm(`Confirmar: ${lead.nome||'este lead'} — ${txt}?`)) return;
+  const r = await vendedorApi({acao:'venda', sender_id: lead.senderId, status});
+  if(r.ok){ lead.vendaStatus = status; transfToast(status==='vendeu' ? '✓ Venda registrada.' : 'Registrado como não vendeu.'); }
+  else vendedorAvisarResultado(r, lead.vendedorResponsavel||'');
+  vendedorRedesenhar();
+}
+
+// ── Tela "Desempenho por Vendedor": ranking do mês (vem pronto do banco) ──
+let _vdDados = null;
+function _vdEsc(s){ return String(s==null?'':s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function _vdMesAtual(){ return new Date().toLocaleDateString('en-CA',{timeZone:'America/Recife'}).slice(0,7); }
+function _vdMesNome(m){ try{ const [a,b]=m.split('-'); return new Date(+a, +b-1, 15).toLocaleDateString('pt-BR',{month:'long',year:'numeric'}); }catch(e){ return m; } }
+async function vdCarregar(){
+  const inp = document.getElementById('vdMes'); if(!inp) return;
+  if(!inp.value) inp.value = _vdMesAtual();
+  const st = document.getElementById('vdStatus'); if(st) st.textContent = 'Carregando…';
+  const r = await vendedorApi({acao:'relatorio', mes: inp.value});
+  if(!r.ok){
+    if(st) st.textContent = r.motivo==='sessao' ? 'Sessão expirada — entre de novo.' : 'Não foi possível carregar agora. Tente de novo em instantes.';
+    return;
+  }
+  _vdDados = r;
+  if(st) st.textContent = 'Atualizado às ' + new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Recife'});
+  vdDesenhar();
+}
+function vdDesenhar(){
+  const body = document.getElementById('vdBody'), res = document.getElementById('vdResumo');
+  if(!body || !_vdDados) return;
+  const lista = Array.isArray(_vdDados.vendedores) ? _vdDados.vendedores : [];
+  const tot = lista.reduce((a,v)=>({p:a.p+(+v.assumidos||0), v:a.v+(+v.vendas||0), g:a.g+(+v.aguardando||0)}), {p:0,v:0,g:0});
+  const mais = lista.length && (+lista[0].vendas||0) > 0 ? lista[0] : null;
+  const menos = lista.length > 1 ? lista[lista.length-1] : null;   // lista já vem do que mais vendeu ao que menos vendeu
+  if(res) res.innerHTML = `
+    <div class="card"><div class="k">${_vdEsc(_vdMesNome(_vdDados.mes))}</div><div class="v">${tot.v} venda${tot.v===1?'':'s'} · ${tot.p} lead${tot.p===1?'':'s'} pego${tot.p===1?'':'s'}</div></div>
+    <div class="card"><div class="k">Quem mais vendeu</div><div class="v">${mais ? `🥇 ${_vdEsc(mais.vendedor)} (${mais.vendas})` : '—'}</div></div>
+    <div class="card"><div class="k">Quem menos vendeu</div><div class="v">${menos && menos!==mais ? `${_vdEsc(menos.vendedor)} (${menos.vendas})` : '—'}</div></div>
+    <div class="card"><div class="k">Aguardando marcar venda</div><div class="v">${tot.g}</div></div>`;
+  if(!lista.length){ body.innerHTML = '<tr><td colspan="7" style="color:var(--tx2)">Nenhum vendedor cadastrado para esta loja.</td></tr>'; return; }
+  const medalha = ['🥇','🥈','🥉'];
+  body.innerHTML = lista.map((v,i)=>{
+    const pegos = +v.assumidos||0, vendas = +v.vendas||0;
+    const taxa = pegos ? Math.round(vendas*100/pegos)+'%' : '—';
+    const leads = Array.isArray(v.leads) ? v.leads : [];
+    const det = leads.map(l=>{
+      const quando = l.em ? new Date(l.em).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',timeZone:'America/Recife'}) : '';
+      const sit = l.situacao==='vendeu' ? '<span style="color:var(--grn-l)">✓ Vendeu</span>'
+                : l.situacao==='nao_vendeu' ? '<span style="color:var(--red)">✗ Não vendeu</span>'
+                : '<span class="s">Aguardando</span>';
+      const podeMarcar = l.sender_id && (l.canal||'whatsapp')==='whatsapp';
+      const btns = podeMarcar ? (l.situacao
+          ? `<button type="button" onclick="vdMarcar('${_vdEsc(l.sender_id)}','${l.situacao==='vendeu'?'nao_vendeu':'vendeu'}')">corrigir</button>`
+          : `<button type="button" class="ok" onclick="vdMarcar('${_vdEsc(l.sender_id)}','vendeu')">✓ Vendeu</button><button type="button" class="no" onclick="vdMarcar('${_vdEsc(l.sender_id)}','nao_vendeu')">✗ Não vendeu</button>`) : '';
+      return `<div class="vd-lead"><strong>${_vdEsc(l.nome||l.telefone||'Lead')}</strong><span class="s">${_vdEsc(quando)}${l.canal&&l.canal!=='whatsapp'?' · '+_vdEsc(l.canal):''}</span>${sit}${btns}</div>`;
+    }).join('');
+    return `<tr>
+      <td>${vendas>0 && i<3 ? medalha[i] : i+1}</td>
+      <td><strong>${_vdEsc(v.vendedor)}</strong>${leads.length?`<div><button type="button" class="vd-ver" onclick="this.closest('td').querySelector('.vd-det').classList.toggle('open')">ver leads (${leads.length})</button><div class="vd-det">${det}</div></div>`:''}</td>
+      <td class="n">${pegos}</td><td class="n">${vendas}</td><td class="n">${+v.nao_vendeu||0}</td><td class="n">${+v.aguardando||0}</td><td class="n">${taxa}</td>
+    </tr>`;
+  }).join('');
+}
+async function vdMarcar(senderId, status){
+  const lead = ACTIVE_LEADS.find(l=>l.senderId===senderId);
+  const nome = lead ? (lead.nome||senderId) : senderId;
+  if(!confirm(`Confirmar: ${nome} — ${status==='vendeu'?'VENDEU':'NÃO VENDEU'}?`)) return;
+  const r = await vendedorApi({acao:'venda', sender_id: senderId, status});
+  if(r.ok){ if(lead) lead.vendaStatus = status; transfToast(status==='vendeu' ? '✓ Venda registrada.' : 'Registrado como não vendeu.'); }
+  else vendedorAvisarResultado(r, '');
+  vdCarregar();
+  try{ if(typeof refreshCurrentCIList==='function') refreshCurrentCIList(); }catch(e){}
+}
+
+// ============================================================
 // LOGIN / SESSÃO — cada concessionária só enxerga os próprios dados
 // ============================================================
 // O navegador NUNCA guarda chave de Supabase de nenhuma concessionária.
@@ -5935,6 +6123,10 @@ function mapLead(l){
     // [AVISO_TRANSF_31_10] usados pelo aviso sonoro de lead transferido
     transferido:   l.transferido === true,
     transferidoEm: l.transferido_em || null,
+    // [VENDEDOR_LEAD_31_10] quem assumiu o lead e se vendeu (gravado no banco, igual em todos os aparelhos)
+    vendedorResponsavel: l.vendedor_responsavel || null,
+    vendedorAssumiuEm:   l.vendedor_assumiu_em || null,
+    vendaStatus:         l.venda_status || null,
     perguntas:   buildPerguntas(l)
   };
 }
@@ -7834,13 +8026,58 @@ function agRender(){
     card.innerHTML = `<h4>🔔 Lead transferido para o vendedor</h4>
       <p><strong>${esc(lead.nome||lead.telefone||'Lead')}</strong>${detalhes?` — ${esc(detalhes)}`:''}</p>
       <small>Transferido às ${esc(horaCurta(lead.transferidoEm))}${lead.telefone?` · ${esc(lead.telefone)}`:''}</small>
+      <div class="av-vend"></div>
       <div class="av-acts"><button type="button" class="av-ver">Ver lead</button><button type="button" class="av-ok">Fechar</button></div>`;
-    const fechar = ()=>{ card.remove(); naoVistos = Math.max(0, naoVistos-1); pararTitulo(); };
+    const fechar = ()=>{ card.remove(); delete cartoes[chave]; naoVistos = Math.max(0, naoVistos-1); pararTitulo(); };
     card.querySelector('.av-ver').onclick = ()=>{ try{ if(typeof openLeadCard==='function') openLeadCard(lead); }catch(e){} fechar(); };
     card.querySelector('.av-ok').onclick = fechar;
+    cartoes[chave] = { card, senderId: lead.senderId, nome: lead.nome };
+    desenharVendedores(card, lead);
     stack.prepend(card);
     naoVistos++; piscarTitulo();
   }
+
+  // [VENDEDOR_LEAD_31_10] nomes dos vendedores no aviso: quem clicar primeiro assume o lead
+  const cartoes = {};
+  function leadAtual(senderId, nome){
+    if(typeof ACTIVE_LEADS==='undefined' || !Array.isArray(ACTIVE_LEADS)) return null;
+    return ACTIVE_LEADS.find(l => (senderId && l.senderId===senderId) || (!senderId && l.nome===nome)) || null;
+  }
+  function desenharVendedores(card, lead){
+    const box = card.querySelector('.av-vend'); if(!box) return;
+    if(lead.vendedorResponsavel){
+      box.innerHTML = `<div class="av-dono">✅ Assumido por <strong>${esc(lead.vendedorResponsavel)}</strong></div>`;
+      return;
+    }
+    const nomes = (typeof getVendedores==='function') ? getVendedores() : [];
+    if(!nomes.length || !lead.senderId){ box.innerHTML=''; return; }
+    box.innerHTML = `<div class="av-vlbl">Quem vai atender? Clique no seu nome:</div><div class="av-chips">${
+      nomes.map((v,i)=>{
+        const rest = (typeof cooldownRestanteMin==='function') ? cooldownRestanteMin(v) : 0;
+        return rest>0
+          ? `<span class="filtro-cl-opt cooldown" title="Aguarde ${rest} min para assumir outro lead">${esc(v)} · ${rest}min</span>`
+          : `<span class="filtro-cl-opt" data-i="${i}" role="button" tabindex="0">${esc(v)}</span>`;
+      }).join('')}</div>`;
+    box.querySelectorAll('[data-i]').forEach(el => {
+      const v = nomes[+el.dataset.i];
+      const go = async () => {
+        const l = leadAtual(lead.senderId, lead.nome) || lead;
+        box.querySelectorAll('.filtro-cl-opt').forEach(c => c.style.pointerEvents='none');
+        await vendedorAssumirLead(l, v);
+        Object.assign(lead, { vendedorResponsavel: l.vendedorResponsavel });
+        desenharVendedores(card, lead);
+      };
+      el.onclick = go;
+      el.onkeydown = (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); go(); } };
+    });
+  }
+  // A cada atualização (30s): se outro vendedor pegou o lead em outro aparelho, o aviso mostra quem foi.
+  window.avisoAtualizarCartoes = function(){
+    Object.values(cartoes).forEach(c => {
+      const l = leadAtual(c.senderId, c.nome);
+      if(l) desenharVendedores(c.card, l);
+    });
+  };
 
   function notificacaoDoSistema(lead, chave){
     try{
@@ -7865,6 +8102,7 @@ function agRender(){
       const t = Date.parse(l.transferidoEm);
       return !vistos.includes(chaveDe(l)) && isFinite(t) && agora - t < JANELA_MS;
     }).sort((a,b) => Date.parse(a.transferidoEm) - Date.parse(b.transferidoEm));
+    window.avisoAtualizarCartoes();
     if(!novos.length) return;
     novos.forEach(l => { mostrarCartao(l, chaveDe(l)); notificacaoDoSistema(l, chaveDe(l)); vistos.push(chaveDe(l)); });
     gravarVistos(vistos);
