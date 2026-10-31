@@ -1726,6 +1726,28 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 </div>
 
 <script>
+/* [31/10] DADOS DO NAVEGADOR SEPARADOS POR LOJA — cada concessionária tem a própria "gaveta" neste navegador
+   (check-ins locais, fila local, etiquetas de lead, vendedores extras, agenda, filtros, aba aberta).
+   A GWM ADTSA continua usando as chaves antigas (o que já estava salvo continua sendo só dela);
+   as outras lojas usam chaves com o nome da loja na frente. */
+(function(){
+  if (window.__lsPorLoja) return; window.__lsPorLoja = true;
+  var P = Storage.prototype, _get = P.getItem, _set = P.setItem, _rem = P.removeItem;
+  var ESCOPO = /^(ci_registros|fila_local|adtsa_lead_|rui_vendedores_v1|rui_vendedor_cooldown_v1|rui_agenda_v1|rui_loja_filtro|rui_loja_fila_filtro|rui_modelo_filtro|rui_setor_filtro|rui_origem_cl_filtro|rui_aba_ativa)/;
+  function prefixo(){
+    try{
+      var s = JSON.parse(_get.call(window.localStorage, 'rui_session') || 'null');
+      var l = String((s && (s.loja_slug || s.concessionaria)) || '').toLowerCase().trim();
+      if(!l || l.indexOf('adtsa') >= 0) return '';
+      return 'loja:' + l.replace(/[^a-z0-9]+/g, '-') + ':';
+    }catch(e){ return ''; }
+  }
+  window._lsPrefixoLoja = prefixo;
+  function chave(st, key){ key = String(key); return (st === window.localStorage && ESCOPO.test(key)) ? prefixo() + key : key; }
+  P.getItem    = function(key){ return _get.call(this, chave(this, key)); };
+  P.setItem    = function(key, v){ return _set.call(this, chave(this, key), v); };
+  P.removeItem = function(key){ return _rem.call(this, chave(this, key)); };
+})();
 /* ============================================================
    CENTRAL OMNICHANNEL — lógica isolada em IIFE (não polui o escopo
    global do app; só expõe window.ocOnOpen, chamado por go()/refresh()).
@@ -6775,10 +6797,11 @@ function buildFilaTransferencias(){
 // ============================================================
 function getVendedorStats(vendedor){
   let totalWA=0, clienteWA=0;
+  const _pfxLead = ((typeof window._lsPrefixoLoja==='function') ? window._lsPrefixoLoja() : '') + 'adtsa_lead_'; // [31/10] só as etiquetas da loja logada
   for(let i=0;i<localStorage.length;i++){
     const key=localStorage.key(i);
-    if(!key || key.indexOf('adtsa_lead_')!==0) continue;
-    const info=getLeadState(key.slice('adtsa_lead_'.length));
+    if(!key || key.indexOf(_pfxLead)!==0) continue;
+    const info=getLeadState(key.slice(_pfxLead.length));
     if(info.vendedor===vendedor){
       totalWA++;
       if(info.state==='cliente') clienteWA++;
