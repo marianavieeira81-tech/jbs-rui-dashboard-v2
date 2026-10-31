@@ -973,6 +973,22 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   .oc-kpi-item{padding:8px 16px;border-right:none;border-bottom:1px solid var(--bdr);}
   .oc-btn span{display:none;}
 }
+/* [AVISO_TRANSF_31_10] aviso de lead transferido */
+.av-bell{position:fixed;right:16px;bottom:16px;z-index:9998;display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;border:1px solid var(--ac-d);background:var(--s2);color:var(--tx);font:600 12px/1 inherit;cursor:pointer;box-shadow:var(--sh)}
+.av-bell:hover{border-color:var(--ac)}
+.av-bell.off{border-color:var(--s4);color:var(--tx2)}
+.av-bell .av-dot{width:8px;height:8px;border-radius:50%;background:var(--grn-l)}
+.av-bell.off .av-dot{background:var(--tx3)}
+.av-stack{position:fixed;top:16px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:10px;width:min(360px,calc(100vw - 32px))}
+.av-card{background:var(--s2);border:1px solid var(--ac);border-left:4px solid var(--ac);border-radius:var(--rsm);padding:14px 16px;box-shadow:var(--sh-md);color:var(--tx);animation:avIn .25s ease-out}
+.av-card h4{margin:0 0 4px;font-size:13px;color:var(--ac-l);display:flex;align-items:center;gap:6px}
+.av-card p{margin:0;font-size:13px;line-height:1.4}
+.av-card small{display:block;margin-top:4px;color:var(--tx2);font-size:11px}
+.av-card .av-acts{display:flex;gap:8px;margin-top:10px}
+.av-card button{border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--s4);background:var(--s3);color:var(--tx)}
+.av-card button.av-ver{background:var(--ac);border-color:var(--ac);color:#111}
+@keyframes avIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.av-card{animation:none}}
 </style>
 </head>
 <body>
@@ -5916,6 +5932,9 @@ function mapLead(l){
     // Colunas mantidas por gatilho no Supabase (ver reincidenteBadge). Ausentes => null => sem etiqueta.
     qtdConversas: l.qtd_conversas ?? null,
     qtdCheckins:  l.qtd_visitas_presenciais ?? null,
+    // [AVISO_TRANSF_31_10] usados pelo aviso sonoro de lead transferido
+    transferido:   l.transferido === true,
+    transferidoEm: l.transferido_em || null,
     perguntas:   buildPerguntas(l)
   };
 }
@@ -6247,6 +6266,7 @@ function refreshDashKpis(){
 
 async function atualizarDashboard(){
   await fetchAllData();
+  try{ if(typeof avisoVerificarTransferencias==='function') avisoVerificarTransferencias(); }catch(e){ console.warn('[AVISO_TRANSF]', e); }
   await fetchFilaData();
   await fetchTransferenciasData();
   buildTable();
@@ -7743,6 +7763,140 @@ function agRender(){
   });
   container.innerHTML=html;
 }
+</script>
+<!-- [AVISO_TRANSF_31_10] aviso com som quando o IAn transfere um lead para o vendedor -->
+<div class="av-stack" id="avStack" aria-live="polite"></div>
+<button class="av-bell" id="avBell" type="button" onclick="avisoAlternarSom()" title="Som de aviso quando um lead for transferido"><span class="av-dot"></span><span id="avBellTxt">🔔 Aviso de lead: ligado</span></button>
+<script>
+(function(){
+  // Lead transferido = transferido true + horário da transferência. Cada transferência avisa uma vez só
+  // (fica guardada neste navegador). O WhatsApp do vendedor continua sendo tentado normalmente pelo n8n.
+  const JANELA_MS = 12*60*60*1000;          // só avisa transferências das últimas 12h
+  const PREF_SOM = 'ian_aviso_transf_som';   // '0' = desligado
+  let audioCtx = null, piscarTimer = null, tituloOriginal = document.title, naoVistos = 0;
+
+  function chaveVistos(){
+    const s = (typeof getSession==='function' && getSession()) || {};
+    return 'ian_aviso_transf_vistos:' + String(s.loja_slug || s.concessionaria || 'loja').toLowerCase();
+  }
+  function lerVistos(){ try{ const v = JSON.parse(localStorage.getItem(chaveVistos())||'null'); return Array.isArray(v) ? v : null; }catch(e){ return null; } }
+  function gravarVistos(lista){ try{ localStorage.setItem(chaveVistos(), JSON.stringify(lista.slice(-400))); }catch(e){} }
+  function somLigado(){ try{ return localStorage.getItem(PREF_SOM)!=='0'; }catch(e){ return true; } }
+
+  // O navegador só libera som depois de um clique na página — destrava no primeiro clique.
+  function destravarAudio(){
+    try{
+      if(!audioCtx){ const AC = window.AudioContext || window.webkitAudioContext; if(AC) audioCtx = new AC(); }
+      if(audioCtx && audioCtx.state==='suspended') audioCtx.resume();
+    }catch(e){}
+  }
+  document.addEventListener('pointerdown', destravarAudio, {passive:true});
+  document.addEventListener('keydown', destravarAudio);
+
+  function tocarSom(){
+    if(!somLigado()) return;
+    destravarAudio();
+    if(!audioCtx) return;
+    const t0 = audioCtx.currentTime + 0.02;
+    // "ding-dong" duas vezes
+    [[0,880],[0.22,660],[0.75,880],[0.97,660]].forEach(([dt,freq])=>{
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type='sine'; o.frequency.value=freq;
+      g.gain.setValueAtTime(0.0001, t0+dt);
+      g.gain.exponentialRampToValueAtTime(0.35, t0+dt+0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0+dt+0.45);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(t0+dt); o.stop(t0+dt+0.5);
+    });
+  }
+
+  function piscarTitulo(){
+    if(piscarTimer) return;
+    let alt = false;
+    piscarTimer = setInterval(()=>{
+      alt = !alt;
+      document.title = alt ? `(${naoVistos}) 🔔 Lead transferido` : tituloOriginal;
+    }, 1200);
+  }
+  function pararTitulo(){
+    if(naoVistos>0) return;
+    clearInterval(piscarTimer); piscarTimer=null; document.title = tituloOriginal;
+  }
+
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+  function horaCurta(iso){ try{ return new Date(iso).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Recife'}); }catch(e){ return ''; } }
+
+  function mostrarCartao(lead, chave){
+    const stack = document.getElementById('avStack'); if(!stack) return;
+    const card = document.createElement('div');
+    card.className = 'av-card'; card.setAttribute('role','alert');
+    const detalhes = [lead.modelo, lead.temperatura ? `${lead.temperatura}${lead.score?` · ${lead.score} pts`:''}` : ''].filter(Boolean).join(' · ');
+    card.innerHTML = `<h4>🔔 Lead transferido para o vendedor</h4>
+      <p><strong>${esc(lead.nome||lead.telefone||'Lead')}</strong>${detalhes?` — ${esc(detalhes)}`:''}</p>
+      <small>Transferido às ${esc(horaCurta(lead.transferidoEm))}${lead.telefone?` · ${esc(lead.telefone)}`:''}</small>
+      <div class="av-acts"><button type="button" class="av-ver">Ver lead</button><button type="button" class="av-ok">Fechar</button></div>`;
+    const fechar = ()=>{ card.remove(); naoVistos = Math.max(0, naoVistos-1); pararTitulo(); };
+    card.querySelector('.av-ver').onclick = ()=>{ try{ if(typeof openLeadCard==='function') openLeadCard(lead); }catch(e){} fechar(); };
+    card.querySelector('.av-ok').onclick = fechar;
+    stack.prepend(card);
+    naoVistos++; piscarTitulo();
+  }
+
+  function notificacaoDoSistema(lead, chave){
+    try{
+      if(!('Notification' in window) || Notification.permission!=='granted') return;
+      const n = new Notification('IAn · Lead transferido', { body: `${lead.nome||lead.telefone||'Lead'}${lead.modelo?' — '+lead.modelo:''}`, tag: chave });
+      n.onclick = ()=>{ window.focus(); try{ if(typeof openLeadCard==='function') openLeadCard(lead); }catch(e){} n.close(); };
+    }catch(e){}
+  }
+
+  window.avisoVerificarTransferencias = function(){
+    if(typeof DATA_MODE!=='undefined' && DATA_MODE==='demo') return;
+    if(typeof ACTIVE_LEADS==='undefined' || !Array.isArray(ACTIVE_LEADS)) return;
+    const agora = Date.now();
+    const transferidos = ACTIVE_LEADS.filter(l => l && l.transferido && l.transferidoEm && (l.canal||'whatsapp')!=='presencial');
+    const chaveDe = l => `${l.senderId||l.telefone}|${l.transferidoEm}`;
+    let vistos = lerVistos();
+    if(vistos===null){                       // 1ª vez neste navegador: só registra, não avisa o que já é antigo
+      gravarVistos(transferidos.map(chaveDe));
+      return;
+    }
+    const novos = transferidos.filter(l => {
+      const t = Date.parse(l.transferidoEm);
+      return !vistos.includes(chaveDe(l)) && isFinite(t) && agora - t < JANELA_MS;
+    }).sort((a,b) => Date.parse(a.transferidoEm) - Date.parse(b.transferidoEm));
+    if(!novos.length) return;
+    novos.forEach(l => { mostrarCartao(l, chaveDe(l)); notificacaoDoSistema(l, chaveDe(l)); vistos.push(chaveDe(l)); });
+    gravarVistos(vistos);
+    tocarSom();
+  };
+
+  function atualizarBotao(){
+    const b = document.getElementById('avBell'), t = document.getElementById('avBellTxt'); if(!b||!t) return;
+    const on = somLigado();
+    b.classList.toggle('off', !on);
+    t.textContent = on ? '🔔 Aviso de lead: ligado' : '🔕 Aviso de lead: desligado';
+  }
+  window.avisoAlternarSom = function(){
+    let on = somLigado();
+    // 1º clique com o aviso ligado: pede permissão de notificação do computador e toca o som de teste
+    if(on && 'Notification' in window && Notification.permission==='default'){
+      destravarAudio(); tocarSom();
+      try{ Notification.requestPermission(); }catch(e){}
+      return;
+    }
+    try{ localStorage.setItem(PREF_SOM, on ? '0' : '1'); }catch(e){}
+    on = !on;
+    atualizarBotao();
+    if(on){
+      destravarAudio(); tocarSom();         // toca uma vez para confirmar que o som funciona
+      try{ if('Notification' in window && Notification.permission==='default') Notification.requestPermission(); }catch(e){}
+    }
+  };
+  atualizarBotao();
+  // Some com o botão na tela de login
+  setInterval(()=>{ const b=document.getElementById('avBell'); const ov=document.getElementById('loginOverlay'); if(b) b.style.display = (ov && ov.style.display==='flex') ? 'none' : 'flex'; }, 1000);
+})();
 </script>
 </body>
 </html>
