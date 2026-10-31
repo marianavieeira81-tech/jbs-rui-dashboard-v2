@@ -3523,7 +3523,7 @@ async function ciSave(){
   saveBtn.disabled = true;
   saveBtn.textContent = 'Enviando...';
 
-  const WH = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/checkin-presencial';
+  const WH = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/checkin-presencial-mt';
   const payload = JSON.stringify({
     token:               authToken(),
     nome:                nome,
@@ -5175,6 +5175,13 @@ function openLeadCard(lead){
         </div>
       `).join('')}
     </div>
+    <!-- CARRO DE TROCA — o que o cliente contou (ano, km, quitação...) [30/10] -->
+    ${buildTrocaSectionHTML(lead)}
+    <!-- FOTOS E DOCUMENTOS — o que o cliente mandou no WhatsApp (pasta privada, link de 15 min) [30/10] -->
+    <div class="lcard-section" id="lc-midias-section" style="display:none">
+      <div class="lcard-section-title">Fotos e documentos<span id="lc-midias-count" style="color:var(--ac);font-weight:700"></span></div>
+      <div id="lc-midias-body" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px"></div>
+    </div>
     <!-- HISTÓRICO DE CONVERSAS — seção ÚNICA de histórico do lead. Preenchida de forma
          assíncrona logo abaixo: timeline de episódios de contato quando existem; senão,
          cai no histórico compacto antigo (leads_historico) dentro desta mesma seção. -->
@@ -5202,6 +5209,7 @@ function openLeadCard(lead){
   // A timeline vem colapsada (só a conversa mais recente + "+ N conversas
   // anteriores"), expande ao clicar.
   const senderIdConv = lead.senderId || lead.telefone;
+  carregarMidiasLead(senderIdConv); // [30/10] fotos e documentos do lead
   // Atualiza a etiqueta de reincidente do cabeçalho e o contador da seção a
   // partir do total real de conversas (reforço para quando o banco ainda não
   // tem a coluna qtd_conversas — a contagem verdadeira vem do endpoint de
@@ -5509,13 +5517,13 @@ const ENDPOINTS = {
   //            distribuicaoScore: {frios, mornos, engajados, quentes, premium} }
   // }
   production: {
-    dashboard: 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/adtsa-dashboard-data',
-    fila:      'https://n8n-n8n.lrdyzi.easypanel.host/webhook/adtsa-fila-espera',
-    estoque:   'https://n8n-n8n.lrdyzi.easypanel.host/webhook/adtsa-estoque'
+    dashboard: 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/adtsa-dashboard-data-mt',
+    fila:      'https://n8n-n8n.lrdyzi.easypanel.host/webhook/adtsa-fila-espera-mt',
+    estoque:   'https://n8n-n8n.lrdyzi.easypanel.host/webhook/adtsa-estoque-mt'
   }
 };
 
-const N8N_CHAT_HISTORY  = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/adtsa-chat-history';
+const N8N_CHAT_HISTORY  = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/adtsa-chat-history-mt';
 const N8N_LOGIN         = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/rui-login';
 const N8N_LOGOUT        = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/rui-logout';
 // Cadastro de interesse (quem quer se tornar cliente do Rui) — endpoint ainda NÃO
@@ -5524,18 +5532,18 @@ const N8N_LOGOUT        = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/rui-log
 // erro com um link de WhatsApp pra não perder o lead — ver submitCadastroInteresse().
 const N8N_CADASTRO_INTERESSE = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/rui-cadastro-interesse';
 const WHATSAPP_COMERCIAL = '5581995090483';
-const N8N_LEADS_QUERY   = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/rui-leads-query';
+const N8N_LEADS_QUERY   = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/rui-leads-query-mt';
 const N8N_FILA_QUERY    = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/rui-fila-query';
-const N8N_HISTORICO_QUERY = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/rui-leads-historico-query';
+const N8N_HISTORICO_QUERY = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/rui-leads-historico-query-mt';
 // Histórico de CONVERSAS (episódios de contato, cada um delimitado por 48h de
 // silêncio) — mesma autenticação Bearer do endpoint acima. Alimenta a timeline
 // "Histórico de conversas" dentro do card do lead. Se o fluxo ainda não estiver
 // ativo/respondendo GET no n8n, a seção simplesmente não aparece (ver fetchLeadConversas).
-const N8N_CONVERSAS_QUERY = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/rui-leads-conversas-query';
+const N8N_CONVERSAS_QUERY = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/rui-leads-conversas-query-mt';
 // Fluxo "rui-fila-adicionar" (16/07) — grava de verdade na fila_espera do Supabase.
 // Enquanto ela não importar/ativar esse fluxo no n8n, a chamada abaixo falha
 // silenciosamente e o botão cai no fallback local (ver filaAddFromCheckin).
-const N8N_FILA_ADICIONAR = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/adicionar-fila-espera';
+const N8N_FILA_ADICIONAR = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/adicionar-fila-espera-mt';
 // Fila de Transferências (11/08) — lê/grava a tabela transferencias_humano no Supabase.
 // Endpoints ainda NÃO existem no n8n (dependem do node "registrar evento" que já
 // grava rui_eventos hoje). Enquanto ela não importar/ativar esses 2 fluxos, a
@@ -5554,7 +5562,7 @@ const REFRESH_INTERVAL_MS = 30000;
 // se o endpoint ainda não existir ou falhar — a atribuição em si (localStorage/
 // Supabase de leads/transferências_humano, conforme o canal) continua sendo a
 // fonte real que o dashboard usa hoje; esta chamada é só uma cópia pro histórico.
-const N8N_ATENDIMENTO_REGISTRAR = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/registrar-atendimento-vendedor';
+const N8N_ATENDIMENTO_REGISTRAR = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/registrar-atendimento-vendedor-mt';
 function registrarAtendimentoVendedor(vendedor, canal, leadNome, leadTelefone, convertido, atendidoEm){
   try{
     fetch(N8N_ATENDIMENTO_REGISTRAR, {
@@ -5791,7 +5799,9 @@ function buildPerguntas(l){
     {num:'G2',tema:'Unidade preferida',   pergunta:'Em qual das nossas unidades você deseja nos visitar?',
       // unidade_preferida é o campo dedicado a essa resposta (G2); loja/loja_slug/unidade
       // continuam como fallback só para leads antigos que não tinham esse campo ainda.
-      resposta: l.unidade_preferida||l.loja||l.loja_slug||l.unidade||null},
+      // [FIX_30_10_UNIDADE] no multiloja "loja" guarda o código da loja (ex.: "adtsa") — só vale como
+      // unidade se for uma das unidades cadastradas; senão a pergunta aparece como ainda sem resposta.
+      resposta: l.unidade_preferida||[l.loja,l.loja_slug,l.unidade].find(v=>v&&LOJAS.some(u=>String(u).toLowerCase()===String(v).toLowerCase()))||null},
   ];
 }
 
@@ -5860,6 +5870,7 @@ function mapLead(l){
     veicAtual:   l.tem_veiculo_troca
                    ? ('Possui veículo para troca'+(l.carro_troca&&l.carro_troca!=='a confirmar'?': '+l.carro_troca:''))
                    : 'Sem troca',
+    trocaDetalhes: (l.carro_troca_detalhes && typeof l.carro_troca_detalhes==='object') ? l.carro_troca_detalhes : null, // [TROCA_30_10]
     decisao:     l.decide_sozinho!=null?(l.decide_sozinho?'Decide sozinho':'Decide com outra pessoa'):'',
     codDetalhe:  l.co_decisor||'',
     localizacao: l.localizacao||'',
@@ -7025,7 +7036,149 @@ async function drFetchLeads(tabId,from,to){
   }catch(e){console.warn('[RuiAI] drFetchLeads:',e);}
 }
 
+// ============================================================
+// [MT] LISTAS POR LOJA — unidades, modelos e vendedores vêm do cadastro
+// da loja de quem fez login (endereço ian-mt-config-loja). Se o endereço
+// falhar, o painel continua com as listas padrão escritas acima.
+// As listas são trocadas "por dentro" (mesmo array), então todo o resto
+// do painel que já usa LOJAS / GWM_MODELOS / CI_GWM_MODELS /
+// VENDEDORES_FIXOS passa a enxergar a lista da loja sem outra mudança.
+// ============================================================
+
+// ── [30/10] CARRO DE TROCA + FOTOS E DOCUMENTOS no card do lead ─────────────
+const N8N_MIDIAS_LEAD = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/ian-mt-midias-lead';
+function buildTrocaSectionHTML(lead){
+  const t = lead.trocaDetalhes;
+  if(!t || !Object.keys(t).some(k => !['atualizado_em','fotos'].includes(k))) return '';
+  const linha = (k, v) => (v===undefined||v===null||v==='') ? '' : `<div class="lcard-row"><div class="lcard-key">${k}</div><div class="lcard-val">${_escHtml(v)}</div></div>`;
+  const km = t.km ? (Number(t.km) ? Number(t.km).toLocaleString('pt-BR') + ' km' : t.km) : '';
+  const ano = t.ano || (t.ano_aprox ? t.ano_aprox + ' (aprox., pela foto)' : '');
+  const quit = t.quitacao ? ({quitado:'Quitado', financiado:'Financiado', consorcio:'Consórcio'}[String(t.quitacao).toLowerCase()] || t.quitacao) : '';
+  return `<div class="lcard-section">
+    <div class="lcard-section-title">Carro de troca</div>
+    ${linha('Veículo', [t.marca, t.modelo, t.versao].filter(Boolean).join(' '))}
+    ${linha('Ano', ano)}${linha('Quilometragem', km)}${linha('Cor', t.cor)}
+    ${linha('Câmbio', t.cambio)}${linha('Combustível', t.combustivel)}${linha('Situação', quit)}
+    ${linha('Único dono', t.unico_dono===true?'Sim':t.unico_dono===false?'Não':'')}
+    ${linha('Estado', t.estado)}${linha('Observações', t.observacoes)}
+    ${linha('Fotos enviadas', t.fotos ? t.fotos + ' (veja em Fotos e documentos)' : '')}
+    <div style="font-size:11px;color:var(--tx3);font-style:italic;margin-top:6px">Informado pelo cliente na conversa — confirmar na avaliação.</div>
+  </div>`;
+}
+async function carregarMidiasLead(senderId){
+  const sec = document.getElementById('lc-midias-section'), body = document.getElementById('lc-midias-body');
+  if(!sec || !body || !senderId) return;
+  try{
+    const res = await authFetch(`${N8N_MIDIAS_LEAD}?sender=${encodeURIComponent(String(senderId).replace(/\D/g,''))}`, { method:'GET' });
+    if(!res.ok) return;
+    const data = await res.json();
+    const lista = (data && Array.isArray(data.midias)) ? data.midias : [];
+    if(!lista.length) return;
+    const ROTULO = { carro:'Carro', peca:'Peça', print:'Print', documento:'Documento', nao_automotivo:'Outro assunto', ilegivel:'Ilegível' };
+    body.innerHTML = lista.map(m => {
+      const quando = m.criado_em ? new Date(m.criado_em).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
+      const ehImagem = String(m.mimetype||'').startsWith('image/') || m.tipo_mensagem === 'image';
+      const doc = m.categoria === 'documento';
+      const titulo = (ROTULO[m.categoria] || 'Arquivo') + (m.subtipo ? ' · ' + m.subtipo : '');
+      const legenda = doc ? [m.dados && m.dados.tipo ? String(m.dados.tipo).toUpperCase() : '', m.dados && m.dados.nome_titular ? m.dados.nome_titular : ''].filter(Boolean).join(' — ') : (m.descricao || '');
+      const miniatura = (ehImagem && !doc && m.url)
+        ? `<img src="${_escHtml(m.url)}" alt="${_escHtml(titulo)}" loading="lazy" style="width:100%;height:90px;object-fit:cover;border-radius:6px;display:block">`
+        : `<div style="height:90px;border-radius:6px;background:var(--bg2,rgba(255,255,255,.04));display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--tx2);text-align:center;padding:6px">${doc ? '🔒 Documento' : (m.tipo_mensagem==='video' ? '🎬 Vídeo' : '📄 Arquivo')}</div>`;
+      const abre = m.url ? `href="${_escHtml(m.url)}" target="_blank" rel="noopener"` : '';
+      return `<a ${abre} title="${_escHtml(legenda)}" style="text-decoration:none;color:inherit;border:1px solid var(--bdr);border-radius:8px;padding:6px;display:block">
+        ${miniatura}
+        <div style="font-size:11px;font-weight:700;margin-top:5px;color:var(--ac)">${_escHtml(titulo)}</div>
+        <div style="font-size:10px;color:var(--tx3);margin-top:2px;max-height:28px;overflow:hidden">${_escHtml(legenda)}</div>
+        <div style="font-size:10px;color:var(--tx3);margin-top:2px">${quando}</div>
+      </a>`;
+    }).join('');
+    const cnt = document.getElementById('lc-midias-count'); if(cnt) cnt.textContent = ` · ${lista.length}`;
+    sec.style.display = '';
+  }catch(e){
+    if(e && e.message === 'sessao-expirada') return;
+    console.warn('[MT] fotos e documentos indisponíveis', e);
+  }
+}
+const N8N_CONFIG_LOJA = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/ian-mt-config-loja';
+const _MT_ICONE_PADRAO = (CI_GWM_MODELS[0] && CI_GWM_MODELS[0].ico) || '';
+const _MT_CORES = ['#D4AF37','#00A065','#E11D48','#6090FF','#A855F7','#F97316','#14B8A6','#EC4899'];
+function _mtTrocar(arr, novos){ arr.splice(0, arr.length, ...novos); }
+function _mtLista(v){ return Array.isArray(v) ? v.filter(x => x != null && String(x).trim() !== '').map(x => String(x).trim()) : []; }
+function _mtPreencherSelect(sel, primeiraOpcao, lista, anteriores){
+  const atual = sel.value;
+  // opções que não são unidade/modelo (ex.: "Presencial" na fila) são mantidas no fim
+  const extras = Array.from(sel.options).slice(1).filter(o => !(anteriores || []).includes(o.value)).map(o => o.outerHTML).join('');
+  sel.innerHTML = primeiraOpcao + lista.map(v => `<option value="${_escHtml(v)}">${_escHtml(v)}</option>`).join('') + extras;
+  if([...sel.options].some(o => o.value === atual)) sel.value = atual;
+}
+function aplicarConfigLoja(cfg){
+  if(!cfg || typeof cfg !== 'object') return;
+  const unidades   = _mtLista(cfg.unidades);
+  const modelos    = _mtLista(cfg.modelos_painel);
+  const vendedores = _mtLista(cfg.vendedores_painel);
+
+  if(unidades.length){
+    const lojasAnteriores = LOJAS.slice();
+    _mtTrocar(LOJAS, unidades);
+    document.querySelectorAll('select.loja-select, select.loja-select-fila')
+      .forEach(sel => _mtPreencherSelect(sel, '<option value="todas">Todas as lojas</option>', LOJAS, lojasAnteriores));
+    ['ci-loja','ag-loja'].forEach(id => {
+      const sel = document.getElementById(id);
+      if(sel) _mtPreencherSelect(sel, '<option value="">Selecione a loja</option>', LOJAS, lojasAnteriores);
+    });
+    if(selectedLoja !== 'todas' && !LOJAS.includes(selectedLoja)){
+      selectedLoja = 'todas';
+      try{ localStorage.setItem('rui_loja_filtro', 'todas'); }catch(e){}
+      document.querySelectorAll('select.loja-select').forEach(sel => { sel.value = 'todas'; });
+    }
+  }
+
+  if(modelos.length){
+    const anteriores = CI_GWM_MODELS.slice();
+    const modelosAnteriores = GWM_MODELOS.slice();
+    _mtTrocar(GWM_MODELOS, modelos);
+    _mtTrocar(CI_GWM_MODELS, modelos.map((nome, i) => {
+      const igual = anteriores.find(m => String(m.name).toLowerCase() === nome.toLowerCase());
+      if(igual) return igual;
+      const cor = _MT_CORES[i % _MT_CORES.length];
+      return { name: nome, color: cor, bg: `rgba(${_hexParaRgb(cor)},.07)`, bdr: `rgba(${_hexParaRgb(cor)},.25)`, ico: _MT_ICONE_PADRAO };
+    }));
+    document.querySelectorAll('select.modelo-select')
+      .forEach(sel => _mtPreencherSelect(sel, '<option value="todos">Todos os modelos</option>', GWM_MODELOS, modelosAnteriores));
+    if(selectedModelo !== 'todos' && !GWM_MODELOS.includes(selectedModelo)){
+      selectedModelo = 'todos';
+      try{ localStorage.setItem('rui_modelo_filtro', 'todos'); }catch(e){}
+      document.querySelectorAll('select.modelo-select').forEach(sel => { sel.value = 'todos'; });
+    }
+  }
+
+  if(vendedores.length){
+    _mtTrocar(VENDEDORES_FIXOS, vendedores);
+    try{ ciRenderVendedorTags(); }catch(e){}
+  }
+
+  try{ initFiltroCL(); }catch(e){}
+  try{ if(typeof atualizarDashboard === 'function') atualizarDashboard(); }catch(e){}
+}
+let _mtConfigPromessa = null;
+function carregarConfigLoja(){
+  if(_mtConfigPromessa) return _mtConfigPromessa;
+  _mtConfigPromessa = (async () => {
+    try{
+      const res = await authFetch(N8N_CONFIG_LOJA, { method: 'GET' });
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      aplicarConfigLoja(data && (data.loja || data));
+    }catch(e){
+      if(e && e.message === 'sessao-expirada'){ _mtConfigPromessa = null; return; }
+      console.warn('[MT] configuração da loja indisponível — mantendo listas padrão', e);
+    }
+  })();
+  return _mtConfigPromessa;
+}
+
 function startDashboard(){
+  carregarConfigLoja();
   const s=getSession();
   const tenantEl=document.getElementById('sbConcessionaria');
   if(tenantEl) tenantEl.textContent = (s&&s.concessionaria) ? s.concessionaria : '';
