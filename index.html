@@ -706,6 +706,34 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 .btn-ag-cancel:hover{border-color:var(--s4);color:var(--tx);}
 .btn-ag-save{background:linear-gradient(135deg,var(--ac),var(--ac-d));color:#000;border:none;padding:10px 24px;border-radius:var(--rsm);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;}
 .btn-ag-save:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(212,175,55,.3);}
+.btn-ag-save:disabled{opacity:.6;cursor:wait;transform:none;}
+/* [AGENDA_TD_31_10] */
+.ag-tabs{flex-wrap:wrap;}
+.ag-card{cursor:pointer;align-items:flex-start;}
+.ag-hora-box{min-width:62px;text-align:center;font-family:'DM Mono',monospace;font-size:18px;font-weight:700;color:var(--ac);padding-top:2px;flex-shrink:0;}
+.ag-linha{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--tx2);margin-top:4px;align-items:center;}
+.ag-linha .ag-phone-link{margin:0;display:inline-flex;}
+.ag-meta-txt{color:var(--tx3);}
+.ag-origem{font-size:11px;color:var(--tx3);margin-top:5px;}
+.ag-st{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:20px;border:1px solid;vertical-align:middle;margin-left:4px;white-space:nowrap;}
+.ag-btn{background:var(--s2);border:1px solid var(--bdr);color:var(--tx2);padding:6px 11px;border-radius:var(--rsm);font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .18s;white-space:nowrap;}
+.ag-btn:hover{background:var(--s3);color:var(--tx);}
+.ag-btn-pri{background:linear-gradient(135deg,var(--ac),var(--ac-d));color:#000;border:none;}
+.ag-btn-ok{border-color:rgba(0,160,101,.3);color:var(--grn-l);background:var(--grn-bg);}
+.ag-btn-warn{border-color:rgba(249,115,22,.3);color:#F97316;}
+.ag-btn-del{border-color:rgba(225,29,72,.25);color:var(--red);background:none;}
+.ag-actions{max-width:260px;}
+.ag-hint{font-size:11px;color:var(--tx3);margin-top:6px;}
+.ag-opc{font-weight:400;text-transform:none;letter-spacing:0;color:var(--tx3);}
+.ag-erro{color:var(--red);font-size:12px;font-weight:600;min-height:16px;}
+.ag-foot{font-size:11px;color:var(--tx3);margin-top:18px;text-align:center;}
+@media (max-width:760px){
+  .ag-kpis{grid-template-columns:repeat(2,1fr);}
+  .ag-card{flex-wrap:wrap;padding:14px 16px;gap:12px;}
+  .ag-actions{max-width:none;width:100%;justify-content:flex-start;}
+  .ag-modal-box{width:calc(100vw - 32px);}
+  .ag-row2{grid-template-columns:1fr;}
+}
 .ag-done-badge{font-size:10px;font-weight:700;background:var(--grn-bg);color:var(--grn-l);border:1px solid rgba(0,160,101,.2);padding:3px 10px;border-radius:20px;display:inline-block;margin-left:6px;}
 
 /* ============================================================
@@ -1238,7 +1266,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       <div class="sb-lbl">Vendedor</div>
       <div class="sb-item" onclick="go('vendedores')"><i class="sb-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M17 5h3v2a3 3 0 0 1-3 3"/><path d="M7 5H4v2a3 3 0 0 0 3 3"/></svg></i>Desempenho por Vendedor</div>
       <div class="sb-item" onclick="go('checkin')"><i class="sb-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><path d="m9 13.5 2 2 4-4.5"/></svg></i>Check-in</div>
-      <div class="sb-item" onclick="go('agenda')"><i class="sb-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M16 2.5v4M8 2.5v4M3 10h18"/></svg></i>Agenda - em construção 🚧</div>
+      <div class="sb-item" onclick="go('agenda')"><i class="sb-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M16 2.5v4M8 2.5v4M3 10h18"/></svg></i>Agenda</div>
       <div class="sb-item" onclick="go('omnichannel')"><i class="sb-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg></i>Multicanais - em construção 🚧</div>
     </div>
   </div>
@@ -2970,8 +2998,9 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 
 <!-- ============ AGENDA ============ -->
 <div id="p-agenda" style="display:none">
+  <!-- [AGENDA_TD_31_10] agenda de test drive — dados do banco (o IAn marca na conversa; o vendedor confirma, marca presença, remarca ou cancela aqui) -->
   <div class="topbar">
-    <div><div class="eye">Agendamentos</div><h1>Agenda de Visitas & Test Drives</h1></div>
+    <div><div class="eye">Agendamentos</div><h1>Agenda de Test Drive</h1></div>
     <div class="topbar-r">
       <select class="loja-select" onchange="setLojaFilter(this.value)">
         <option value="todas">Todas as lojas</option>
@@ -2979,86 +3008,74 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
         <option value="Parnamirim">Parnamirim</option>
         <option value="Caruaru">Caruaru</option>
       </select>
-      <button class="btn-ag-new" onclick="agOpenModal()">＋ Novo Agendamento</button>
+      <button class="btn-ag-new" onclick="agOpenModal()">＋ Agendar test drive</button>
     </div>
   </div>
 
-  <!-- KPIs -->
   <div class="ag-kpis">
-    <div class="ag-kpi"><div class="ag-kpi-val" id="ag-k-total">0</div><div class="ag-kpi-lbl">Total agendados</div></div>
     <div class="ag-kpi"><div class="ag-kpi-val" id="ag-k-hoje">0</div><div class="ag-kpi-lbl">Hoje</div></div>
-    <div class="ag-kpi"><div class="ag-kpi-val" id="ag-k-semana">0</div><div class="ag-kpi-lbl">Esta semana</div></div>
-    <div class="ag-kpi"><div class="ag-kpi-val" id="ag-k-done">0</div><div class="ag-kpi-lbl">Concluídos</div></div>
+    <div class="ag-kpi"><div class="ag-kpi-val" id="ag-k-semana">0</div><div class="ag-kpi-lbl">Próximos 7 dias</div></div>
+    <div class="ag-kpi"><div class="ag-kpi-val" id="ag-k-confirmar">0</div><div class="ag-kpi-lbl">A confirmar</div></div>
+    <div class="ag-kpi"><div class="ag-kpi-val" id="ag-k-comparec">—</div><div class="ag-kpi-lbl">Compareceram no mês</div></div>
   </div>
 
-  <!-- Filtros -->
-  <div class="ag-tabs">
-    <button class="ag-tab active" onclick="agFilter('todos',this)">Todos</button>
-    <button class="ag-tab" onclick="agFilter('visita',this)">🏪 Visitas</button>
-    <button class="ag-tab" onclick="agFilter('testdrive',this)">🏍️ Test Drives</button>
-    <button class="ag-tab" onclick="agFilter('pendentes',this)">⏳ Pendentes</button>
-    <button class="ag-tab" onclick="agFilter('concluidos',this)">✅ Concluídos</button>
+  <div class="ag-tabs" id="ag-tabs">
+    <button class="ag-tab active" data-f="hoje" onclick="agFilter('hoje',this)">Hoje</button>
+    <button class="ag-tab" data-f="semana" onclick="agFilter('semana',this)">Próximos 7 dias</button>
+    <button class="ag-tab" data-f="mes" onclick="agFilter('mes',this)">Este mês</button>
+    <button class="ag-tab" data-f="confirmar" onclick="agFilter('confirmar',this)">A confirmar</button>
+    <button class="ag-tab" data-f="anteriores" onclick="agFilter('anteriores',this)">Anteriores</button>
   </div>
 
-  <!-- Lista -->
   <div class="ag-list" id="ag-list"></div>
+  <div class="ag-foot">Os test drives marcados pelo IAn na conversa aparecem aqui sozinhos. A página atualiza a cada 30 segundos.</div>
 </div>
 
-<!-- Modal novo agendamento -->
-<div class="ag-modal-bg" id="agModalBg">
-  <div class="ag-modal-box">
+<!-- Modal agendar / remarcar test drive -->
+<div class="ag-modal-bg" id="agModalBg" onclick="if(event.target===this)agCloseModal()">
+  <div class="ag-modal-box" role="dialog" aria-modal="true" aria-labelledby="ag-modal-title">
     <div class="ag-modal-head">
-      <div class="ag-modal-title">Novo Agendamento</div>
-      <div class="ag-modal-sub">Registre visita ou test drive de um lead do WhatsApp</div>
-      <button class="ag-modal-close" onclick="agCloseModal()">✕</button>
+      <div class="ag-modal-title" id="ag-modal-title">Agendar test drive</div>
+      <div class="ag-modal-sub" id="ag-modal-sub">Escolha o lead, o dia, o horário e a unidade</div>
+      <button class="ag-modal-close" onclick="agCloseModal()" aria-label="Fechar">✕</button>
     </div>
     <div class="ag-modal-body">
-      <div class="ag-field">
-        <div class="ag-field-label">Tipo de agendamento</div>
-        <div class="ag-type-opts">
-          <button class="ag-type-opt sel-visita" id="ag-opt-visita" onclick="agSelectType('visita')">🏪 Visita</button>
-          <button class="ag-type-opt" id="ag-opt-testdrive" onclick="agSelectType('testdrive')">🏍️ Test Drive</button>
-        </div>
-      </div>
-      <div class="ag-field">
-        <div class="ag-field-label">Nome do lead</div>
-        <input class="ag-input" id="ag-nome" list="ag-leads-list" placeholder="Ex: Carlos Menezes" autocomplete="off"/>
+      <div class="ag-field" id="ag-f-lead">
+        <div class="ag-field-label">Lead</div>
+        <input class="ag-input" id="ag-nome" list="ag-leads-list" placeholder="Digite o nome ou o telefone" autocomplete="off" oninput="agLeadEscolhido()"/>
         <datalist id="ag-leads-list"></datalist>
-      </div>
-      <div class="ag-field">
-        <div class="ag-field-label">Loja</div>
-        <select class="ag-input" id="ag-loja">
-          <option value="">Selecione a loja</option>
-          <option value="Boa Viagem">Boa Viagem</option>
-          <option value="Parnamirim">Parnamirim</option>
-          <option value="Caruaru">Caruaru</option>
-        </select>
+        <div class="ag-hint" id="ag-lead-hint">Todo test drive fica ligado a um lead. Cliente que chegou na loja sem cadastro: faça o check-in primeiro.</div>
       </div>
       <div class="ag-row2">
         <div class="ag-field">
-          <div class="ag-field-label">Data</div>
+          <div class="ag-field-label">Dia</div>
           <input class="ag-input" id="ag-data" type="date"/>
         </div>
         <div class="ag-field">
           <div class="ag-field-label">Horário</div>
-          <input class="ag-input" id="ag-hora" type="time" value="10:00"/>
+          <input class="ag-input" id="ag-hora" type="time" step="1800" value="10:00"/>
         </div>
       </div>
-      <div class="ag-field">
-        <div class="ag-field-label">Modelo de interesse</div>
-        <input class="ag-input" id="ag-modelo" placeholder="Ex: BMW X5 2023" autocomplete="off"/>
+      <div class="ag-field" id="ag-f-unidade">
+        <div class="ag-field-label">Unidade</div>
+        <div class="ci-chips" id="ag-unidades"></div>
       </div>
       <div class="ag-field">
-        <div class="ag-field-label">WhatsApp do lead</div>
-        <input class="ag-input" id="ag-phone" type="tel" placeholder="(81) 99999-9999"/>
+        <div class="ag-field-label">Carro do test drive</div>
+        <input class="ag-input" id="ag-modelo" placeholder="Ex.: Haval H6" autocomplete="off"/>
+      </div>
+      <div class="ag-field" id="ag-f-quem">
+        <div class="ag-field-label">Quem está marcando <span class="ag-opc">(opcional)</span></div>
+        <div class="ci-chips" id="ag-quem"></div>
       </div>
       <div class="ag-field">
-        <div class="ag-field-label">Observações <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--tx3)">(opcional)</span></div>
-        <input class="ag-input" id="ag-notes" placeholder="Ex: cliente prefere tarde, já fez orçamento…"/>
+        <div class="ag-field-label">Observação <span class="ag-opc">(opcional)</span></div>
+        <input class="ag-input" id="ag-notes" maxlength="300" placeholder="Ex.: vem com a esposa, quer testar na estrada"/>
       </div>
+      <div class="ag-erro" id="ag-erro" role="alert"></div>
       <div class="ag-modal-actions">
         <button class="btn-ag-cancel" onclick="agCloseModal()">Cancelar</button>
-        <button class="btn-ag-save" onclick="agSave()">Agendar →</button>
+        <button class="btn-ag-save" id="ag-salvar" onclick="agSave()">Salvar →</button>
       </div>
     </div>
   </div>
@@ -3098,6 +3115,7 @@ function setLojaFilter(v){
 // setLojaFilter quanto por setModeloFilter, já que os dois se combinam (E lógico).
 function refreshAllTabsForFilters(){
   buildTable();
+  try{ if(document.getElementById('p-agenda')?.style.display==='block') agRender(); }catch(e){}
   buildFunil();
   buildFunilPresencial();
   buildDiagnostico();
@@ -4420,6 +4438,7 @@ function waHiCardHTML(l, idx){
         ${(l.telefone||'').replace(/\D/g,'')?`<a href="https://wa.me/55${(l.telefone||'').replace(/\D/g,'')}" target="_blank" rel="noopener" class="ptag wa" style="margin-top:0;text-decoration:none;">WhatsApp</a>`:`<span class="ptag wa" style="margin-top:0;">WhatsApp</span>`}
         <span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;color:${tempColor(l.temperatura)};border:1px solid ${tempColor(l.temperatura)}44;background:${tempColor(l.temperatura)}1a;">${l.score}/100 · ${l.temperatura}</span>
         ${reincidenteBadge(l)}
+        ${tdBadge(l)}
         ${statusHtml}
       </div>
     </div>
@@ -5244,6 +5263,7 @@ function openLeadCard(lead){
     <span style="font-size:11px;font-weight:700;padding:2px 9px;border-radius:4px;background:${lead.status==='Transferido'?'rgba(212,175,55,.12)':lead.status==='Encerrado'?'var(--red-bg)':'rgba(30,80,200,.12)'};color:${stCol}">${lead.status}</span>
     <span style="font-size:11px;padding:2px 9px;border-radius:4px;background:${isHuman?'var(--grn-bg)':'rgba(212,175,55,.08)'};color:${isHuman?'var(--grn-l)':'var(--ac)'};font-weight:600">${isHuman?'Horário humano':'Fora do horário'}</span>
     ${reincidenteBadge(lead)}
+    ${tdBadge(lead)}
   `;
   document.getElementById('lc-body').innerHTML=`
     <!-- SCORE -->
@@ -5281,6 +5301,8 @@ function openLeadCard(lead){
         </div>
       `).join('')}
     </div>
+    <!-- TEST DRIVE [AGENDA_TD_31_10] -->
+    ${buildTestDriveSectionHTML(lead)}
     <!-- CARRO DE TROCA — o que o cliente contou (ano, km, quitação...) [30/10] -->
     ${buildTrocaSectionHTML(lead)}
     <!-- FOTOS E DOCUMENTOS — o que o cliente mandou no WhatsApp (pasta privada, link de 15 min) [30/10] -->
@@ -6127,6 +6149,13 @@ function mapLead(l){
     vendedorResponsavel: l.vendedor_responsavel || null,
     vendedorAssumiuEm:   l.vendedor_assumiu_em || null,
     vendaStatus:         l.venda_status || null,
+    // [AGENDA_TD_31_10] test drive marcado pelo IAn ou pelo painel
+    unidadePreferida: l.unidade_preferida || null,
+    testDrive: (l.test_drive_data || l.test_drive_status) ? {
+      data: l.test_drive_data ? String(l.test_drive_data).slice(0,10) : null, hora: l.test_drive_hora || null,
+      modelo: l.test_drive_modelo || null, unidade: l.test_drive_unidade || null, status: l.test_drive_status || null,
+      pedido: l.test_drive_pedido || null, obs: l.test_drive_obs || null,
+      atualizadoPor: l.test_drive_atualizado_por || null, registradoEm: l.test_drive_registrado_em || null } : null,
     perguntas:   buildPerguntas(l)
   };
 }
@@ -7759,201 +7788,300 @@ function closeDiagModal(){
 }
 
 // ============================================================
-// AGENDA — VISITAS & TEST DRIVES
+// [AGENDA_TD_31_10] AGENDA DE TEST DRIVE
+// Fonte: campos test_drive_* do lead (banco). O IAn grava quando confirma
+// na conversa; aqui o vendedor confirma, marca presença, remarca ou cancela
+// pelo mesmo endereço do vendedor (vendedor-lead-mt → ian_vendedor_acao).
 // ============================================================
-const AG_KEY = 'rui_agenda_v1';
-let agFilter_current = 'todos';
-let agSelectedType = 'visita';
+const AG_STATUS = {
+  a_confirmar:    { txt:'A confirmar',     cor:'#EAB308' },
+  agendado:       { txt:'Agendado',        cor:'#60A5FA' },
+  confirmado:     { txt:'Confirmado',      cor:'#22C55E' },
+  compareceu:     { txt:'Compareceu',      cor:'#10B981' },
+  nao_compareceu: { txt:'Não compareceu',  cor:'#F97316' },
+  cancelado:      { txt:'Cancelado',       cor:'#EF4444' }
+};
+let agFilter_current = 'hoje';
+let agEditando = null;      // senderId do lead quando é remarcação
+let agUnidadeSel = '';
+let agQuemSel = '';
+let agTimer = null;
 
-function agLoad(){ try{ return JSON.parse(localStorage.getItem(AG_KEY)||'[]'); }catch(e){ return []; } }
-function agSaveAll(arr){ localStorage.setItem(AG_KEY, JSON.stringify(arr)); }
+function _agHojeISO(){ return _dataLocalISO(new Date()); }
+function _agMaisDias(iso, n){ const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0,10); }
+function _agFmtDia(iso, opts){ return new Date(iso + 'T12:00:00').toLocaleDateString('pt-BR', opts || {weekday:'long', day:'2-digit', month:'2-digit'}); }
+function _agTel(l){ return String(l.telefone || l.senderId || '').replace(/\D/g,''); }
+function _agTelFmt(t){ const d = t.replace(/^55/, ''); return d.length >= 10 ? `(${d.slice(0,2)}) ${d.slice(2, d.length-4)}-${d.slice(-4)}` : t; }
+
+// Leads com test drive (agendado ou pedido "a confirmar"), já filtrados pela loja do topo
+function agLeads(){
+  return (ACTIVE_LEADS || []).filter(l => l && l.testDrive && (l.testDrive.data || l.testDrive.status === 'a_confirmar'))
+    .filter(l => matchLoja(l.testDrive.unidade || l.loja || ''));
+}
+function agStatusDe(l){
+  const td = l.testDrive || {};
+  if(td.status && AG_STATUS[td.status]) return td.status;
+  return td.data ? 'agendado' : 'a_confirmar';
+}
 
 function agInit(){
   agPopulateLeadsList();
-  // data default = hoje
-  const today = new Date();
-  today.setMinutes(today.getMinutes()-today.getTimezoneOffset());
-  const el = document.getElementById('ag-data');
-  if(el && !el.value) el.value = today.toISOString().slice(0,10);
   agRender();
+  if(!agTimer) agTimer = setInterval(() => {
+    if(document.getElementById('p-agenda')?.style.display === 'block' && !document.getElementById('agModalBg')?.classList.contains('show')) agRender();
+  }, 30000);
 }
 
 function agPopulateLeadsList(){
   const dl = document.getElementById('ag-leads-list');
   if(!dl) return;
-  const names = ALL_LEADS_NAMES || [];
-  dl.innerHTML = names.map(n=>`<option value="${n}">`).join('');
+  dl.innerHTML = (ACTIVE_LEADS || []).filter(l => l && l.senderId)
+    .map(l => `<option value="${_escHtml(l.nome || 'Cliente')} · ${_escHtml(_agTelFmt(_agTel(l)))}"></option>`).join('');
 }
-
-function agOpenModal(){
-  agSelectedType = 'visita';
-  document.getElementById('ag-opt-visita').className='ag-type-opt sel-visita';
-  document.getElementById('ag-opt-testdrive').className='ag-type-opt';
-  document.getElementById('ag-nome').value='';
-  document.getElementById('ag-loja').value='';
-  document.getElementById('ag-modelo').value='';
-  document.getElementById('ag-phone').value='';
-  document.getElementById('ag-notes').value='';
-  document.getElementById('ag-hora').value='10:00';
-  const today = new Date();
-  today.setMinutes(today.getMinutes()-today.getTimezoneOffset());
-  document.getElementById('ag-data').value = today.toISOString().slice(0,10);
-  // tenta preencher modelo se nome bater com um lead
-  document.getElementById('ag-nome').addEventListener('input', agAutoFillModelo, {once:false});
-  document.getElementById('agModalBg').classList.add('show');
+function agAcharLeadPeloTexto(txt){
+  const t = String(txt || '').trim().toLowerCase();
+  if(!t) return null;
+  const dig = t.replace(/\D/g,'');
+  return (ACTIVE_LEADS || []).find(l => l && l.senderId && (
+    `${(l.nome || 'cliente').toLowerCase()} · ${_agTelFmt(_agTel(l)).toLowerCase()}` === t ||
+    (dig.length >= 8 && _agTel(l).endsWith(dig.slice(-8))))) || null;
 }
-
-function agAutoFillModelo(){
-  const nome = document.getElementById('ag-nome').value.trim();
+function agLeadEscolhido(){
+  const l = agAcharLeadPeloTexto(document.getElementById('ag-nome').value);
   const modeloEl = document.getElementById('ag-modelo');
-  if(!modeloEl.value){
-    const all = agGetAllLeadData();
-    const found = all.find(l=>l.nome===nome);
-    if(found) modeloEl.value = found.modelo||'';
+  if(l){
+    if(!modeloEl.value) modeloEl.value = (l.testDrive && l.testDrive.modelo) || l.modelo || '';
+    const un = (l.testDrive && l.testDrive.unidade) || l.unidadePreferida || '';
+    if(un && LOJAS.includes(un)) agEscolherUnidade(un);
   }
 }
 
-function agGetAllLeadData(){
-  if(typeof ALL_LEADS_NAMES==='undefined') return [];
-  return ALL_LEADS_NAMES.map((nome,i)=>({nome, modelo:(typeof buildLeadData==='function'?buildLeadData(nome,LEAD_SCORES[i]||50,i).modelo:'')}));
+function agChipsHTML(lista, sel, fn){
+  return lista.map(v => `<div class="ci-chip${v === sel ? ' sel-gold' : ''}" data-val="${_escHtml(v)}" onclick="${fn}(this.dataset.val)">${_escHtml(v)}</div>`).join('');
+}
+function agEscolherUnidade(v){ agUnidadeSel = v; document.getElementById('ag-unidades').innerHTML = agChipsHTML(LOJAS, agUnidadeSel, 'agEscolherUnidade'); }
+function agEscolherQuem(v){ agQuemSel = agQuemSel === v ? '' : v; document.getElementById('ag-quem').innerHTML = agChipsHTML(VENDEDORES_FIXOS, agQuemSel, 'agEscolherQuem'); }
+
+function agOpenModal(senderId){
+  const l = senderId ? (ACTIVE_LEADS || []).find(x => x.senderId === senderId) : null;
+  const td = (l && l.testDrive) || {};
+  agEditando = l ? l.senderId : null;
+  agPopulateLeadsList();
+  document.getElementById('ag-modal-title').textContent = l ? (td.data ? 'Remarcar test drive' : 'Agendar test drive') : 'Agendar test drive';
+  document.getElementById('ag-modal-sub').textContent = l ? `${l.nome || 'Cliente'} · ${_agTelFmt(_agTel(l))}` : 'Escolha o lead, o dia, o horário e a unidade';
+  document.getElementById('ag-f-lead').style.display = l ? 'none' : '';
+  document.getElementById('ag-nome').value = '';
+  document.getElementById('ag-modelo').value = td.modelo || (l && l.modelo) || '';
+  document.getElementById('ag-notes').value = td.obs || '';
+  document.getElementById('ag-hora').value = td.hora || '10:00';
+  document.getElementById('ag-data').min = _agHojeISO();
+  let _agSug = _agMaisDias(_agHojeISO(), 1);
+  if(new Date(_agSug + 'T12:00:00').getDay() === 0) _agSug = _agMaisDias(_agSug, 1); // domingo a loja não abre
+  document.getElementById('ag-data').value = td.data && td.data >= _agHojeISO() ? td.data : _agSug;
+  document.getElementById('ag-erro').textContent = '';
+  agUnidadeSel = td.unidade || (l && l.unidadePreferida && LOJAS.includes(l.unidadePreferida) ? l.unidadePreferida : '') || (LOJAS.length === 1 ? LOJAS[0] : '');
+  agEscolherUnidade(agUnidadeSel);
+  document.getElementById('ag-f-unidade').style.display = LOJAS.length > 1 ? '' : 'none';
+  agQuemSel = '';
+  document.getElementById('ag-f-quem').style.display = VENDEDORES_FIXOS.length ? '' : 'none';
+  agEscolherQuem('');
+  document.getElementById('agModalBg').classList.add('show');
+  setTimeout(() => document.getElementById(l ? 'ag-data' : 'ag-nome')?.focus(), 50);
+}
+function agCloseModal(){ document.getElementById('agModalBg').classList.remove('show'); agEditando = null; }
+
+const AG_ERROS = {
+  sessao: 'Sessão expirada — entre de novo.',
+  data: 'Confira o dia e o horário.',
+  data_fora: 'Escolha um dia de hoje até 4 meses para frente.',
+  loja_fechada: 'A loja não abre nesse dia. Escolha outro dia.',
+  hora_passou: 'Esse horário de hoje já passou.',
+  unidade: 'Escolha a unidade.',
+  lead_nao_encontrado: 'Lead não encontrado. Atualize a página e tente de novo.',
+  sem_agendamento: 'Esse lead ainda não tem dia e horário. Use "Agendar".'
+};
+function agMsgErro(r){
+  if(r && r.motivo === 'fora_horario') return `Nesse dia a loja funciona das ${r.abre} às ${r.fecha}. O último test drive começa 1 hora antes de fechar.`;
+  return AG_ERROS[r && r.motivo] || 'Não foi possível salvar agora. Tente de novo.';
+}
+function agAtualizarLocal(senderId, campos){
+  (ACTIVE_LEADS || []).forEach(l => { if(l.senderId === senderId) l.testDrive = Object.assign({}, l.testDrive || {}, campos); });
 }
 
-function agCloseModal(){
-  document.getElementById('agModalBg').classList.remove('show');
-}
-
-function agSelectType(t){
-  agSelectedType = t;
-  document.getElementById('ag-opt-visita').className = 'ag-type-opt'+(t==='visita'?' sel-visita':'');
-  document.getElementById('ag-opt-testdrive').className = 'ag-type-opt'+(t==='testdrive'?' sel-testdrive':'');
-}
-
-function agSave(){
-  const nome = document.getElementById('ag-nome').value.trim();
-  const loja = document.getElementById('ag-loja').value;
+async function agSave(){
+  const erro = document.getElementById('ag-erro');
+  erro.textContent = '';
+  let senderId = agEditando;
+  if(!senderId){
+    const l = agAcharLeadPeloTexto(document.getElementById('ag-nome').value);
+    if(!l){ erro.textContent = 'Escolha um lead da lista (digite o nome ou o telefone).'; return; }
+    senderId = l.senderId;
+  }
   const data = document.getElementById('ag-data').value;
   const hora = document.getElementById('ag-hora').value;
-  if(!nome){ showToast('Informe o nome do lead'); return; }
-  if(!loja){ showToast('Informe a loja'); return; }
-  if(!data){ showToast('Informe a data'); return; }
-  const arr = agLoad();
-  arr.push({
-    id: Date.now(),
-    tipo: agSelectedType,
-    nome,
-    loja,
-    data,
-    hora,
-    modelo: document.getElementById('ag-modelo').value.trim(),
-    phone: document.getElementById('ag-phone').value.trim(),
-    notes: document.getElementById('ag-notes').value.trim(),
-    done: false,
-    criado: new Date().toISOString()
-  });
-  agSaveAll(arr);
+  if(!data || !hora){ erro.textContent = 'Informe o dia e o horário.'; return; }
+  if(LOJAS.length > 1 && !agUnidadeSel){ erro.textContent = 'Escolha a unidade.'; return; }
+  const dados = { data, hora, unidade: agUnidadeSel || null,
+    modelo: document.getElementById('ag-modelo').value.trim(), obs: document.getElementById('ag-notes').value.trim() };
+  const btn = document.getElementById('ag-salvar');
+  btn.disabled = true; btn.textContent = 'Salvando…';
+  const r = await vendedorApi({ acao:'agenda_salvar', sender_id: senderId, vendedor: agQuemSel || null, mes: JSON.stringify(dados) });
+  btn.disabled = false; btn.textContent = 'Salvar →';
+  if(!r || !r.ok){ erro.textContent = agMsgErro(r); return; }
+  agAtualizarLocal(senderId, { data: r.data || data, hora: r.hora || hora, unidade: r.unidade || dados.unidade, modelo: dados.modelo || null,
+    obs: dados.obs || null, status: 'agendado', atualizadoPor: agQuemSel || 'Painel' });
   agCloseModal();
-  agRender();
-  showToast('Agendamento registrado');
+  agRender(); agRedesenharCard(senderId);
+  transfToast(`Test drive salvo: ${_agFmtDia(data, {weekday:'short', day:'2-digit', month:'2-digit'})} às ${hora}.`);
 }
 
-function agMarkDone(id){
-  const arr = agLoad().map(a=>a.id===id?{...a,done:true}:a);
-  agSaveAll(arr);
-  agRender();
-  showToast('Agendamento concluído');
+async function agMudarStatus(senderId, status){
+  if(status === 'cancelado' && !confirm('Cancelar este test drive?')) return;
+  const r = await vendedorApi({ acao:'agenda_status', sender_id: senderId, status });
+  if(!r || !r.ok){ transfToast(agMsgErro(r)); return; }
+  agAtualizarLocal(senderId, { status, atualizadoPor: 'Painel' });
+  agRender(); agRedesenharCard(senderId);
+  transfToast(`Test drive: ${AG_STATUS[status].txt}.`);
 }
-
-function agDelete(id){
-  if(!confirm('Remover este agendamento?')) return;
-  agSaveAll(agLoad().filter(a=>a.id!==id));
-  agRender();
-  showToast('Agendamento removido');
+function agRedesenharCard(senderId){
+  try{
+    const cur = window._lcCurrentLead;
+    if(cur && cur.senderId === senderId && document.getElementById('lcardOverlay')?.classList.contains('show')){
+      const novo = (ACTIVE_LEADS || []).find(l => l.senderId === senderId);
+      if(novo) cur.testDrive = novo.testDrive;
+      openLeadCard(cur);
+    }
+  }catch(e){}
+  try{ if(typeof refreshCurrentCIList === 'function') refreshCurrentCIList(); }catch(e){}
+}
+function agVerLead(senderId){
+  const l = (ACTIVE_LEADS || []).find(x => x.senderId === senderId);
+  if(l) openLeadCard(l);
 }
 
 function agFilter(f, btn){
   agFilter_current = f;
-  document.querySelectorAll('.ag-tab').forEach(b=>b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
+  document.querySelectorAll('#ag-tabs .ag-tab').forEach(b => b.classList.toggle('active', b.dataset.f === f));
   agRender();
 }
 
+// Botões de ação de um test drive (usados na agenda e no card do lead)
+function agAcoesHTML(l){
+  const st = agStatusDe(l);
+  const id = String(l.senderId).replace(/'/g, "\\'");
+  const td = l.testDrive || {};
+  const b = (s, txt, cls) => `<button class="ag-btn ${cls || ''}" onclick="event.stopPropagation();agMudarStatus('${id}','${s}')">${txt}</button>`;
+  if(!td.data) return `<button class="ag-btn ag-btn-pri" onclick="event.stopPropagation();agOpenModal('${id}')">Agendar</button>`;
+  const passou = td.data < _agHojeISO();
+  let h = '';
+  if(st === 'agendado' && !passou) h += b('confirmado', '✓ Confirmado', 'ag-btn-ok');
+  if(['agendado','confirmado'].includes(st) && td.data <= _agHojeISO()){ h += b('compareceu', 'Compareceu', 'ag-btn-ok'); h += b('nao_compareceu', 'Não veio', 'ag-btn-warn'); }
+  if(['compareceu','nao_compareceu','cancelado'].includes(st)) h += b(td.data >= _agHojeISO() ? 'agendado' : st, '↺ Desfazer', '');
+  h += `<button class="ag-btn" onclick="event.stopPropagation();agOpenModal('${id}')">Remarcar</button>`;
+  if(['agendado','confirmado'].includes(st)) h += b('cancelado', 'Cancelar', 'ag-btn-del');
+  return h;
+}
+function agStatusChip(st){
+  const s = AG_STATUS[st] || AG_STATUS.agendado;
+  return `<span class="ag-st" style="color:${s.cor};border-color:${s.cor}55;background:${s.cor}1a">${s.txt}</span>`;
+}
+
 function agRender(){
-  const all = agLoad().filter(a=>matchLoja(a.loja));
-  const today = new Date().toISOString().slice(0,10);
-  const weekEnd = new Date(); weekEnd.setDate(weekEnd.getDate()+7);
-  const weekEndStr = weekEnd.toISOString().slice(0,10);
+  const list = document.getElementById('ag-list');
+  if(!list) return;
+  const hoje = _agHojeISO(), em7 = _agMaisDias(hoje, 6), mes = hoje.slice(0,7);
+  const todos = agLeads();
+  const ativo = l => !['cancelado'].includes(agStatusDe(l));
+  const comData = todos.filter(l => l.testDrive.data);
+  document.getElementById('ag-k-hoje').textContent = comData.filter(l => l.testDrive.data === hoje && ativo(l)).length;
+  document.getElementById('ag-k-semana').textContent = comData.filter(l => l.testDrive.data >= hoje && l.testDrive.data <= em7 && ativo(l)).length;
+  document.getElementById('ag-k-confirmar').textContent = todos.filter(l => !l.testDrive.data && agStatusDe(l) === 'a_confirmar').length;
+  const doMes = comData.filter(l => l.testDrive.data.slice(0,7) === mes && ['compareceu','nao_compareceu'].includes(agStatusDe(l)));
+  const vieram = doMes.filter(l => agStatusDe(l) === 'compareceu').length;
+  document.getElementById('ag-k-comparec').textContent = doMes.length ? Math.round(vieram / doMes.length * 100) + '%' : '—';
 
-  // KPIs
-  document.getElementById('ag-k-total').textContent = all.length;
-  document.getElementById('ag-k-hoje').textContent = all.filter(a=>a.data===today&&!a.done).length;
-  document.getElementById('ag-k-semana').textContent = all.filter(a=>a.data>=today&&a.data<=weekEndStr&&!a.done).length;
-  document.getElementById('ag-k-done').textContent = all.filter(a=>a.done).length;
-
-  // Filtrar
-  let list = [...all];
-  if(agFilter_current==='visita') list=list.filter(a=>a.tipo==='visita');
-  else if(agFilter_current==='testdrive') list=list.filter(a=>a.tipo==='testdrive');
-  else if(agFilter_current==='pendentes') list=list.filter(a=>!a.done);
-  else if(agFilter_current==='concluidos') list=list.filter(a=>a.done);
-
-  // Ordenar: pendentes primeiro por data, depois concluídos
-  list.sort((a,b)=>{
-    if(a.done!==b.done) return a.done?1:-1;
-    return (a.data+a.hora).localeCompare(b.data+b.hora);
-  });
-
-  const container = document.getElementById('ag-list');
-  if(!list.length){
-    container.innerHTML = `<div class="ag-empty"><div class="ag-empty-ico">📅</div>Nenhum agendamento aqui ainda.<br><span style="color:var(--ac);cursor:pointer;font-weight:700" onclick="agOpenModal()">+ Criar primeiro agendamento</span></div>`;
+  let itens, vazio;
+  const f = agFilter_current;
+  if(f === 'confirmar'){
+    itens = todos.filter(l => !l.testDrive.data && agStatusDe(l) === 'a_confirmar');
+    vazio = 'Nenhum cliente esperando dia e horário.';
+  } else if(f === 'anteriores'){
+    itens = comData.filter(l => l.testDrive.data < hoje).sort((a,b) => (b.testDrive.data + (b.testDrive.hora||'')).localeCompare(a.testDrive.data + (a.testDrive.hora||'')));
+    vazio = 'Nenhum test drive anterior nos últimos 30 dias.';
+  } else {
+    const noFiltro = d => f === 'hoje' ? d === hoje : f === 'semana' ? (d >= hoje && d <= em7) : d.slice(0,7) === mes;
+    itens = comData.filter(l => noFiltro(l.testDrive.data))
+      .sort((a,b) => (a.testDrive.data + (a.testDrive.hora||'')).localeCompare(b.testDrive.data + (b.testDrive.hora||'')));
+    vazio = f === 'hoje' ? 'Nenhum test drive para hoje.' : f === 'semana' ? 'Nenhum test drive nos próximos 7 dias.' : 'Nenhum test drive neste mês.';
+  }
+  if(!itens.length){
+    list.innerHTML = `<div class="ag-empty"><div class="ag-empty-ico">📅</div>${vazio}</div>`;
     return;
   }
-
-  // Agrupar por data
-  const groups = {};
-  list.forEach(a=>{ if(!groups[a.data]) groups[a.data]=[]; groups[a.data].push(a); });
-
-  const waIcon = `<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.555 4.116 1.528 5.845L0 24l6.335-1.507A11.933 11.933 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.793 9.793 0 01-5.012-1.374l-.36-.214-3.732.888.923-3.618-.235-.373A9.77 9.77 0 012.182 12C2.182 6.573 6.573 2.182 12 2.182c5.426 0 9.818 4.391 9.818 9.818 0 5.426-4.392 9.818-9.818 9.818z"/></svg>`;
-
-  let html = '';
-  let lastDate = null;
-  list.forEach(a=>{
-    const isToday = a.data===today;
-    const isOverdue = !a.done && a.data<today;
-    if(a.data!==lastDate){
-      lastDate = a.data;
-      const [y,m,d]=a.data.split('-');
-      const dateLabel = isToday?'Hoje — '+new Date(a.data+'T12:00').toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'}):
-        new Date(a.data+'T12:00').toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-      html+=`<div class="ag-day-label">${dateLabel}</div>`;
+  let html = '', ultimoDia = null;
+  itens.forEach(l => {
+    const td = l.testDrive, st = agStatusDe(l);
+    if(f !== 'confirmar' && td.data !== ultimoDia){
+      ultimoDia = td.data;
+      html += `<div class="ag-day-label">${td.data === hoje ? 'Hoje — ' : ''}${_agFmtDia(td.data)}</div>`;
     }
-    const initials=(a.nome||'?').split(' ').slice(0,2).map(w=>w[0]).join('');
-    const typeClass=a.tipo==='visita'?'ag-type-visita':'ag-type-testdrive';
-    const typeIcon=a.tipo==='visita'?'🏪':'🏍️';
-    const labelClass=a.tipo==='visita'?'ag-label-visita':'ag-label-testdrive';
-    const labelTxt=a.tipo==='visita'?'Visita':'Test Drive';
-    const tel=(a.phone||'').replace(/\D/g,'');
-    const waHref=tel?`https://wa.me/55${tel}`:'#';
-    const cardClass='ag-card'+(isToday&&!a.done?' today':isOverdue?' overdue':a.done?' done':'');
-    const doneBadge=a.done?`<span class="ag-done-badge">✓ Concluído</span>`:'';
-    html+=`<div class="${cardClass}">
-      <div class="ag-type-badge ${typeClass}">${typeIcon}</div>
+    const tel = _agTel(l);
+    const id = String(l.senderId).replace(/'/g, "\\'");
+    const atrasado = td.data && td.data < hoje && ['agendado','confirmado'].includes(st);
+    const cls = 'ag-card' + (td.data === hoje && ['agendado','confirmado'].includes(st) ? ' today' : atrasado ? ' overdue' : ['cancelado','nao_compareceu'].includes(st) ? ' done' : '');
+    const quem = l.vendedorResponsavel ? `<span class="ag-meta-txt">👤 ${_escHtml(l.vendedorResponsavel)}</span>` : '';
+    const venda = l.vendaStatus === 'vendeu' ? '<span class="ag-st" style="color:#D4AF37;border-color:#D4AF3755;background:#D4AF371a">Vendeu</span>' : '';
+    html += `<div class="${cls}" onclick="agVerLead('${id}')">
+      <div class="ag-hora-box">${td.hora ? _escHtml(td.hora) : '<span style="font-size:11px">a definir</span>'}</div>
       <div class="ag-info">
-        <div class="ag-lead-name">${a.nome}${doneBadge}</div>
-        <div><span class="ag-type-label ${labelClass}">${labelTxt}</span>${a.loja?`<span style="font-size:12px;color:var(--ac);margin-left:6px">📍 ${a.loja}</span>`:''}${a.modelo?`<span style="font-size:12px;color:var(--tx3)">${a.modelo}</span>`:''}</div>
-        ${a.notes?`<div class="ag-notes">"${a.notes}"</div>`:''}
-      </div>
-      <div class="ag-meta">
-        <div class="ag-date-badge">${new Date(a.data+'T12:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}</div>
-        <div class="ag-time">⏰ ${a.hora}</div>
-        ${tel?`<a class="ag-phone-link" href="${waHref}" target="_blank" rel="noopener">${waIcon} ${a.phone}</a>`:''}
-        <div class="ag-actions">
-          ${!a.done?`<button class="btn-ag-done" onclick="agMarkDone(${a.id})">✓ Concluído</button>`:''}
-          <button class="btn-ag-del" onclick="agDelete(${a.id})">✕</button>
+        <div class="ag-lead-name">${_escHtml(l.nome || 'Cliente')} ${agStatusChip(st)} ${venda}</div>
+        <div class="ag-linha">
+          ${td.modelo || l.modelo ? `<span>🚗 ${_escHtml(td.modelo || l.modelo)}</span>` : ''}
+          ${LOJAS.length > 1 ? `<span>📍 ${_escHtml(td.unidade || 'unidade a definir')}</span>` : ''}
+          ${tel ? `<a class="ag-phone-link" href="https://wa.me/${tel.startsWith('55') ? tel : '55' + tel}" target="_blank" rel="noopener" onclick="event.stopPropagation()">WhatsApp ${_escHtml(_agTelFmt(tel))}</a>` : ''}
+          ${quem}
         </div>
+        ${!td.data && td.pedido ? `<div class="ag-notes">Cliente disse: "${_escHtml(td.pedido)}"</div>` : ''}
+        ${td.obs ? `<div class="ag-notes">${_escHtml(td.obs)}</div>` : ''}
+        <div class="ag-origem">${atrasado ? '⚠ Já passou — marque se o cliente veio · ' : ''}${td.atualizadoPor ? 'Por ' + _escHtml(td.atualizadoPor) : ''}</div>
       </div>
+      <div class="ag-actions" onclick="event.stopPropagation()">${agAcoesHTML(l)}</div>
     </div>`;
   });
-  container.innerHTML=html;
+  list.innerHTML = html;
+}
+
+// Seção "Test drive" do card do lead
+function buildTestDriveSectionHTML(lead){
+  const td = lead && lead.testDrive;
+  const id = String((lead && lead.senderId) || '').replace(/'/g, "\\'");
+  if(!lead || !lead.senderId || String(lead.canal || 'whatsapp') === 'presencial' && !td) return '';
+  const linha = (k, v) => v ? `<div class="lcard-row"><div class="lcard-key">${k}</div><div class="lcard-val">${v}</div></div>` : '';
+  if(!td || (!td.data && td.status !== 'a_confirmar')){
+    return `<div class="lcard-section"><div class="lcard-section-title">Test drive</div>
+      <div style="font-size:12px;color:var(--tx3);margin-bottom:8px">Ainda não agendado.</div>
+      <div class="ag-actions" style="justify-content:flex-start"><button class="ag-btn ag-btn-pri" onclick="agOpenModal('${id}')">Agendar test drive</button></div></div>`;
+  }
+  const st = agStatusDe(lead);
+  const quando = td.data ? `${_agFmtDia(td.data)}${td.hora ? ' às ' + _escHtml(td.hora) : ''}` : 'Dia e horário a confirmar';
+  return `<div class="lcard-section"><div class="lcard-section-title">Test drive ${agStatusChip(st)}</div>
+    ${linha('Quando', quando)}
+    ${linha('Carro', _escHtml(td.modelo || lead.modelo || ''))}
+    ${LOJAS.length > 1 ? linha('Unidade', _escHtml(td.unidade || 'a definir')) : ''}
+    ${linha('Cliente disse', td.pedido ? '"' + _escHtml(td.pedido) + '"' : '')}
+    ${linha('Observação', _escHtml(td.obs || ''))}
+    ${linha('Atualizado por', _escHtml(td.atualizadoPor || ''))}
+    <div class="ag-actions" style="justify-content:flex-start;margin-top:8px">${agAcoesHTML(lead)}</div></div>`;
+}
+// Etiqueta curta do test drive (cards da Central de Leads e topo do card)
+function tdBadge(l){
+  const td = l && l.testDrive;
+  if(!td || (!td.data && td.status !== 'a_confirmar')) return '';
+  const st = agStatusDe(l);
+  if(st === 'cancelado') return '';
+  const s = AG_STATUS[st];
+  const txt = td.data ? `🗓 Test drive ${new Date(td.data + 'T12:00:00').toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'})}${td.hora ? ' ' + td.hora : ''}` : '🗓 Test drive a confirmar';
+  return `<span class="ag-st" title="${s.txt}" style="color:${s.cor};border-color:${s.cor}55;background:${s.cor}1a">${_escHtml(txt)}</span>`;
 }
 </script>
 <!-- [AVISO_TRANSF_31_10] aviso com som quando o IAn transfere um lead para o vendedor -->
