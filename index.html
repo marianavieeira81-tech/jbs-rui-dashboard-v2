@@ -4648,7 +4648,7 @@ function buildCheckinResumoHTML(lead){
 // setor não é Novos/Semi-novos (não passa pelo processo de qualificação).
 function ciHiCardHTML(r, opts){
   const cor    = ciAvatarColor(r.nome);
-  const iniA   = r.nome.charAt(0).toUpperCase();
+  const iniA   = _escHtml(r.nome.charAt(0).toUpperCase());
   const dtFmt  = r.dt ? new Date(r.dt).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
   const dSty   = CI_DESFECHO_STYLE[r.desfecho]  || 'background:var(--s2);color:var(--tx2);border:1px solid var(--bdr);';
   const iSty   = CI_INTENCAO_STYLE[r.intencao]  || 'background:var(--s2);color:var(--tx2);';
@@ -4668,16 +4668,16 @@ function ciHiCardHTML(r, opts){
     <div class="ci-hi-head">
       <div class="ci-hi-av" style="background:${cor}">${iniA}</div>
       <div style="flex:1;">
-        <div class="ci-hi-name">${r.nome}</div>
+        <div class="ci-hi-name">${_escHtml(r.nome)}</div>
         <div class="ci-hi-sub">${dtFmt}</div>
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex-shrink:0;" onclick="event.stopPropagation()">
         <span class="ptag pr" style="margin-top:0;">Presencial</span>
-        ${r.vend?`<span class="filtro-cl-opt sel" style="cursor:default;">${r.vend}</span>`:''}
+        ${r.vend?`<span class="filtro-cl-opt sel" style="cursor:default;">${_escHtml(r.vend)}</span>`:''}
         ${reincidenteBadge(r)}
         ${notaBadge}
-        <span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;${iSty}">${r.intencao||'—'}</span>
-        <span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;${dSty}">${r.desfecho||'—'}</span>
+        <span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;${iSty}">${_escHtml(r.intencao||'—')}</span>
+        <span style="padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;${dSty}">${_escHtml(r.desfecho||'—')}</span>
         ${statusBadge}
         ${waLink?`<a href="https://wa.me/55${waLink}" target="_blank" rel="noopener" class="wa-icon-btn" title="Chamar no WhatsApp">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.116 1.527 5.847L.057 23.882a.5.5 0 0 0 .612.612l6.035-1.47A11.942 11.942 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.65-.523-5.15-1.43l-.369-.218-3.827.932.933-3.827-.22-.371A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
@@ -4685,17 +4685,17 @@ function ciHiCardHTML(r, opts){
       </div>
     </div>
     <div class="ci-hi-grid">
-      <div class="ci-hi-f"><div class="ci-hi-k">WhatsApp</div><div class="ci-hi-v">${r.wa||'—'}</div></div>
-      <div class="ci-hi-f"><div class="ci-hi-k">Modelo(s)</div><div class="ci-hi-v">${r.modelos||'—'}</div></div>
+      <div class="ci-hi-f"><div class="ci-hi-k">WhatsApp</div><div class="ci-hi-v">${_escHtml(r.wa||'—')}</div></div>
+      <div class="ci-hi-f"><div class="ci-hi-k">Modelo(s)</div><div class="ci-hi-v">${_escHtml(r.modelos||'—')}</div></div>
       <div class="ci-hi-f"><div class="ci-hi-k">Troca</div><div class="ci-hi-v">${ciYNLabel(r.troca)}</div></div>
       <div class="ci-hi-f"><div class="ci-hi-k">Financiamento</div><div class="ci-hi-v">${ciYNLabel(r.financiamento)}</div></div>
       <div class="ci-hi-f"><div class="ci-hi-k">Test drive</div><div class="ci-hi-v">${ciYNLabel(r.test_drive)}</div></div>
       <div class="ci-hi-f"><div class="ci-hi-k">Proposta/Simulação</div><div class="ci-hi-v">${ciYNLabel(r.proposta)}</div></div>
     </div>
-    ${r.justificativa?`<div class="ci-hi-obs"><strong>Justificativa da temperatura:</strong> ${r.justificativa}</div>`:''}
-    ${r.servico_oficina?`<div class="ci-hi-obs"><strong>Serviço de oficina:</strong> ${r.servico_oficina}</div>`:''}
-    ${r.reclamacoes_elogios?`<div class="ci-hi-obs"><strong>Reclamações/elogios:</strong> ${r.reclamacoes_elogios}</div>`:''}
-    ${r.observacoes?`<div class="ci-hi-obs">${r.observacoes}</div>`:''}
+    ${r.justificativa?`<div class="ci-hi-obs"><strong>Justificativa da temperatura:</strong> ${_escHtml(r.justificativa)}</div>`:''}
+    ${r.servico_oficina?`<div class="ci-hi-obs"><strong>Serviço de oficina:</strong> ${_escHtml(r.servico_oficina)}</div>`:''}
+    ${r.reclamacoes_elogios?`<div class="ci-hi-obs"><strong>Reclamações/elogios:</strong> ${_escHtml(r.reclamacoes_elogios)}</div>`:''}
+    ${r.observacoes?`<div class="ci-hi-obs">${_escHtml(r.observacoes)}</div>`:''}
   </div>`;
 }
 
@@ -4706,7 +4706,7 @@ function ciHiCardHTML(r, opts){
 // idx referencia window._ciUnifiedLeads (evita serializar o objeto no HTML).
 function waHiCardHTML(l, idx){
   const cor    = ciAvatarColor(l.nome||'?');
-  const iniA   = ini(l.nome||'?');
+  const iniA   = _escHtml(ini(l.nome||'?'));
   const dtFmt  = l.data ? new Date(l.data+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'})+(l.hora?' '+l.hora:'') : (l.hora||'—');
   const isTransferred = l.status==='Transferido';
   const nomeEsc = (l.nome||'').replace(/'/g,"\\'");
@@ -4737,14 +4737,14 @@ function waHiCardHTML(l, idx){
   // Antes de "Transferido" o status ainda diz algo útil (ex: "Em andamento"),
   // então mantém o badge junto das tags; depois de Transferido as tags/nome
   // já deixam claro que o lead foi atribuído, sem precisar repetir o texto.
-  const statusHtml = isTransferred ? vendedorHtml : `<span class="badge-status">${l.status||'—'}</span>${vendedorHtml}`;
+  const statusHtml = isTransferred ? vendedorHtml : `<span class="badge-status">${_escHtml(l.status||'—')}</span>${vendedorHtml}`;
   const faixa = `border-left:3px solid ${l.temperatura ? tempColor(l.temperatura) : 'var(--bdr)'};`; // [JORNADA_08_11]
   return `<div class="ci-hi" style="cursor:pointer;${faixa}" onclick="openLeadCard(window._ciUnifiedLeads[${idx}])">
     <div class="ci-hi-head">
       <div class="ci-hi-av" style="background:${cor}">${iniA}</div>
       <div style="flex:1;">
-        <div class="ci-hi-name">${l.nome||'—'}</div>
-        <div class="ci-hi-sub">${l.loja||'—'} &middot; ${dtFmt}</div>
+        <div class="ci-hi-name">${_escHtml(l.nome||'—')}</div>
+        <div class="ci-hi-sub">${_escHtml(l.loja||'—')} &middot; ${dtFmt}</div>
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex-shrink:0;" onclick="event.stopPropagation()">
         ${(l.telefone||'').replace(/\D/g,'')?`<a href="https://wa.me/55${(l.telefone||'').replace(/\D/g,'')}" target="_blank" rel="noopener" class="ptag wa" style="margin-top:0;text-decoration:none;">WhatsApp</a>`:`<span class="ptag wa" style="margin-top:0;">WhatsApp</span>`}
@@ -4755,9 +4755,9 @@ function waHiCardHTML(l, idx){
       </div>
     </div>
     <div class="ci-hi-grid">
-      <div class="ci-hi-f"><div class="ci-hi-k">WhatsApp</div><div class="ci-hi-v">${l.telefone||'—'}</div></div>
-      <div class="ci-hi-f"><div class="ci-hi-k">Modelo</div><div class="ci-hi-v">${l.modelo||'—'}</div></div>
-      <div class="ci-hi-f"><div class="ci-hi-k">Veículo atual</div><div class="ci-hi-v">${l.veicAtual||'—'}</div></div>
+      <div class="ci-hi-f"><div class="ci-hi-k">WhatsApp</div><div class="ci-hi-v">${_escHtml(l.telefone||'—')}</div></div>
+      <div class="ci-hi-f"><div class="ci-hi-k">Modelo</div><div class="ci-hi-v">${_escHtml(l.modelo||'—')}</div></div>
+      <div class="ci-hi-f"><div class="ci-hi-k">Veículo atual</div><div class="ci-hi-v">${_escHtml(l.veicAtual||'—')}</div></div>
     </div>
   </div>`;
 }
