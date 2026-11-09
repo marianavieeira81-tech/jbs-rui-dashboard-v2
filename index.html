@@ -1654,8 +1654,8 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   </div>
 
   <!-- CENTRAL DE LEADS UNIFICADA — WhatsApp + Check-in juntos, organizados por Setor.
-       Cada lead traz a tag de origem (WhatsApp/Presencial). [JORNADA_08_11] Novos, Seminovos e
-       "Condição não informada" abrem por modelo; os outros 3 setores vão direto pra lista final.
+       Cada lead traz a tag de origem (WhatsApp/Presencial). [CARROS_09_11] "Carros" (Novos +
+       Semi-novos juntos) abre por modelo; os outros 3 setores vão direto pra lista final.
        No topo fica a Jornada Comercial (substitui a antiga aba "Funil de Qualificação"). -->
   <div class="sec" style="margin-top:8px;">Leads qualificados · WhatsApp + Check-in</div>
 
@@ -1694,7 +1694,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     <div class="cat-grid" id="ciSectorCardsGrid"></div>
   </div>
 
-  <!-- ESTADO 2: modelo de carro — só aparece dentro de Novos / Seminovos / Condição não informada -->
+  <!-- ESTADO 2: modelo de carro — só aparece dentro de "Carros" -->
   <div id="ciPltModelCards" style="display:none;">
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;">
       <button onclick="backToCISectors()" style="background:var(--s2);border:1px solid var(--bdr);color:var(--tx2);padding:7px 16px;border-radius:var(--rsm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;">&#8592; Setores</button>
@@ -4121,16 +4121,18 @@ const CI_SETORES = [
 // ============================================================
 // CENTRAL DE LEADS — setores da grade "Demanda por setor"
 // ============================================================
-// [JORNADA_08_11] Decisão de 02/09 REVERTIDA em 08/11: a Central de Leads volta a
-// separar "Novos" e "Seminovos" (antes os dois viravam um card só, "Carros").
-// O valor gravado no banco continua 'Semi-novos' (enum setor_lead); só o rótulo
-// exibido muda pra "Seminovos". Check-in, Cobertura 24/7 e o resto do painel
-// continuam usando CI_SETORES, sem mudança.
-const CL_SETOR_SEM_CONDICAO = 'Condição não informada'; // setor virtual: tem modelo, mas não disse se é novo ou seminovo
-const CL_SETORES = CI_SETORES.map(s => Object.assign({}, s, {
-  rotulo: s.nome==='Semi-novos' ? 'Seminovos' : s.nome
-}));
-const CL_SETOR_VIRTUAL = {nome: CL_SETOR_SEM_CONDICAO, rotulo: CL_SETOR_SEM_CONDICAO, cor:'var(--tx3)', temModelo:true, qualificavel:true};
+// [CARROS_09_11] Pedido dela em 09/11: a Central de Leads volta a ter UM card só, "Carros"
+// (Novos + Semi-novos juntos), porque o IAn ainda não pergunta se o cliente quer carro novo
+// ou seminovo. Isto desfaz a separação feita em 08/11 ([JORNADA_08_11]) e o card virtual
+// "Condição não informada". O valor gravado no banco não muda (enum setor_lead continua com
+// 'Novos'/'Semi-novos'). Check-in, Cobertura 24/7 e o resto do painel continuam usando
+// CI_SETORES, que separa os dois — só a grade da Central de Leads junta.
+const CL_CARROS = 'Carros';
+const CL_CARROS_MERGE = ['Novos', 'Semi-novos'];
+const CL_SETORES = [
+  {nome: CL_CARROS, rotulo: CL_CARROS, cor: 'var(--tx3)', temModelo: true, qualificavel: true},
+  ...CI_SETORES.filter(s => !CL_CARROS_MERGE.includes(s.nome)).map(s => Object.assign({}, s, {rotulo: s.nome}))
+];
 // Setores que NÃO são venda de carro — ficam fora da Jornada Comercial.
 const JC_SETORES_FORA = ['Oficina', 'Reclamações e elogios', 'Vendas de peças e acessórios'];
 function clSetorRotulo(nome){
@@ -4138,30 +4140,22 @@ function clSetorRotulo(nome){
   const s = clSetorInfo(nome);
   return s ? (s.rotulo || s.nome) : (nome || '');
 }
-// condicao_veiculo do lead (texto livre gravado pelo IAn) -> setor
-function clSetorPorCondicao(cond){
-  const c = String(cond || '').trim();
-  if(/^novo/i.test(c)) return 'Novos';
-  if(/semi|usad/i.test(c)) return 'Semi-novos';
-  return null; // "sem resposta após 1 tentativa" e qualquer outro valor = não informado
-}
 // Setor EFETIVO do lead na Central de Leads. Regra, nesta ordem:
-//   1. setor gravado pelo n8n/check-in (Novos/Semi-novos/Oficina/Reclamações/Peças);
-//   2. condicao_veiculo: "novo..." -> Novos; "semi..."/"usado..." -> Semi-novos;
-//   3. tem veículo de interesse, mas a condição não veio -> "Condição não informada";
+//   1. setor gravado Novos ou Semi-novos -> "Carros"; Oficina/Reclamações/Peças -> ele mesmo;
+//   2. o IAn gravou condição do veículo (novo/seminovo/usado) -> "Carros";
+//   3. tem veículo de interesse -> "Carros";
 //   4. nada disso -> null (card "Não informado").
 function clSetorEfetivo(lead){
   if(!lead) return null;
+  if(CL_CARROS_MERGE.includes(lead.setor)) return CL_CARROS;
   if(CL_SETORES.some(s => s.nome === lead.setor)) return lead.setor;
-  const porCond = clSetorPorCondicao(lead.condicao);
-  if(porCond) return porCond;
+  if(/novo|semi|usad/i.test(String(lead.condicao || ''))) return CL_CARROS;
   const modeloTxt = String(lead.modelo || lead.modelos || '').trim();
-  if(modeloTxt) return CL_SETOR_SEM_CONDICAO;
+  if(modeloTxt) return CL_CARROS;
   return null;
 }
 // info (cor / temModelo / rótulo) do setor da Central de Leads
 function clSetorInfo(nome){
-  if(nome===CL_SETOR_SEM_CONDICAO) return CL_SETOR_VIRTUAL;
   return CL_SETORES.find(s => s.nome === nome) || CI_SETORES.find(s => s.nome === nome) || null;
 }
 
@@ -4565,7 +4559,7 @@ function renderCISectorCards(){
     return `<span style="color:${tempColor(c.t)}">${c.t} ${pct}%</span>`;
   }).join('');
 
-  // Cartões de setor — [JORNADA_08_11] Novos e Seminovos separados de novo (ver clSetorEfetivo),
+  // Cartões de setor — [CARROS_09_11] um card só, "Carros" (ver clSetorEfetivo),
   // todos em cinza: na Central de Leads, cor significa só temperatura.
   const cardHTML = (nome, rotulo, n, sub, extra) => {
     const pct = total>0?Math.round(n/total*100):0;
@@ -4580,23 +4574,20 @@ function renderCISectorCards(){
   const html = CL_SETORES.map(s=>{
     const doSetor = arr.filter(r=>clSetorEfetivo(r)===s.nome);
     let extra = '';
-    if(s.nome==='Novos' || s.nome==='Semi-novos'){
+    if(s.nome===CL_CARROS){
       const vis = doSetor.filter(l=>estagioJornada(l)>=4).length;
       const ven = doSetor.filter(l=>estagioJornada(l)===5).length;
-      extra = `${vis} visitara${vis===1?'':'m'} · ${ven} vendera${ven===1?'':'m'}`;
+      extra = `${vis} ${vis===1?'visitou':'visitaram'} · ${ven} ${ven===1?'vendeu':'venderam'}`;
     }
     return cardHTML(s.nome, s.rotulo||s.nome, doSetor.length, s.temModelo?'leads com interesse':'atendimentos registrados', extra);
   });
-  // Setor virtual: tem modelo de interesse mas não disse se é novo ou seminovo (só aparece se N>0)
-  const semCond = arr.filter(r=>clSetorEfetivo(r)===CL_SETOR_SEM_CONDICAO).length;
-  if(semCond>0) html.push(cardHTML(CL_SETOR_SEM_CONDICAO, CL_SETOR_SEM_CONDICAO, semCond, 'novo ou seminovo não informado', ''));
   // Leads sem setor e sem veículo de interesse — card "Não informado"
   const semSetor = arr.filter(r=>clSetorEfetivo(r)===null).length;
   if(semSetor>0) html.push(cardHTML(CI_SETOR_OUTRO, 'Não informado', semSetor, 'setor ainda não confirmado', ''));
   container.innerHTML = html.join('');
 }
 
-// ESTADO 2 — só existe nos setores com modelo (Novos / Seminovos / Condição não informada):
+// ESTADO 2 — só existe no setor "Carros" (Novos + Semi-novos juntos):
 // abre o grid de modelos da loja, filtrado pelo setor escolhido.
 function openCISector(setor){
   currentCISetor = setor;
