@@ -432,6 +432,11 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 .jc-perda-det div{display:flex;justify-content:space-between;gap:10px;padding:2px 0;color:var(--tx2);}
 .jc-pend{display:inline-flex;align-items:center;gap:6px;margin-top:10px;font-size:12px;color:var(--tx2);background:var(--s2);border:1px solid var(--bdr);border-radius:20px;padding:5px 12px;cursor:pointer;font-family:inherit;}
 .jc-seg{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
+/* [FASE0_09_11] status do lead + quanto da qualificação ele completou (cinza: cor é só temperatura) */
+.cl-qual{display:flex;align-items:center;gap:8px;margin-top:5px;font-size:11px;color:var(--tx3);flex-wrap:wrap;}
+.cl-qual .cl-st{padding:1px 8px;border-radius:20px;border:1px solid var(--bdr);background:var(--s2);color:var(--tx2);font-weight:700;white-space:nowrap;}
+.cl-qual .cl-bar{width:90px;height:4px;border-radius:2px;background:var(--bdr);overflow:hidden;flex-shrink:0;}
+.cl-qual .cl-bar i{display:block;height:100%;background:var(--tx3);}
 .jc-grupo{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--tx2);margin:18px 0 8px;display:flex;align-items:center;gap:8px;}
 .jc-grupo i{display:inline-block;width:8px;height:8px;border-radius:50%;}
 .jc-acoes{display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap;}
@@ -1679,6 +1684,9 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     <!-- [JORNADA_08_11] A. Jornada Comercial -->
     <span class="plt-ov-t">Jornada comercial</span>
     <div id="jcBox" class="jc-box"></div>
+    <!-- [FASE0_09_11] todo lead aparece aqui, mesmo sem setor e sem qualificação completa -->
+    <span class="plt-ov-t" style="margin-top:22px;">Todos os leads</span>
+    <div id="clTodosBox" class="jc-seg" style="margin-bottom:0;"></div>
     <span class="plt-ov-t" style="margin-top:22px;">Temperatura dos leads qualificados</span>
     <div class="plt-ov-bar" id="ciOvBar"></div>
     <div class="plt-ov-pcts" id="ciOvPcts"></div>
@@ -3139,7 +3147,9 @@ let selectedLoja = localStorage.getItem('rui_loja_filtro') || 'todas';
 
 // true (mostra) se a loja escolhida bater com a do registro, ou se "todas" estiver selecionado
 function matchLoja(loja){
-  return selectedLoja==='todas' || (loja||'')===selectedLoja;
+  // [FASE0_09_11] lead sem unidade reconhecida (vazio, "adtsa", nome da concessionária)
+  // não some quando o filtro de unidade está ligado — ele aparece em todas as unidades.
+  return selectedLoja==='todas' || (loja||'')===selectedLoja || !LOJAS.includes(loja||'');
 }
 
 // Mostra o aviso "ainda sem loja no n8n" só quando há um filtro específico ativo
@@ -4265,6 +4275,73 @@ const JC_MOTIVOS = [
   ['vai_pensar','Vai pensar'], ['desistiu','Desistiu da compra'], ['outro','Outro']
 ];
 const JC_JORNADA = '__jornada__';  // sentinela de currentCISetor: lista aberta pelo funil
+// [FASE0_09_11] "Todos os leads": status do funil + percentual da qualificação.
+// O banco já manda status_funil e percentual_qualificacao (view v_leads_painel); enquanto
+// a view não estiver no ar, o painel calcula com a MESMA regra da view.
+const CL_TODOS = '__todos__';      // sentinela de currentCISetor: lista aberta por "Todos os leads"
+let clStatusSel = 'todos';
+const CL_STATUS = [
+  ['novo','Novo'], ['em_qualificacao','Em qualificação'], ['qualificado','Qualificado'],
+  ['agendado','Agendado'], ['sem_resposta','Sem resposta'], ['perdido','Perdido'], ['vendido','Vendido']
+];
+const CL_BLOCOS_FUNIL = 5;          // abertura, carro_atual, prazo, comprometimento, unidade_preferida
+const CL_HORAS_SEM_RESPOSTA = 24;
+function clStatusRotulo(st){ const x = CL_STATUS.find(c => c[0]===st); return x ? x[1] : st; }
+function clStatusFunil(l){
+  if(!l) return 'novo';
+  if(jcEhPresencial(l)){
+    if(l.desfecho==='Comprou') return 'vendido';
+    if(['Desistiu','Saiu sem definição'].includes(l.desfecho)) return 'perdido';
+    return 'qualificado'; // atendido na loja
+  }
+  if(l.statusFunil) return l.statusFunil;
+  if(l.vendaStatus==='vendeu' || l.virouCliente) return 'vendido';
+  if(l.vendaStatus==='nao_vendeu' || (l.followupStatus==='encerrado' && !l.transferido)) return 'perdido';
+  const td = l.testDrive;
+  if(td && ['agendado','confirmado'].includes(td.status) && td.data && td.data >= _hojeLocal()) return 'agendado';
+  if(l.transferido) return 'qualificado';
+  const ult = l.ultimaMsgLeadEm || l.atualizadoEmISO;
+  if(ult && (Date.now() - new Date(ult).getTime()) > CL_HORAS_SEM_RESPOSTA*3600*1000) return 'sem_resposta';
+  if((l.score||0) > 0 || (l.blocos && Object.keys(l.blocos).length) || (l.qtdMsgsLead||0) > 1) return 'em_qualificacao';
+  return 'novo';
+}
+function clPercentualQualif(l){
+  if(!l || jcEhPresencial(l)) return null;
+  if(l.percentualQualif!=null) return Math.max(0, Math.min(100, Number(l.percentualQualif)||0));
+  const b = l.blocos;
+  if(!b || typeof b!=='object') return 0;
+  return Math.min(100, Math.round(Object.values(b).filter(v => v===true).length * 100 / CL_BLOCOS_FUNIL));
+}
+function clQualHTML(l){
+  const st = clStatusFunil(l), pct = clPercentualQualif(l);
+  return `<div class="cl-qual"><span class="cl-st">${_escHtml(clStatusRotulo(st))}</span>${pct==null ? '' :
+    `<span class="cl-bar" title="Qualificação ${pct}%"><i style="width:${pct}%"></i></span><span>${pct}% da qualificação</span>`}</div>`;
+}
+// Todos os leads da Central (WhatsApp + presencial), com os filtros e o período atuais
+function clTodosLeads(){
+  return [
+    ...waLeadsCL().map(l=>({...l, _origem:'whatsapp'})),
+    ...ciLeadsCL().map(r=>({...r, _origem:'presencial'}))
+  ];
+}
+function renderTodosLeads(){
+  const box = document.getElementById('clTodosBox');
+  if(!box) return;
+  const leads = clTodosLeads();
+  const cont = {}; leads.forEach(l => { const st = clStatusFunil(l); cont[st] = (cont[st]||0) + 1; });
+  box.innerHTML = `<span class="filtro-cl-opt" onclick="clAbrirTodos('todos')">Todos · ${leads.length}</span>` +
+    CL_STATUS.map(([v,t]) => `<span class="filtro-cl-opt" onclick="clAbrirTodos('${v}')">${t} · ${cont[v]||0}</span>`).join('');
+}
+function clAbrirTodos(st){
+  currentCISetor = CL_TODOS;
+  currentCIModel = null;
+  clStatusSel = st || 'todos';
+  document.getElementById('ciPltCategories').style.display='none';
+  document.getElementById('ciPltModelCards').style.display='none';
+  document.getElementById('ciPltModelList').style.display='block';
+  renderCILeadList();
+}
+function clSetStatus(st){ clStatusSel = st; renderCILeadList(); }
 let clSegmento = 'todos';          // chip de segmento ativo na lista de leads
 function jcEhPresencial(l){
   return !!l && (l._origem==='presencial' || (l.canal||'')==='presencial' || (l.dt!==undefined && l.vend!==undefined));
@@ -4470,6 +4547,7 @@ function renderCISectorCards(){
 
   // [JORNADA_08_11] A. Jornada Comercial (mesmos leads, mesmos filtros/período)
   try{ renderJornadaComercial(); }catch(e){ console.warn('[jornada] não foi possível desenhar o funil', e); }
+  try{ renderTodosLeads(); }catch(e){ console.warn('[todos os leads] não foi possível desenhar', e); } // [FASE0_09_11]
 
   // Painel de temperatura (Premium/Quente/Engajado/Morno/Frio) — só qualificados
   const qualificados = arr.filter(l=>l.score!=null);
@@ -4670,6 +4748,7 @@ function ciHiCardHTML(r, opts){
       <div style="flex:1;">
         <div class="ci-hi-name">${_escHtml(r.nome)}</div>
         <div class="ci-hi-sub">${dtFmt}</div>
+        ${(opts && opts.faixa) ? clQualHTML(r) : ''}
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex-shrink:0;" onclick="event.stopPropagation()">
         <span class="ptag pr" style="margin-top:0;">Presencial</span>
@@ -4745,6 +4824,7 @@ function waHiCardHTML(l, idx){
       <div style="flex:1;">
         <div class="ci-hi-name">${_escHtml(l.nome||'—')}</div>
         <div class="ci-hi-sub">${_escHtml(l.loja||'—')} &middot; ${dtFmt}</div>
+        ${clQualHTML(l)}
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex-shrink:0;" onclick="event.stopPropagation()">
         ${(l.telefone||'').replace(/\D/g,'')?`<a href="https://wa.me/55${(l.telefone||'').replace(/\D/g,'')}" target="_blank" rel="noopener" class="ptag wa" style="margin-top:0;text-decoration:none;">WhatsApp</a>`:`<span class="ptag wa" style="margin-top:0;">WhatsApp</span>`}
@@ -4766,7 +4846,8 @@ function renderCILeadList(){
   const setor  = currentCISetor;
   const model  = currentCIModel;
   const daJornada = setor===JC_JORNADA; // [JORNADA_08_11] lista aberta pelo funil
-  const setorLabel = daJornada ? 'Jornada comercial' : clSetorRotulo(setor);
+  const daTodos = setor===CL_TODOS;     // [FASE0_09_11] lista aberta por "Todos os leads"
+  const setorLabel = daTodos ? 'Todos os leads' : daJornada ? 'Jornada comercial' : clSetorRotulo(setor);
   const matchesModel = m => {
     if(!model) return true;
     // Mesma regra dos cards de modelo (_modeloBateMarca entende apelidos, ex.: "h6" = Haval)
@@ -4777,7 +4858,7 @@ function renderCILeadList(){
   // pelo n8n, nem inferido por condição/veículo de interesse — ver clSetorEfetivo).
   const matchesSetor = r => setor===CI_SETOR_OUTRO ? clSetorEfetivo(r)===null : clSetorEfetivo(r)===setor;
 
-  const base = daJornada ? jcLeads() : [
+  const base = daTodos ? clTodosLeads() : daJornada ? jcLeads() : [
     ...waLeadsCL().filter(l=>matchesSetor(l) && matchesModel(l.modelo)).map(l=>({...l, _origem:'whatsapp'})),
     ...ciLeadsCL().filter(r=>matchesSetor(r) && matchesModel(r.modelos)).map(r=>({...r, _origem:'presencial'}))
   ];
@@ -4788,13 +4869,24 @@ function renderCILeadList(){
   });
 
   // [JORNADA_08_11] chips de segmento (com contagem) + filtro do segmento ativo
-  const segs = JC_SEGMENTOS.slice();
-  if(!segs.some(x=>x[0]===clSegmento)) segs.push([clSegmento, jcRotuloSegmento(clSegmento)]);
-  const segHTML = segs.map(([v,t]) => {
-    const n = base.filter(l=>jcNoSegmento(l, v)).length;
-    return `<span class="filtro-cl-opt${clSegmento===v?' sel':''}" onclick="jcSetSegmento('${v}')">${_escHtml(t)} · ${n}</span>`;
-  }).join('');
-  const leads = base.filter(l=>jcNoSegmento(l, clSegmento));
+  let segHTML, leads;
+  if(daTodos){
+    // [FASE0_09_11] chips de status do funil
+    const noStatus = (l, v) => v==='todos' || clStatusFunil(l)===v;
+    segHTML = [['todos','Todos'], ...CL_STATUS].map(([v,t]) => {
+      const n = base.filter(l=>noStatus(l, v)).length;
+      return `<span class="filtro-cl-opt${clStatusSel===v?' sel':''}" onclick="clSetStatus('${v}')">${_escHtml(t)} · ${n}</span>`;
+    }).join('');
+    leads = base.filter(l=>noStatus(l, clStatusSel));
+  } else {
+    const segs = JC_SEGMENTOS.slice();
+    if(!segs.some(x=>x[0]===clSegmento)) segs.push([clSegmento, jcRotuloSegmento(clSegmento)]);
+    segHTML = segs.map(([v,t]) => {
+      const n = base.filter(l=>jcNoSegmento(l, v)).length;
+      return `<span class="filtro-cl-opt${clSegmento===v?' sel':''}" onclick="jcSetSegmento('${v}')">${_escHtml(t)} · ${n}</span>`;
+    }).join('');
+    leads = base.filter(l=>jcNoSegmento(l, clSegmento));
+  }
 
   // [JORNADA_08_11] agrupada por temperatura; dentro do grupo, mantém a ordem por data
   const TEMPS = ['Premium','Quente','Engajado','Morno','Frio'];
@@ -4821,7 +4913,7 @@ function renderCILeadList(){
     const modelLabel = model===CI_OUTRO_MODELO ? 'Outro / não informado' : model;
     content.innerHTML = segBar + `<div style="text-align:center;padding:60px 0;color:var(--tx3);font-size:13px;">
       <div style="font-size:42px;margin-bottom:14px;">📋</div>
-      Nenhum lead em <strong style="color:var(--tx);">${_escHtml(model?setorLabel+' · '+modelLabel:setorLabel)}</strong>${clSegmento!=='todos'?' · '+_escHtml(jcRotuloSegmento(clSegmento)):''} no período selecionado.
+      Nenhum lead em <strong style="color:var(--tx);">${_escHtml(model?setorLabel+' · '+modelLabel:setorLabel)}</strong>${daTodos ? (clStatusSel!=='todos'?' · '+_escHtml(clStatusRotulo(clStatusSel)):'') : (clSegmento!=='todos'?' · '+_escHtml(jcRotuloSegmento(clSegmento)):'')} no período selecionado.
     </div>`;
     return;
   }
@@ -6510,6 +6602,17 @@ function mapLead(l){
     visitaOrigem:        l.visita_origem || null,
     vendaMotivoPerda:    l.venda_motivo_perda || null,
     condicao:            l.condicao_veiculo || '',
+    // [FASE0_09_11] status do funil / % da qualificação (view v_leads_painel) e dados para calcular sem ela
+    statusFunil:         l.status_funil || null,
+    percentualQualif:    l.percentual_qualificacao ?? null,
+    virouCliente:        l.virou_cliente === true,
+    followupStatus:      l.followup_status || null,
+    blocos:              (() => { let b = l.blocos_completados; if(typeof b==='string'){ try{ b = JSON.parse(b); }catch(e){ b = null; } } return (b && typeof b==='object') ? b : null; })(),
+    ultimaMsgLeadEm:     l.ultima_mensagem_lead_em || null,
+    primeiraMsgEm:       l.primeira_mensagem_em || null,
+    qtdMsgsLead:         l.qtd_mensagens_lead ?? null,
+    atualizadoEmISO:     l.atualizado_em || null,
+    origemLead:          l.origem_lead || null,
     // [AGENDA_TD_31_10] test drive marcado pelo IAn ou pelo painel
     unidadePreferida: l.unidade_preferida || null,
     testDrive: (l.test_drive_data || l.test_drive_status) ? {
