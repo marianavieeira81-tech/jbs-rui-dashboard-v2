@@ -414,6 +414,49 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 .btn-nao-fechou:hover{background:rgba(225,29,72,.2);}
 .badge-cliente{background:var(--grn-bg);color:var(--grn-l);padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;border:1px solid rgba(0,160,101,.2);}
 .badge-nao-fechou{background:var(--red-bg);color:var(--red);padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;border:1px solid rgba(225,29,72,.2);}
+/* [JORNADA_08_11] Jornada Comercial — tudo em cinza; cor só na temperatura */
+.jc-box{margin:8px 0 4px;}
+.jc-orig{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+.jc-funil{display:flex;align-items:stretch;gap:0;}
+.jc-etapa{flex:1;min-width:0;background:var(--s2);border:1px solid var(--bdr);border-radius:var(--rsm);padding:12px 12px 10px;cursor:pointer;transition:border-color .2s;font-family:inherit;text-align:left;color:var(--tx);}
+.jc-etapa:hover,.jc-etapa.sel{border-color:var(--tx3);}
+.jc-etapa .jc-n{font-size:26px;font-weight:800;line-height:1.1;color:var(--tx);margin:4px 0 2px;}
+.jc-etapa .jc-l{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--tx2);}
+.jc-etapa .jc-p{font-size:11px;color:var(--tx3);}
+.jc-etapa .jc-bar{height:3px;background:var(--bdr);border-radius:2px;margin-top:8px;overflow:hidden;}
+.jc-etapa .jc-bar i{display:block;height:100%;background:var(--tx3);}
+.jc-chev{display:flex;align-items:center;justify-content:center;width:18px;flex-shrink:0;color:var(--tx3);font-size:14px;}
+.jc-perda{position:relative;align-self:center;font-size:11px;color:var(--tx2);background:none;border:1px dashed var(--bdr);border-radius:20px;padding:4px 10px;margin:0 4px;cursor:pointer;font-family:inherit;white-space:nowrap;}
+.jc-perda-det{display:none;position:absolute;top:calc(100% + 6px);left:50%;transform:translateX(-50%);z-index:20;background:var(--surface,var(--s2));border:1px solid var(--bdr);border-radius:var(--rsm);padding:8px 10px;min-width:190px;text-align:left;box-shadow:0 6px 20px rgba(0,0,0,.25);}
+.jc-perda:hover .jc-perda-det,.jc-perda.open .jc-perda-det{display:block;}
+.jc-perda-det div{display:flex;justify-content:space-between;gap:10px;padding:2px 0;color:var(--tx2);}
+.jc-pend{display:inline-flex;align-items:center;gap:6px;margin-top:10px;font-size:12px;color:var(--tx2);background:var(--s2);border:1px solid var(--bdr);border-radius:20px;padding:5px 12px;cursor:pointer;font-family:inherit;}
+.jc-seg{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
+.jc-grupo{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--tx2);margin:18px 0 8px;display:flex;align-items:center;gap:8px;}
+.jc-grupo i{display:inline-block;width:8px;height:8px;border-radius:50%;}
+.jc-acoes{display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.jc-btn{background:var(--s2);border:1px solid var(--bdr);color:var(--tx);padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;}
+.jc-btn:hover{border-color:var(--tx3);}
+.jc-link{background:none;border:none;color:var(--tx3);font-size:11px;text-decoration:underline;cursor:pointer;font-family:inherit;padding:0 2px;}
+.jc-selo{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap;}
+.jc-selo.vis{background:var(--s2);color:var(--tx2);border:1px solid var(--bdr);}
+.jc-selo.ok{background:var(--tx);color:var(--bg,#111);border:1px solid var(--tx);}
+.jc-selo.no{background:transparent;color:var(--tx2);border:1px solid var(--tx3);}
+.jc-motivo-txt{font-size:11px;color:var(--tx3);}
+.jc-mot-ov{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:9999;padding:16px;}
+.jc-mot{background:var(--surface,var(--s2));border:1px solid var(--bdr);border-radius:var(--r);padding:18px;max-width:380px;width:100%;}
+.jc-mot h4{margin:0 0 4px;font-size:15px;color:var(--tx);}
+.jc-mot p{margin:0 0 12px;font-size:12px;color:var(--tx3);}
+.jc-mot-opts{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+@media (max-width:760px){
+  .jc-funil{flex-direction:column;gap:6px;}
+  .jc-chev{width:auto;height:12px;transform:rotate(90deg);}
+  .jc-etapa{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .jc-etapa .jc-n{order:-1;min-width:48px;font-size:22px;margin:0;}
+  .jc-etapa .jc-bar{flex-basis:100%;}
+  .jc-perda{align-self:flex-start;}
+  .jc-perda-det{left:0;transform:none;}
+}
 .badge-status{background:var(--s2);color:var(--tx3);padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid var(--bdr);}
 
 /* LEAD CARD COMPLETO */
@@ -1260,7 +1303,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     </div>
     <div class="sb-group">
       <div class="sb-lbl">Leads</div>
-      <div class="sb-item" onclick="go('funil')"><i class="sb-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h18l-7 8.5V19l-4 2v-8.5z"/></svg></i>Funil de Qualificação</div>
+      <!-- [JORNADA_08_11] item "Funil de Qualificação" saiu do menu: a Jornada Comercial agora fica dentro da Central de Leads -->
     </div>
     <div class="sb-group">
       <div class="sb-lbl">Vendedor</div>
@@ -1606,8 +1649,9 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   </div>
 
   <!-- CENTRAL DE LEADS UNIFICADA — WhatsApp + Check-in juntos, organizados por Setor.
-       Cada lead traz a tag de origem (WhatsApp/Presencial). "Carros" (Novos + Semi-novos
-       juntos) abre por modelo GWM; os outros 3 setores vão direto pra lista final. -->
+       Cada lead traz a tag de origem (WhatsApp/Presencial). [JORNADA_08_11] Novos, Seminovos e
+       "Condição não informada" abrem por modelo; os outros 3 setores vão direto pra lista final.
+       No topo fica a Jornada Comercial (substitui a antiga aba "Funil de Qualificação"). -->
   <div class="sec" style="margin-top:8px;">Leads qualificados · WhatsApp + Check-in</div>
 
   <!-- BUSCA POR TELEFONE OU CPF (check-in) -->
@@ -1632,14 +1676,17 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
         <span class="plt-panorama-cnt">· <strong id="ciTotalCount">—</strong> no período · WhatsApp + Check-in</span>
       </div>
     </div>
-    <span class="plt-ov-t">Temperatura dos leads qualificados</span>
+    <!-- [JORNADA_08_11] A. Jornada Comercial -->
+    <span class="plt-ov-t">Jornada comercial</span>
+    <div id="jcBox" class="jc-box"></div>
+    <span class="plt-ov-t" style="margin-top:22px;">Temperatura dos leads qualificados</span>
     <div class="plt-ov-bar" id="ciOvBar"></div>
     <div class="plt-ov-pcts" id="ciOvPcts"></div>
     <span class="plt-ov-t" style="margin-top:22px;">Demanda por setor</span>
     <div class="cat-grid" id="ciSectorCardsGrid"></div>
   </div>
 
-  <!-- ESTADO 2: modelo de carro — só aparece dentro do setor "Carros" -->
+  <!-- ESTADO 2: modelo de carro — só aparece dentro de Novos / Seminovos / Condição não informada -->
   <div id="ciPltModelCards" style="display:none;">
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;">
       <button onclick="backToCISectors()" style="background:var(--s2);border:1px solid var(--bdr);color:var(--tx2);padding:7px 16px;border-radius:var(--rsm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;">&#8592; Setores</button>
@@ -2986,12 +3033,12 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   <div class="card" style="padding:0;overflow:hidden;margin-bottom:20px;">
     <div class="vd-scroll">
       <table class="vd-tbl">
-        <thead><tr><th>#</th><th>Vendedor</th><th class="n">Leads pegos</th><th class="n">Vendas</th><th class="n">Não vendeu</th><th class="n">Aguardando</th><th class="n">Taxa de venda</th></tr></thead>
-        <tbody id="vdBody"><tr><td colspan="7" style="color:var(--tx2)">Carregando…</td></tr></tbody>
+        <thead><tr><th>#</th><th>Vendedor</th><th class="n">Leads pegos</th><th class="n">Visitas</th><th class="n">Fechamento na loja</th><th class="n">Vendas</th><th class="n">Não vendeu</th><th class="n">Aguardando</th><th class="n">Taxa de venda</th></tr></thead>
+        <tbody id="vdBody"><tr><td colspan="9" style="color:var(--tx2)">Carregando…</td></tr></tbody>
       </table>
     </div>
     <div style="padding:10px 16px;font-size:11px;color:var(--tx3);border-top:1px solid var(--bdr);">
-      Ordem: quem mais vendeu primeiro. "Leads pegos" = leads que o vendedor assumiu no mês (clicando no nome dele). "Aguardando" = ainda não foi marcado se vendeu — clique em "ver leads" para marcar.
+      Ordem: quem mais vendeu primeiro. "Leads pegos" = leads que o vendedor assumiu no mês (clicando no nome dele). "Visitas" = desses, quantos foram à loja. "Fechamento na loja" = vendas ÷ visitas. "Aguardando" = ainda não foi marcado se vendeu — clique em "ver leads" para marcar (primeiro a visita, depois a venda).
     </div>
   </div>
 </div>
@@ -3391,6 +3438,7 @@ function toggleMobileMenu(force){
 }
 
 function go(id){
+  if(id==='funil') id='plataformas'; // [JORNADA_08_11] aba antiga (inclusive salva no navegador) abre a Central de Leads
   toggleMobileMenu(false);
   localStorage.setItem('rui_aba_ativa', id);
   if(id!=='omnichannel' && typeof ocOnClose==='function') ocOnClose();
@@ -3755,6 +3803,7 @@ function ciPresencialLeadsRaw(){
         // contagem de contatos anteriores — etiqueta de lead reincidente
         qtdConversas:        l.qtd_conversas ?? null,
         qtdCheckins:         l.qtd_visitas_presenciais ?? null,
+        condicao:            l.condicao || '',   // [JORNADA_08_11]
         _lead:               l   // [CARD_PRESENCIAL_04_11] lead completo, p/ abrir o card ao clicar
       };
       // A nota é sempre a temperatura que o vendedor escolheu no formulário —
@@ -4060,46 +4109,49 @@ const CI_SETORES = [
 ];
 
 // ============================================================
-// CENTRAL DE LEADS — "Novos" + "Semi-novos" viram um card só: "Carros"
+// CENTRAL DE LEADS — setores da grade "Demanda por setor"
 // ============================================================
-// Pedido 02/09: na aba Central de Leads a pessoa não escolhe mais entre
-// veículo 0 km e seminovo. Os dois setores aparecem juntos num único card
-// "Carros", com os mesmos modelos GWM dentro (Haval, ORA, Tank, Poer, WEY).
-// Se o lead disser no meio da conversa que quer novo ou seminovo, isso vai
-// pro resumo do Rui — mas não é mais uma pergunta fixa de qualificação.
-// O RESTO do painel (Check-in, Cobertura 24/7, Funil, tabela do Dashboard)
-// continua separando Novos/Semi-novos: só a grade de setores da Central de
-// Leads usa CL_SETORES no lugar de CI_SETORES.
-const CL_CARROS_MERGE = ['Novos', 'Semi-novos'];
-const CL_SETORES = [
-  {nome:'Carros', cor:'#38BDF8', temModelo:true, qualificavel:true},
-  ...CI_SETORES.filter(s => !CL_CARROS_MERGE.includes(s.nome)),
-];
-// setor real gravado no lead -> nome do setor como ele aparece na Central de Leads
-function clSetorDisplay(setor){
-  return CL_CARROS_MERGE.includes(setor) ? 'Carros' : setor;
+// [JORNADA_08_11] Decisão de 02/09 REVERTIDA em 08/11: a Central de Leads volta a
+// separar "Novos" e "Seminovos" (antes os dois viravam um card só, "Carros").
+// O valor gravado no banco continua 'Semi-novos' (enum setor_lead); só o rótulo
+// exibido muda pra "Seminovos". Check-in, Cobertura 24/7 e o resto do painel
+// continuam usando CI_SETORES, sem mudança.
+const CL_SETOR_SEM_CONDICAO = 'Condição não informada'; // setor virtual: tem modelo, mas não disse se é novo ou seminovo
+const CL_SETORES = CI_SETORES.map(s => Object.assign({}, s, {
+  rotulo: s.nome==='Semi-novos' ? 'Seminovos' : s.nome
+}));
+const CL_SETOR_VIRTUAL = {nome: CL_SETOR_SEM_CONDICAO, rotulo: CL_SETOR_SEM_CONDICAO, cor:'var(--tx3)', temModelo:true, qualificavel:true};
+// Setores que NÃO são venda de carro — ficam fora da Jornada Comercial.
+const JC_SETORES_FORA = ['Oficina', 'Reclamações e elogios', 'Vendas de peças e acessórios'];
+function clSetorRotulo(nome){
+  if(nome===CI_SETOR_OUTRO) return 'Não informado';
+  const s = clSetorInfo(nome);
+  return s ? (s.rotulo || s.nome) : (nome || '');
 }
-// Setor EFETIVO do lead na Central de Leads (o que a grade "Demanda por setor" usa).
-// Regra, nesta ordem:
-//   1. Se o n8n já gravou um setor real (Novos/Semi-novos/Oficina/Reclamações/Peças),
-//      usa ele — clSetorDisplay junta Novos+Semi-novos em "Carros".
-//   2. Se NÃO veio setor, mas o Rui capturou um veículo de interesse (veiculo_interesse,
-//      que aqui vira o campo `modelo`), o lead está no funil de venda de carro -> "Carros".
-//      Desde 02/09 o Rui não pergunta mais "novo ou seminovo" (bloco G1 saiu da
-//      qualificação), então a coluna `setor` quase nunca chega preenchida para lead de
-//      WhatsApp — sem esta regra, TODO lead de carro caía em "Não informado" mesmo com
-//      interesse claro (ex.: lead Lorena Buarque, modelo "ora3", 09/09/2026).
-//   3. Sem setor e sem veículo de interesse -> null (cai no card "Não informado",
-//      pra ela continuar enxergando quem realmente não foi identificado).
+// condicao_veiculo do lead (texto livre gravado pelo IAn) -> setor
+function clSetorPorCondicao(cond){
+  const c = String(cond || '').trim();
+  if(/^novo/i.test(c)) return 'Novos';
+  if(/semi|usad/i.test(c)) return 'Semi-novos';
+  return null; // "sem resposta após 1 tentativa" e qualquer outro valor = não informado
+}
+// Setor EFETIVO do lead na Central de Leads. Regra, nesta ordem:
+//   1. setor gravado pelo n8n/check-in (Novos/Semi-novos/Oficina/Reclamações/Peças);
+//   2. condicao_veiculo: "novo..." -> Novos; "semi..."/"usado..." -> Semi-novos;
+//   3. tem veículo de interesse, mas a condição não veio -> "Condição não informada";
+//   4. nada disso -> null (card "Não informado").
 function clSetorEfetivo(lead){
-  const real = clSetorDisplay(lead && lead.setor);
-  if(CL_SETORES.some(s => s.nome === real)) return real;
-  const modeloTxt = String((lead && (lead.modelo || lead.modelos)) || '').trim();
-  if(modeloTxt) return 'Carros';
+  if(!lead) return null;
+  if(CL_SETORES.some(s => s.nome === lead.setor)) return lead.setor;
+  const porCond = clSetorPorCondicao(lead.condicao);
+  if(porCond) return porCond;
+  const modeloTxt = String(lead.modelo || lead.modelos || '').trim();
+  if(modeloTxt) return CL_SETOR_SEM_CONDICAO;
   return null;
 }
-// info (cor / temModelo) do setor da Central de Leads; cai pro CI_SETORES nos que não mudaram
+// info (cor / temModelo / rótulo) do setor da Central de Leads
 function clSetorInfo(nome){
+  if(nome===CL_SETOR_SEM_CONDICAO) return CL_SETOR_VIRTUAL;
   return CL_SETORES.find(s => s.nome === nome) || CI_SETORES.find(s => s.nome === nome) || null;
 }
 
@@ -4196,6 +4248,214 @@ function waLeadsComSetor(){
   return getLeadsForPeriod().wa||[];
 }
 
+// ============================================================
+// [JORNADA_08_11] JORNADA COMERCIAL — Recebidos > Qualificados > Com vendedor >
+// Visitaram a loja > Venderam. Usa os MESMOS leads da Central ([...waLeadsCL(),
+// ...ciLeadsCL()], que já respeitam filtros e período). Funil cumulativo: cada lead
+// conta em todas as etapas até a dele. "Não vendeu" fica na etapa 4, marcado como perdido.
+// Tudo em cinza — cor, na Central de Leads, é só temperatura.
+// ============================================================
+const JC_ETAPAS = [
+  {k:1, nome:'Recebidos'}, {k:2, nome:'Qualificados'}, {k:3, nome:'Com vendedor'},
+  {k:4, nome:'Visitaram a loja'}, {k:5, nome:'Venderam'}
+];
+const JC_MOTIVOS = [
+  ['preco_condicao','Preço/condição'], ['financiamento_negado','Financiamento negado'],
+  ['avaliacao_troca','Avaliação da troca'], ['comprou_concorrente','Comprou em outro lugar'],
+  ['vai_pensar','Vai pensar'], ['desistiu','Desistiu da compra'], ['outro','Outro']
+];
+const JC_JORNADA = '__jornada__';  // sentinela de currentCISetor: lista aberta pelo funil
+let clSegmento = 'todos';          // chip de segmento ativo na lista de leads
+function jcEhPresencial(l){
+  return !!l && (l._origem==='presencial' || (l.canal||'')==='presencial' || (l.dt!==undefined && l.vend!==undefined));
+}
+function jcVendedorPres(l){ const v = (l && l.vend) || ''; return v && v!=='—' ? v : ''; }
+function jcPerdido(l){
+  if(jcEhPresencial(l)) return ['Desistiu','Saiu sem definição'].includes(l.desfecho);
+  return l.vendaStatus==='nao_vendeu';
+}
+// 1 Recebidos · 2 Qualificados · 3 Com vendedor · 4 Visitaram a loja · 5 Venderam
+function estagioJornada(l){
+  if(!l) return 1;
+  const pres = jcEhPresencial(l);
+  if(l.vendaStatus==='vendeu' || (pres && l.desfecho==='Comprou')) return 5;
+  if(jcPerdido(l)) return 4;
+  if(l.visitouLojaEm || pres) return 4;
+  if(l.vendedorResponsavel || (pres && jcVendedorPres(l))) return 3;
+  if(l.qualificadoEm || (pres && l.score!=null)) return 2;
+  return 1;
+}
+function jcMotivoTexto(l){
+  if(jcEhPresencial(l)) return l.desfecho || 'Não informado';
+  const m = JC_MOTIVOS.find(x => x[0]===l.vendaMotivoPerda);
+  return m ? m[1] : 'Sem motivo informado';
+}
+// Leads da Jornada: só venda de carro (Oficina, Reclamações e Peças ficam de fora)
+function jcLeads(){
+  return [
+    ...waLeadsCL().map(l=>({...l, _origem:'whatsapp'})),
+    ...ciLeadsCL().map(r=>({...r, _origem:'presencial'}))
+  ].filter(l => !JC_SETORES_FORA.includes(clSetorEfetivo(l)));
+}
+// Pendência de registro: está com vendedor há mais de 48h e ninguém marcou a visita
+function jcPendente(l){
+  return estagioJornada(l)===3 && !!l.vendedorAssumiuEm && (Date.now() - new Date(l.vendedorAssumiuEm).getTime()) > 48*3600*1000;
+}
+// Segmentos da lista (chips) — 'ge1'..'ge5' vêm do clique numa etapa do funil
+const JC_SEGMENTOS = [
+  ['todos','Todos'], ['wa','Só WhatsApp'], ['vend','Com vendedor'],
+  ['vis','Visitou a loja'], ['vendeu','Vendeu'], ['perdido','Não vendeu']
+];
+function jcNoSegmento(l, seg){
+  const e = estagioJornada(l);
+  if(!seg || seg==='todos') return true;
+  if(seg==='wa') return e<=2;
+  if(seg==='vend') return e===3;
+  if(seg==='vis') return e===4 && !jcPerdido(l);
+  if(seg==='vendeu') return e===5;
+  if(seg==='perdido') return jcPerdido(l);
+  if(seg==='pend') return jcPendente(l);
+  if(/^ge[1-5]$/.test(seg)) return e >= +seg.slice(2);
+  return true;
+}
+function jcRotuloSegmento(seg){
+  const s = JC_SEGMENTOS.find(x=>x[0]===seg);
+  if(s) return s[1];
+  if(seg==='pend') return 'Pendências de registro';
+  if(/^ge[1-5]$/.test(seg)) return 'Etapa: ' + JC_ETAPAS[+seg.slice(2)-1].nome;
+  return seg;
+}
+function renderJornadaComercial(){
+  const box = document.getElementById('jcBox');
+  if(!box) return;
+  const leads = jcLeads();
+  const est = leads.map(estagioJornada);
+  const cnt = JC_ETAPAS.map(e => est.filter(x => x>=e.k).length);
+  const perdidos = leads.filter(jcPerdido);
+  const motivos = {};
+  perdidos.forEach(l => { const t = jcMotivoTexto(l); motivos[t] = (motivos[t]||0) + 1; });
+  const pend = leads.filter(jcPendente).length;
+  const orig = [['todos','Todos'],['whatsapp','WhatsApp'],['presencial','Presencial']]
+    .map(([v,t]) => `<span class="filtro-cl-opt${selectedOrigemCL===v?' sel':''}" onclick="setOrigemFilterCL('${v}')">${t}</span>`).join('');
+  const etapaHTML = (e, i) => {
+    const n = cnt[i];
+    const sub = i===0 ? 'leads no período' : (cnt[i-1]>0 ? Math.round(n/cnt[i-1]*100)+'% da etapa anterior' : '—');
+    const w = cnt[0]>0 ? Math.round(n/cnt[0]*100) : 0;
+    return `<button type="button" class="jc-etapa" onclick="jcAbrirLista('ge${e.k}')" title="Ver os leads desta etapa">
+      <div class="jc-l">${e.nome}</div><div class="jc-n">${n}</div><div class="jc-p">${sub}</div>
+      <div class="jc-bar"><i style="width:${w}%"></i></div></button>`;
+  };
+  const detMotivos = Object.keys(motivos).sort((a,b)=>motivos[b]-motivos[a])
+    .map(t => `<div><span>${_escHtml(t)}</span><strong>${motivos[t]}</strong></div>`).join('')
+    || '<div><span>Nenhum no período</span></div>';
+  const perdaHTML = `<span class="jc-perda" role="button" tabindex="0" onclick="this.classList.toggle('open')" title="Passe o mouse ou toque para ver os motivos">Não venderam: <strong>${perdidos.length}</strong>
+      <span class="jc-perda-det">${detMotivos}${perdidos.length?`<div><button type="button" class="jc-link" onclick="event.stopPropagation();jcAbrirLista('perdido')">ver leads</button></div>`:''}</span></span>`;
+  let funil = '';
+  JC_ETAPAS.forEach((e,i) => {
+    if(i>0) funil += '<span class="jc-chev">›</span>';
+    if(i===4) funil += perdaHTML + '<span class="jc-chev">›</span>';
+    funil += etapaHTML(e,i);
+  });
+  box.innerHTML = `<div class="jc-orig">${orig}</div>
+    <div class="jc-funil">${funil}</div>
+    <button type="button" class="jc-pend" onclick="jcAbrirLista('pend')" title="Leads com vendedor há mais de 48h sem visita registrada">⏳ Pendências de registro: <strong>${pend}</strong></button>`;
+}
+// Abre a lista de leads a partir do funil (todas as etapas de venda de carro)
+function jcAbrirLista(seg){
+  currentCISetor = JC_JORNADA;
+  currentCIModel = null;
+  clSegmento = seg || 'todos';
+  document.getElementById('ciPltCategories').style.display='none';
+  document.getElementById('ciPltModelCards').style.display='none';
+  document.getElementById('ciPltModelList').style.display='block';
+  renderCILeadList();
+}
+function jcSetSegmento(seg){ clSegmento = seg; renderCILeadList(); }
+
+// ── Ações da jornada no card do WhatsApp (gravadas no banco via ian_vendedor_acao) ──
+function jcJs(v){ return _escHtml(String(v==null?'':v).replace(/\\/g,'\\\\').replace(/'/g,"\\'")); }
+function jcLead(sid){ return (Array.isArray(ACTIVE_LEADS) ? ACTIVE_LEADS : []).find(l => l.senderId===sid) || null; }
+function jcNome(lead, sid){ return (lead && (lead.nome||lead.telefone)) || sid || 'este lead'; }
+function jcRedesenhar(){
+  vendedorRedesenhar();
+  try{ if(document.getElementById('ciPltCategories')?.style.display!=='none') renderCISectorCards(); }catch(e){}
+}
+function jcAcoesHTML(l){
+  const sid = jcJs(l.senderId);
+  const vis = l.visitouLojaEm ? '<span class="jc-selo vis">🏬 Visitou</span>' : '';
+  const corrigir = `<button type="button" class="jc-link" onclick="event.stopPropagation();jcDesfazerVenda('${sid}')">corrigir</button>`;
+  if(l.vendaStatus==='vendeu') return `<span class="jc-acoes">${vis}<span class="jc-selo ok">✓ Vendeu</span>${corrigir}</span>`;
+  if(l.vendaStatus==='nao_vendeu') return `<span class="jc-acoes">${vis}<span class="jc-selo no">✗ Não vendeu</span>${l.vendaMotivoPerda?`<span class="jc-motivo-txt">${_escHtml(jcMotivoTexto(l))}</span>`:''}${corrigir}</span>`;
+  if(l.visitouLojaEm) return `<span class="jc-acoes">${vis}
+    <button type="button" class="jc-btn" onclick="event.stopPropagation();jcMarcarVendeu('${sid}')">✓ Vendeu</button>
+    <button type="button" class="jc-btn" onclick="event.stopPropagation();jcAbrirMotivo('${sid}')">✗ Não vendeu</button>
+    <button type="button" class="jc-link" onclick="event.stopPropagation();jcDesfazerVisita('${sid}')">desfazer visita</button></span>`;
+  return `<span class="jc-acoes"><button type="button" class="jc-btn" onclick="event.stopPropagation();jcMarcarVisita('${sid}')">🏬 Visitou a loja</button></span>`;
+}
+async function jcMarcarVisita(sid){
+  const lead = jcLead(sid);
+  if(!confirm(`Confirmar: ${jcNome(lead,sid)} visitou a loja?`)) return;
+  const r = await vendedorApi({acao:'visita', sender_id: sid});
+  if(r.ok){
+    if(lead){ lead.visitouLojaEm = r.visitou_loja_em || lead.visitouLojaEm || new Date().toISOString(); lead.visitaOrigem = lead.visitaOrigem || 'vendedor'; }
+    transfToast('🏬 Visita à loja registrada.');
+  } else vendedorAvisarResultado(r, (lead && lead.vendedorResponsavel) || '');
+  jcRedesenhar();
+}
+async function jcDesfazerVisita(sid){
+  const lead = jcLead(sid);
+  if(!confirm(`Desfazer a visita à loja de ${jcNome(lead,sid)}?`)) return;
+  const r = await vendedorApi({acao:'desfazer_visita', sender_id: sid});
+  if(r.ok){ if(lead){ lead.visitouLojaEm = null; lead.visitaOrigem = null; } transfToast('Visita desfeita.'); }
+  else vendedorAvisarResultado(r, (lead && lead.vendedorResponsavel) || '');
+  jcRedesenhar();
+}
+async function jcMarcarVendeu(sid){
+  const lead = jcLead(sid);
+  if(!confirm(`Confirmar: ${jcNome(lead,sid)} — VENDEU?`)) return;
+  const r = await vendedorApi({acao:'venda', sender_id: sid, status:'vendeu'});
+  if(r.ok){ if(lead){ lead.vendaStatus = 'vendeu'; lead.vendaMotivoPerda = null; } transfToast('✓ Venda registrada.'); }
+  else vendedorAvisarResultado(r, (lead && lead.vendedorResponsavel) || '');
+  jcRedesenhar();
+}
+// "Não vendeu": seletor rápido de motivo (opcional — "Pular" grava sem motivo)
+function jcAbrirMotivo(sid){
+  const lead = jcLead(sid);
+  jcFecharMotivo();
+  const ov = document.createElement('div');
+  ov.className = 'jc-mot-ov'; ov.id = 'jcMotOv';
+  ov.onclick = ev => { if(ev.target===ov) jcFecharMotivo(); };
+  const s = jcJs(sid);
+  ov.innerHTML = `<div class="jc-mot" role="dialog" aria-label="Motivo de não ter vendido">
+    <h4>✗ Não vendeu — ${_escHtml(jcNome(lead,sid))}</h4>
+    <p>Qual foi o motivo? (opcional)</p>
+    <div class="jc-mot-opts">${JC_MOTIVOS.map(([v,t])=>`<button type="button" class="jc-btn" onclick="jcEnviarNaoVendeu('${s}','${v}')">${t}</button>`).join('')}</div>
+    <div style="display:flex;justify-content:space-between;gap:8px;">
+      <button type="button" class="jc-link" onclick="jcFecharMotivo()">cancelar</button>
+      <button type="button" class="jc-btn" onclick="jcEnviarNaoVendeu('${s}','')">Pular</button>
+    </div></div>`;
+  document.body.appendChild(ov);
+}
+function jcFecharMotivo(){ const o = document.getElementById('jcMotOv'); if(o) o.remove(); }
+async function jcEnviarNaoVendeu(sid, motivo){
+  jcFecharMotivo();
+  const lead = jcLead(sid);
+  const campos = {acao:'venda', sender_id: sid, status:'nao_vendeu'};
+  if(motivo) campos.motivo = motivo;
+  const r = await vendedorApi(campos);
+  if(r.ok){ if(lead){ lead.vendaStatus = 'nao_vendeu'; lead.vendaMotivoPerda = r.motivo_perda!==undefined ? r.motivo_perda : (motivo||null); } transfToast('Registrado como não vendeu.'); }
+  else vendedorAvisarResultado(r, (lead && lead.vendedorResponsavel) || '');
+  jcRedesenhar();
+}
+async function jcDesfazerVenda(sid){
+  const lead = jcLead(sid);
+  if(!confirm(`Corrigir: apagar o resultado (vendeu / não vendeu) de ${jcNome(lead,sid)}?`)) return;
+  const r = await vendedorApi({acao:'desfazer_venda', sender_id: sid});
+  if(r.ok){ if(lead){ lead.vendaStatus = null; lead.vendaMotivoPerda = null; } transfToast('Resultado apagado — marque de novo.'); }
+  else vendedorAvisarResultado(r, (lead && lead.vendedorResponsavel) || '');
+  jcRedesenhar();
+}
+
 // ESTADO 1 — cartões de setor (bloco principal). Junta WhatsApp + Check-in
 // num só painel. A distribuição de temperatura só considera quem foi
 // qualificado (WhatsApp sempre é; check-in só quando o vendedor já definiu
@@ -4207,6 +4467,9 @@ function renderCISectorCards(){
   const total = arr.length;
   const totalEl=document.getElementById('ciTotalCount');
   if(totalEl) totalEl.textContent=total;
+
+  // [JORNADA_08_11] A. Jornada Comercial (mesmos leads, mesmos filtros/período)
+  try{ renderJornadaComercial(); }catch(e){ console.warn('[jornada] não foi possível desenhar o funil', e); }
 
   // Painel de temperatura (Premium/Quente/Engajado/Morno/Frio) — só qualificados
   const qualificados = arr.filter(l=>l.score!=null);
@@ -4224,34 +4487,43 @@ function renderCISectorCards(){
     return `<span style="color:${tempColor(c.t)}">${c.t} ${pct}%</span>`;
   }).join('');
 
-  // Cartões de setor — Novos + Semi-novos entram juntos no card "Carros" (ver CL_SETORES).
-  // clSetorEfetivo: usa o setor gravado quando existe; senão, infere "Carros" pra quem
-  // tem veículo de interesse capturado (ver comentário da função).
-  const counts = CL_SETORES.map(s=>({s, n: arr.filter(r=>clSetorEfetivo(r)===s.nome).length}));
-  // Leads que continuam sem setor E sem veículo de interesse — vão pro card "Não
-  // informado", mesmo padrão do card "Outro / não informado" de modelo abaixo.
-  const semSetor = arr.filter(r=>clSetorEfetivo(r)===null).length;
-  container.innerHTML = counts.map(({s,n})=>{
+  // Cartões de setor — [JORNADA_08_11] Novos e Seminovos separados de novo (ver clSetorEfetivo),
+  // todos em cinza: na Central de Leads, cor significa só temperatura.
+  const cardHTML = (nome, rotulo, n, sub, extra) => {
     const pct = total>0?Math.round(n/total*100):0;
-    return `<div class="cat-card" onclick="openCISector('${s.nome}')" style="border-color:${s.cor}44;background:${s.cor}14;">
-      <div class="cat-card-top"><span class="cat-card-chip" style="background:${s.cor};"></span><div class="cat-card-lbl" style="color:${s.cor};">${s.nome}</div></div>
-      <div class="cat-card-cnt" style="color:${s.cor};">${n}</div>
+    return `<div class="cat-card" onclick="openCISector('${_escHtml(nome)}')" style="border-color:var(--bdr);background:var(--s2);">
+      <div class="cat-card-top"><span class="cat-card-chip" style="background:var(--tx3);"></span><div class="cat-card-lbl" style="color:var(--tx2);">${_escHtml(rotulo)}</div></div>
+      <div class="cat-card-cnt" style="color:var(--tx);">${n}</div>
       <div class="cat-card-pct" style="margin-bottom:2px;">${pct}% do total</div>
-      <div class="cat-card-sub">${s.temModelo?'leads com interesse':'atendimentos registrados'}</div>
+      <div class="cat-card-sub">${sub}</div>
+      ${extra?`<div class="cat-card-sub" style="margin-top:4px;color:var(--tx3);">${extra}</div>`:''}
     </div>`;
-  }).join('') + (semSetor>0 ? `<div class="cat-card" onclick="openCISector('${CI_SETOR_OUTRO}')" style="border-color:var(--bdr);background:var(--s2);">
-      <div class="cat-card-top"><span class="cat-card-chip" style="background:var(--tx3);"></span><div class="cat-card-lbl" style="color:var(--tx3);">Não informado</div></div>
-      <div class="cat-card-cnt" style="color:var(--tx3);">${semSetor}</div>
-      <div class="cat-card-pct" style="margin-bottom:2px;">${total>0?Math.round(semSetor/total*100):0}% do total</div>
-      <div class="cat-card-sub">setor ainda não confirmado</div>
-    </div>` : '');
+  };
+  const html = CL_SETORES.map(s=>{
+    const doSetor = arr.filter(r=>clSetorEfetivo(r)===s.nome);
+    let extra = '';
+    if(s.nome==='Novos' || s.nome==='Semi-novos'){
+      const vis = doSetor.filter(l=>estagioJornada(l)>=4).length;
+      const ven = doSetor.filter(l=>estagioJornada(l)===5).length;
+      extra = `${vis} visitara${vis===1?'':'m'} · ${ven} vendera${ven===1?'':'m'}`;
+    }
+    return cardHTML(s.nome, s.rotulo||s.nome, doSetor.length, s.temModelo?'leads com interesse':'atendimentos registrados', extra);
+  });
+  // Setor virtual: tem modelo de interesse mas não disse se é novo ou seminovo (só aparece se N>0)
+  const semCond = arr.filter(r=>clSetorEfetivo(r)===CL_SETOR_SEM_CONDICAO).length;
+  if(semCond>0) html.push(cardHTML(CL_SETOR_SEM_CONDICAO, CL_SETOR_SEM_CONDICAO, semCond, 'novo ou seminovo não informado', ''));
+  // Leads sem setor e sem veículo de interesse — card "Não informado"
+  const semSetor = arr.filter(r=>clSetorEfetivo(r)===null).length;
+  if(semSetor>0) html.push(cardHTML(CI_SETOR_OUTRO, 'Não informado', semSetor, 'setor ainda não confirmado', ''));
+  container.innerHTML = html.join('');
 }
 
-// ESTADO 2 — só existe dentro do setor "Carros" (Novos + Semi-novos juntos):
-// abre o mesmo grid de modelos GWM que já existia, filtrado pelo setor escolhido.
+// ESTADO 2 — só existe nos setores com modelo (Novos / Seminovos / Condição não informada):
+// abre o grid de modelos da loja, filtrado pelo setor escolhido.
 function openCISector(setor){
   currentCISetor = setor;
   currentCIModel = null;
+  clSegmento = 'todos'; // [JORNADA_08_11]
   const info = clSetorInfo(setor);
   if(info && info.temModelo){
     document.getElementById('ciPltCategories').style.display='none';
@@ -4268,8 +4540,8 @@ function renderCIModelCardsForSector(setor){
   const container = document.getElementById('ciModelCardsGrid');
   const titleEl = document.getElementById('ciModelCardsTitle');
   if(!container) return;
-  const info = clSetorInfo(setor);
-  if(titleEl) titleEl.innerHTML = `<span style="color:${info?.cor}">${setor}</span> · modelo de interesse`;
+  // [JORNADA_08_11] títulos e cards em cinza (cor = só temperatura na Central de Leads)
+  if(titleEl) titleEl.innerHTML = `<span style="color:var(--tx)">${_escHtml(clSetorRotulo(setor))}</span> · modelo de interesse`;
   const arr = [...waLeadsCL(), ...ciLeadsCL()].filter(r=>clSetorEfetivo(r)===setor);
   const total = arr.length;
   const matchesAlgumModelo = r => CI_GWM_MODELS.some(m=>_modeloBateMarca(r.modelos||r.modelo, m.name));
@@ -4277,23 +4549,17 @@ function renderCIModelCardsForSector(setor){
     m, n: arr.filter(r=>_modeloBateMarca(r.modelos||r.modelo, m.name)).length
   }));
   // Leads sem modelo capturado ainda (comum logo no início da conversa) ou com texto
-  // fora dos 5 nomes fixos — sem esse card eles somem da tela por modelo mas continuam
+  // fora dos nomes da loja — sem esse card eles somem da tela por modelo mas continuam
   // contados no total do setor, fazendo a soma dos cards nunca bater com o total.
   const semModelo = arr.filter(r=>!matchesAlgumModelo(r)).length;
-  container.innerHTML = counts.map(({m,n})=>{
-    const pct = total>0?Math.round(n/total*100):0;
-    return `<div class="cat-card" onclick="openCIModel('${m.name}')" style="border-color:${m.bdr};background:${m.bg};">
-      <div class="cat-card-top"><span class="cat-card-chip" style="background:${m.color};"></span><div class="cat-card-lbl" style="color:${m.color};">${m.name}</div></div>
-      <div class="cat-card-cnt" style="color:${m.color};">${n}</div>
-      <div class="cat-card-pct" style="margin-bottom:2px;">${pct}% do total</div>
-      <div class="cat-card-sub">leads com interesse</div>
+  const card = (onclickArg, rotulo, n, sub) => `<div class="cat-card" onclick="openCIModel('${_escHtml(onclickArg)}')" style="border-color:var(--bdr);background:var(--s2);">
+      <div class="cat-card-top"><span class="cat-card-chip" style="background:var(--tx3);"></span><div class="cat-card-lbl" style="color:var(--tx2);">${_escHtml(rotulo)}</div></div>
+      <div class="cat-card-cnt" style="color:var(--tx);">${n}</div>
+      <div class="cat-card-pct" style="margin-bottom:2px;">${total>0?Math.round(n/total*100):0}% do total</div>
+      <div class="cat-card-sub">${sub}</div>
     </div>`;
-  }).join('') + (semModelo>0 ? `<div class="cat-card" onclick="openCIModel('${CI_OUTRO_MODELO}')" style="border-color:var(--bdr);background:var(--s2);">
-      <div class="cat-card-top"><span class="cat-card-chip" style="background:var(--tx3);"></span><div class="cat-card-lbl" style="color:var(--tx3);">Outro / não informado</div></div>
-      <div class="cat-card-cnt" style="color:var(--tx3);">${semModelo}</div>
-      <div class="cat-card-pct" style="margin-bottom:2px;">${total>0?Math.round(semModelo/total*100):0}% do total</div>
-      <div class="cat-card-sub">modelo ainda não capturado</div>
-    </div>` : '');
+  container.innerHTML = counts.map(({m,n})=>card(m.name, m.name, n, 'leads com interesse')).join('')
+    + (semModelo>0 ? card(CI_OUTRO_MODELO, 'Outro / não informado', semModelo, 'modelo ainda não capturado') : '');
 }
 
 function openCIModel(model){
@@ -4380,7 +4646,7 @@ function buildCheckinResumoHTML(lead){
 // Card de um lead de check-in (canal presencial) — usado tanto na Central de
 // Leads unificada quanto na aba Check-in. Mostra "Não qualificado" quando o
 // setor não é Novos/Semi-novos (não passa pelo processo de qualificação).
-function ciHiCardHTML(r){
+function ciHiCardHTML(r, opts){
   const cor    = ciAvatarColor(r.nome);
   const iniA   = r.nome.charAt(0).toUpperCase();
   const dtFmt  = r.dt ? new Date(r.dt).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
@@ -4396,7 +4662,9 @@ function ciHiCardHTML(r){
   // [CARD_PRESENCIAL_04_11] o card do check-in agora abre o resumo completo do lead (antes não abria)
   window._ciCardRegs = window._ciCardRegs || [];
   const regIdx = window._ciCardRegs.push(r) - 1;
-  return `<div class="ci-hi" style="cursor:pointer;" title="Ver resumo do lead" onclick="ciAbrirCardPresencial(${regIdx})">
+  // [JORNADA_08_11] faixa lateral de 3px na cor da temperatura (só na Central de Leads)
+  const faixa = (opts && opts.faixa) ? `border-left:3px solid ${r.temperatura ? tempColor(r.temperatura) : 'var(--bdr)'};` : '';
+  return `<div class="ci-hi" style="cursor:pointer;${faixa}" title="Ver resumo do lead" onclick="ciAbrirCardPresencial(${regIdx})">
     <div class="ci-hi-head">
       <div class="ci-hi-av" style="background:${cor}">${iniA}</div>
       <div style="flex:1;">
@@ -4452,7 +4720,10 @@ function waHiCardHTML(l, idx){
   const tempoTxt = (info.vendedor && info.atendido_em && l.qualificadoEm)
     ? fmtDecorrido(new Date(info.atendido_em)-new Date(l.qualificadoEm)) : null;
   let resultado = '';
-  if(info.vendedor && info.state==='atendendo'){
+  // [JORNADA_08_11] lead do banco com vendedor: Visitou a loja -> Vendeu / Não vendeu (com motivo)
+  if(l.senderId && l.vendedorResponsavel){
+    resultado = jcAcoesHTML(l);
+  } else if(info.vendedor && info.state==='atendendo'){
     resultado = `<button class="btn-cliente" onclick="event.stopPropagation();leadOutcome('${nomeEsc}','cliente')">✓ cliente</button>
       <button class="btn-nao-fechou" onclick="event.stopPropagation();leadOutcome('${nomeEsc}','nao-fechou')">✗ não fechou</button>`;
   } else if(info.state==='cliente'){
@@ -4467,7 +4738,8 @@ function waHiCardHTML(l, idx){
   // então mantém o badge junto das tags; depois de Transferido as tags/nome
   // já deixam claro que o lead foi atribuído, sem precisar repetir o texto.
   const statusHtml = isTransferred ? vendedorHtml : `<span class="badge-status">${l.status||'—'}</span>${vendedorHtml}`;
-  return `<div class="ci-hi" style="cursor:pointer;" onclick="openLeadCard(window._ciUnifiedLeads[${idx}])">
+  const faixa = `border-left:3px solid ${l.temperatura ? tempColor(l.temperatura) : 'var(--bdr)'};`; // [JORNADA_08_11]
+  return `<div class="ci-hi" style="cursor:pointer;${faixa}" onclick="openLeadCard(window._ciUnifiedLeads[${idx}])">
     <div class="ci-hi-head">
       <div class="ci-hi-av" style="background:${cor}">${iniA}</div>
       <div style="flex:1;">
@@ -4493,9 +4765,8 @@ function waHiCardHTML(l, idx){
 function renderCILeadList(){
   const setor  = currentCISetor;
   const model  = currentCIModel;
-  const setorLabel = setor===CI_SETOR_OUTRO ? 'Não informado' : setor;
-  const sInfo  = clSetorInfo(setor);
-  const gwm    = model===CI_OUTRO_MODELO ? null : CI_GWM_MODELS.find(m=>m.name===model);
+  const daJornada = setor===JC_JORNADA; // [JORNADA_08_11] lista aberta pelo funil
+  const setorLabel = daJornada ? 'Jornada comercial' : clSetorRotulo(setor);
   const matchesModel = m => {
     if(!model) return true;
     // Mesma regra dos cards de modelo (_modeloBateMarca entende apelidos, ex.: "h6" = Haval)
@@ -4503,46 +4774,68 @@ function renderCILeadList(){
     return _modeloBateMarca(m, model);
   };
   // "Não informado": pega os leads que continuam sem setor efetivo (nem gravado
-  // pelo n8n, nem inferido por veículo de interesse — ver clSetorEfetivo).
+  // pelo n8n, nem inferido por condição/veículo de interesse — ver clSetorEfetivo).
   const matchesSetor = r => setor===CI_SETOR_OUTRO ? clSetorEfetivo(r)===null : clSetorEfetivo(r)===setor;
 
-  const waLeads = waLeadsCL()
-    .filter(l=>matchesSetor(l) && matchesModel(l.modelo))
-    .map(l=>({...l, _origem:'whatsapp'}));
-  const ciLeads = ciLeadsCL()
-    .filter(r=>matchesSetor(r) && matchesModel(r.modelos))
-    .map(r=>({...r, _origem:'presencial'}));
-  const leads = [...waLeads, ...ciLeads].sort((a,b)=>{
+  const base = daJornada ? jcLeads() : [
+    ...waLeadsCL().filter(l=>matchesSetor(l) && matchesModel(l.modelo)).map(l=>({...l, _origem:'whatsapp'})),
+    ...ciLeadsCL().filter(r=>matchesSetor(r) && matchesModel(r.modelos)).map(r=>({...r, _origem:'presencial'}))
+  ];
+  base.sort((a,b)=>{
     const da = a._origem==='whatsapp' ? (a.data||'') : (a.dt||'');
     const db = b._origem==='whatsapp' ? (b.data||'') : (b.dt||'');
     return db.localeCompare(da);
   });
+
+  // [JORNADA_08_11] chips de segmento (com contagem) + filtro do segmento ativo
+  const segs = JC_SEGMENTOS.slice();
+  if(!segs.some(x=>x[0]===clSegmento)) segs.push([clSegmento, jcRotuloSegmento(clSegmento)]);
+  const segHTML = segs.map(([v,t]) => {
+    const n = base.filter(l=>jcNoSegmento(l, v)).length;
+    return `<span class="filtro-cl-opt${clSegmento===v?' sel':''}" onclick="jcSetSegmento('${v}')">${_escHtml(t)} · ${n}</span>`;
+  }).join('');
+  const leads = base.filter(l=>jcNoSegmento(l, clSegmento));
+
+  // [JORNADA_08_11] agrupada por temperatura; dentro do grupo, mantém a ordem por data
+  const TEMPS = ['Premium','Quente','Engajado','Morno','Frio'];
+  const grupos = [...TEMPS, null].map(t => ({
+    t, itens: leads.filter(l => t===null ? !TEMPS.includes(l.temperatura) : l.temperatura===t)
+  })).filter(g => g.itens.length);
   // Guarda a lista pra permitir abrir o card completo do WhatsApp por índice
   // (evita serializar o lead inteiro dentro do atributo onclick).
-  window._ciUnifiedLeads = leads;
+  const ordenados = grupos.flatMap(g => g.itens);
+  window._ciUnifiedLeads = ordenados;
 
   const titleEl = document.getElementById('ciModelListTitle');
   if(titleEl){
-    const rotulo = model===CI_OUTRO_MODELO
-      ? `<span style="color:var(--tx3)">${setorLabel} · Outro / não informado</span>`
-      : (gwm ? `<span style="color:${gwm.color}">${setorLabel} · ${gwm.name}</span>` : `<span style="color:${sInfo?sInfo.cor:'var(--tx3)'}">${setorLabel}</span>`);
-    titleEl.innerHTML = `${rotulo}&ensp;<span style="font-size:13px;font-weight:500;color:var(--tx3);">${leads.length} lead${leads.length!==1?'s':''}</span>`;
+    const gwm = model===CI_OUTRO_MODELO ? null : CI_GWM_MODELS.find(m=>m.name===model);
+    const rotulo = model===CI_OUTRO_MODELO ? `${setorLabel} · Outro / não informado` : (gwm ? `${setorLabel} · ${gwm.name}` : setorLabel);
+    titleEl.innerHTML = `<span style="color:var(--tx)">${_escHtml(rotulo)}</span>&ensp;<span style="font-size:13px;font-weight:500;color:var(--tx3);">${leads.length} lead${leads.length!==1?'s':''}</span>`;
   }
 
   const content = document.getElementById('ciModelListContent');
   if(!content) return;
+  const segBar = `<div class="jc-seg">${segHTML}</div>`;
 
   if(!leads.length){
     const modelLabel = model===CI_OUTRO_MODELO ? 'Outro / não informado' : model;
-    content.innerHTML = `<div style="text-align:center;padding:60px 0;color:var(--tx3);font-size:13px;">
+    content.innerHTML = segBar + `<div style="text-align:center;padding:60px 0;color:var(--tx3);font-size:13px;">
       <div style="font-size:42px;margin-bottom:14px;">📋</div>
-      Nenhum lead em <strong style="color:var(--tx);">${model?setorLabel+' · '+modelLabel:setorLabel}</strong> no período selecionado.
+      Nenhum lead em <strong style="color:var(--tx);">${_escHtml(model?setorLabel+' · '+modelLabel:setorLabel)}</strong>${clSegmento!=='todos'?' · '+_escHtml(jcRotuloSegmento(clSegmento)):''} no período selecionado.
     </div>`;
     return;
   }
 
   window._ciCardRegs = [];
-  content.innerHTML = leads.map((l,idx)=> l._origem==='presencial' ? ciHiCardHTML(l) : waHiCardHTML(l,idx)).join('');
+  let idx = 0;
+  content.innerHTML = segBar + grupos.map(g => {
+    const cor = g.t ? tempColor(g.t) : 'var(--tx3)';
+    const head = `<div class="jc-grupo"><i style="background:${cor}"></i>${g.t || 'Sem temperatura'} · ${g.itens.length}</div>`;
+    return head + g.itens.map(l => {
+      const i = idx++;
+      return l._origem==='presencial' ? ciHiCardHTML(l, {faixa:true}) : waHiCardHTML(l, i);
+    }).join('');
+  }).join('');
 }
 
 // ============================================================
@@ -4646,7 +4939,7 @@ function getLeadState(nome){
   try{
     const lb = (typeof ACTIVE_LEADS!=='undefined' && Array.isArray(ACTIVE_LEADS)) ? ACTIVE_LEADS.find(l=>l.nome===nome && l.vendedorResponsavel) : null;
     if(lb) return {
-      state: lb.vendaStatus==='vendeu' ? 'cliente' : lb.vendaStatus==='nao_vendeu' ? 'nao-fechou' : 'atendendo',
+      state: lb.vendaStatus==='vendeu' ? 'cliente' : lb.vendaStatus==='nao_vendeu' ? 'nao-fechou' : (lb.visitouLojaEm ? 'visitou' : 'atendendo'), // [JORNADA_08_11] 'visitou'
       vendedor: lb.vendedorResponsavel, atendido_em: lb.vendedorAssumiuEm||null
     };
   }catch(e){}
@@ -5772,6 +6065,12 @@ function vendedorAvisarResultado(r, vendedor){
   if(r.motivo==='ja_assumido') transfToast(`Esse lead já foi assumido por ${r.vendedor}.`);
   else if(r.motivo==='cooldown') transfToast(`${vendedor} só pode pegar outro lead em ${r.minutos} min.`);
   else if(r.motivo==='sessao') transfToast('Sessão expirada — entre de novo.');
+  // [JORNADA_08_11]
+  else if(r.motivo==='sem_visita') transfToast('Registre a visita à loja antes da venda.');
+  else if(r.motivo==='tem_venda') transfToast('Desfaça a venda antes de desfazer a visita.');
+  else if(r.motivo==='sem_vendedor') transfToast('Esse lead ainda não tem vendedor — alguém precisa assumir antes.');
+  else if(r.motivo==='lead_nao_encontrado') transfToast('Lead não encontrado no banco. Atualize a página.');
+  else if(r.motivo==='acao') transfToast('Essa ação ainda não foi ativada no servidor. Avise o suporte.');
   else transfToast('Não foi possível salvar agora. Tente de novo.');
 }
 function vendedorRedesenhar(){
@@ -5835,27 +6134,42 @@ function vdDesenhar(){
     <div class="card"><div class="k">Quem mais vendeu</div><div class="v">${mais ? `🥇 ${_vdEsc(mais.vendedor)} (${mais.vendas})` : '—'}</div></div>
     <div class="card"><div class="k">Quem menos vendeu</div><div class="v">${menos && menos!==mais ? `${_vdEsc(menos.vendedor)} (${menos.vendas})` : '—'}</div></div>
     <div class="card"><div class="k">Aguardando marcar venda</div><div class="v">${tot.g}</div></div>`;
-  if(!lista.length){ body.innerHTML = '<tr><td colspan="7" style="color:var(--tx2)">Nenhum vendedor cadastrado para esta loja.</td></tr>'; return; }
+  if(!lista.length){ body.innerHTML = '<tr><td colspan="9" style="color:var(--tx2)">Nenhum vendedor cadastrado para esta loja.</td></tr>'; return; }
   const medalha = ['🥇','🥈','🥉'];
   body.innerHTML = lista.map((v,i)=>{
     const pegos = +v.assumidos||0, vendas = +v.vendas||0;
     const taxa = pegos ? Math.round(vendas*100/pegos)+'%' : '—';
+    // [JORNADA_08_11] visitas (o servidor antigo não manda o campo -> '—')
+    const temVisitas = v.visitas!==undefined && v.visitas!==null;
+    const visitas = +v.visitas||0;
+    const fechLoja = temVisitas && visitas ? Math.round(vendas*100/visitas)+'%' : '—';
     const leads = Array.isArray(v.leads) ? v.leads : [];
     const det = leads.map(l=>{
       const quando = l.em ? new Date(l.em).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',timeZone:'America/Recife'}) : '';
+      const motTxt = l.motivo ? ((JC_MOTIVOS.find(x=>x[0]===l.motivo)||[])[1] || l.motivo) : '';
       const sit = l.situacao==='vendeu' ? '<span style="color:var(--grn-l)">✓ Vendeu</span>'
-                : l.situacao==='nao_vendeu' ? '<span style="color:var(--red)">✗ Não vendeu</span>'
+                : l.situacao==='nao_vendeu' ? `<span style="color:var(--red)">✗ Não vendeu</span>${motTxt?`<span class="s">${_vdEsc(motTxt)}</span>`:''}`
                 : '<span class="s">Aguardando</span>';
       const podeMarcar = l.sender_id && (l.canal||'whatsapp')==='whatsapp';
-      const btns = podeMarcar ? (l.situacao
-          ? `<button type="button" onclick="vdMarcar('${_vdEsc(l.sender_id)}','${l.situacao==='vendeu'?'nao_vendeu':'vendeu'}')">corrigir</button>`
-          : `<button type="button" class="ok" onclick="vdMarcar('${_vdEsc(l.sender_id)}','vendeu')">✓ Vendeu</button><button type="button" class="no" onclick="vdMarcar('${_vdEsc(l.sender_id)}','nao_vendeu')">✗ Não vendeu</button>`) : '';
-      return `<div class="vd-lead"><strong>${_vdEsc(l.nome||l.telefone||'Lead')}</strong><span class="s">${_vdEsc(quando)}${l.canal&&l.canal!=='whatsapp'?' · '+_vdEsc(l.canal):''}</span>${sit}${btns}</div>`;
+      // [JORNADA_08_11] campo 'visitou' só vem do servidor novo; sem ele, mantém os botões antigos
+      const sabeVisita = l.visitou!==undefined;
+      const sid = jcJs(l.sender_id);
+      const selVisita = sabeVisita && l.visitou ? '<span class="s">🏬 Visitou</span>' : '';
+      let btns = '';
+      if(podeMarcar){
+        if(l.situacao) btns = sabeVisita
+          ? `<button type="button" onclick="jcDesfazerVenda('${sid}')">corrigir</button>`
+          : `<button type="button" onclick="vdMarcar('${_vdEsc(l.sender_id)}','${l.situacao==='vendeu'?'nao_vendeu':'vendeu'}')">corrigir</button>`;
+        else if(sabeVisita && !l.visitou) btns = `<button type="button" onclick="jcMarcarVisita('${sid}')">🏬 Visitou</button>`;
+        else if(sabeVisita) btns = `<button type="button" class="ok" onclick="jcMarcarVendeu('${sid}')">✓ Vendeu</button><button type="button" class="no" onclick="jcAbrirMotivo('${sid}')">✗ Não vendeu</button>`;
+        else btns = `<button type="button" class="ok" onclick="vdMarcar('${_vdEsc(l.sender_id)}','vendeu')">✓ Vendeu</button><button type="button" class="no" onclick="vdMarcar('${_vdEsc(l.sender_id)}','nao_vendeu')">✗ Não vendeu</button>`;
+      }
+      return `<div class="vd-lead"><strong>${_vdEsc(l.nome||l.telefone||'Lead')}</strong><span class="s">${_vdEsc(quando)}${l.canal&&l.canal!=='whatsapp'?' · '+_vdEsc(l.canal):''}</span>${selVisita}${sit}${btns}</div>`;
     }).join('');
     return `<tr>
       <td>${vendas>0 && i<3 ? medalha[i] : i+1}</td>
       <td><strong>${_vdEsc(v.vendedor)}</strong>${leads.length?`<div><button type="button" class="vd-ver" onclick="this.closest('td').querySelector('.vd-det').classList.toggle('open')">ver leads (${leads.length})</button><div class="vd-det">${det}</div></div>`:''}</td>
-      <td class="n">${pegos}</td><td class="n">${vendas}</td><td class="n">${+v.nao_vendeu||0}</td><td class="n">${+v.aguardando||0}</td><td class="n">${taxa}</td>
+      <td class="n">${pegos}</td><td class="n">${temVisitas?visitas:'—'}</td><td class="n">${fechLoja}</td><td class="n">${vendas}</td><td class="n">${+v.nao_vendeu||0}</td><td class="n">${+v.aguardando||0}</td><td class="n">${taxa}</td>
     </tr>`;
   }).join('');
 }
@@ -6191,6 +6505,11 @@ function mapLead(l){
     vendedorResponsavel: l.vendedor_responsavel || null,
     vendedorAssumiuEm:   l.vendedor_assumiu_em || null,
     vendaStatus:         l.venda_status || null,
+    // [JORNADA_08_11] jornada comercial (visita à loja + motivo da perda) e condição novo/seminovo
+    visitouLojaEm:       l.visitou_loja_em || null,
+    visitaOrigem:        l.visita_origem || null,
+    vendaMotivoPerda:    l.venda_motivo_perda || null,
+    condicao:            l.condicao_veiculo || '',
     // [AGENDA_TD_31_10] test drive marcado pelo IAn ou pelo painel
     unidadePreferida: l.unidade_preferida || null,
     testDrive: (l.test_drive_data || l.test_drive_status) ? {
