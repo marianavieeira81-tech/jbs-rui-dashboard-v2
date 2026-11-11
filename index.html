@@ -1868,6 +1868,17 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     }catch(e){ return ''; }
   }
   window._lsPrefixoLoja = prefixo;
+  // [VENDEDORES_11_11] uma vez por navegador: apaga vendedores extras e cooldowns
+  // antigos (nomes fictícios), de todas as lojas, antes de qualquer leitura.
+  try{
+    var ls = window.localStorage;
+    if(!_get.call(ls, 'rui_vend_reset_1111')){
+      var apagar = [];
+      for(var i = 0; i < ls.length; i++){ var k = ls.key(i); if(/(^|:)(rui_vendedores_v1|rui_vendedor_cooldown_v1)$/.test(k)) apagar.push(k); }
+      apagar.forEach(function(k){ _rem.call(ls, k); });
+      _set.call(ls, 'rui_vend_reset_1111', '1');
+    }
+  }catch(e){}
   function chave(st, key){ key = String(key); return (st === window.localStorage && ESCOPO.test(key)) ? prefixo() + key : key; }
   P.getItem    = function(key){ return _get.call(this, chave(this, key)); };
   P.setItem    = function(key, v){ return _set.call(this, chave(this, key), v); };
@@ -2851,15 +2862,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
         </div>
         <div class="ci-field">
           <div class="ci-label">Origem</div>
-          <div class="ci-chips" id="ci-origem">
-            <div class="ci-chip" data-val="Passou na loja" onclick="ciChip(this,'ci-origem','sel-gold')">Passou na loja</div>
-            <div class="ci-chip" data-val="Instagram" onclick="ciChip(this,'ci-origem','sel-gold')">Instagram</div>
-            <div class="ci-chip" data-val="Facebook" onclick="ciChip(this,'ci-origem','sel-gold')">Facebook</div>
-            <div class="ci-chip" data-val="Google" onclick="ciChip(this,'ci-origem','sel-gold')">Google</div>
-            <div class="ci-chip" data-val="Indicação" onclick="ciChip(this,'ci-origem','sel-gold')">Indicação</div>
-            <div class="ci-chip" data-val="Já é cliente" onclick="ciChip(this,'ci-origem','sel-gold')">Já é cliente</div>
-            <div class="ci-chip" data-val="Outro" onclick="ciChip(this,'ci-origem','sel-gold')">Outro</div>
-          </div>
+          <input class="ci-input" id="ci-origem" type="text" placeholder="Ex: viu no Instagram, indicação de um amigo, passou na frente..."/>
         </div>
 
         <div style="display:flex;gap:10px;align-items:center;">
@@ -3230,17 +3233,6 @@ const NETWORK_LEADS_SEMANA = ALL_LEADS_NAMES.slice(0,28).map((n,i)=>buildLeadDat
 const NETWORK_LEADS_MES    = ALL_LEADS_NAMES.map((n,i)=>buildLeadData(n,LEAD_SCORES[i],i));
 
 
-const SELLERS = [
-  {n:"Ana Lima",     c:"#B87333",spd:38,cnv:4},
-  {n:"Bruno Mota",   c:"#D4AF37",spd:52,cnv:3},
-  {n:"Carla Sena",   c:"#004225",spd:65,cnv:5},
-  {n:"Diego Faria",  c:"#606060",spd:71,cnv:2},
-  {n:"Eduardo Paz",  c:"#00845A",spd:44,cnv:4},
-  {n:"Fernanda Rios",c:"#E11D48",spd:90,cnv:1},
-  {n:"Gabriel Lins", c:"#6090FF",spd:58,cnv:3},
-  {n:"Helena Vaz",   c:"#E060C0",spd:33,cnv:5},
-  {n:"Ítalo Cruz",   c:"#A88820",spd:48,cnv:4}
-];
 
 const FUNNEL = [
   {lbl:"Leads recebidos",c:"#D4AF37",n:1000,p:100,tip:"Total de leads atendidos pelo IAn no mês via WhatsApp.",waCount:1000},
@@ -3439,12 +3431,12 @@ function ciGetYN(groupId){
 }
 
 function ciClear(){
-  ['ci-nome','ci-wa','ci-vendedor'].forEach(id=>{
+  ['ci-nome','ci-wa','ci-vendedor','ci-origem'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.value='';
   });
   const dtEl=document.getElementById('ci-dt');
   if(dtEl){const now=new Date();now.setMinutes(now.getMinutes()-now.getTimezoneOffset());dtEl.value=now.toISOString().slice(0,16);}
-  ['ci-origem'].forEach(g=>{
+  [].forEach(g=>{
     document.querySelectorAll('#'+g+' .ci-chip').forEach(c=>{
       [...c.classList].forEach(cls=>{ if(cls.startsWith('sel-')) c.classList.remove(cls); });
     });
@@ -3466,7 +3458,7 @@ async function ciSave(){
   const nome   = document.getElementById('ci-nome').value.trim();
   const wa     = document.getElementById('ci-wa').value.trim();
   const vend   = document.getElementById('ci-vendedor').value.trim();
-  const origem = ciGetChip('ci-origem');
+  const origem = document.getElementById('ci-origem').value.trim();
   const err    = document.getElementById('ci-err');
   const agora  = new Date(); agora.setMinutes(agora.getMinutes() - agora.getTimezoneOffset());
   const dt     = agora.toISOString().slice(0,16);
@@ -3695,7 +3687,8 @@ function ciAvatarColor(nome){return CI_CORES[(nome.charCodeAt(0)||0)%CI_CORES.le
 // própria interface (Check-in, Fila de Transferências) e ficam salvos só no
 // localStorage deste navegador, somados aos 3 fixos.
 // ============================================================
-const VENDEDORES_FIXOS = ['Maria Assiz','Mateus Silva','Sergio Fortunato'];
+// [VENDEDORES_11_11] equipe real (os nomes antigos eram fictícios).
+const VENDEDORES_FIXOS = ['Caio Henrique','Kaio Vitor','Rodrigo Sotero','Lane Alves','Paulo Vinícius','Rayara Francisca'];
 function getVendedores(){
   let extras = [];
   try{ extras = JSON.parse(localStorage.getItem('rui_vendedores_v1')||'[]'); }catch(e){}
