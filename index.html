@@ -2831,7 +2831,8 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     <div>
       <div class="card ci-form">
 
-        <!-- CLIENTE -->
+        <!-- [CHECKIN_SIMPLES_11_11] a pedido dela, o check-in pede só 4 dados:
+             nome, telefone, vendedor e origem. O resto do formulário saiu. -->
         <div class="ci-sec-title">Dados do cliente</div>
         <div class="ci-row2">
           <div class="ci-field">
@@ -2839,172 +2840,26 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
             <input class="ci-input" id="ci-nome" type="text" placeholder="Nome completo ou apelido"/>
           </div>
           <div class="ci-field">
-            <div class="ci-label">WhatsApp</div>
+            <div class="ci-label">Telefone</div>
             <input class="ci-input" id="ci-wa" type="tel" placeholder="(00) 00000-0000"/>
           </div>
         </div>
-        <div class="ci-row2">
-          <div class="ci-field">
-            <div class="ci-label">CPF (opcional)</div>
-            <input class="ci-input" id="ci-cpf" type="text" placeholder="000.000.000-00" maxlength="14"
-              oninput="this.value=this.value.replace(/\D/g,'').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3}\.\d{3})(\d)/,'$1.$2').replace(/(\d{3}\.\d{3}\.\d{3})(\d{1,2})/,'$1-$2')"/>
-          </div>
-        </div>
-
-        <!-- ATENDIMENTO -->
-        <div class="ci-sec-title" style="margin-top:6px">Dados do atendimento</div>
-        <div class="ci-row2">
-          <div class="ci-field">
-            <div class="ci-label">Vendedor responsável</div>
-            <div class="filtro-cl-opts" id="ci-vendedor-tags"></div>
-            <input type="hidden" id="ci-vendedor"/>
-          </div>
-          <div class="ci-field">
-            <div class="ci-label">Loja</div>
-            <select class="ci-input" id="ci-loja">
-              <option value="">Selecione a loja</option>
-              <option value="Boa Viagem">Boa Viagem</option>
-              <option value="Parnamirim">Parnamirim</option>
-              <option value="Caruaru">Caruaru</option>
-            </select>
-          </div>
-        </div>
-        <div class="ci-row2">
-          <div class="ci-field">
-            <div class="ci-label">Data e hora do atendimento</div>
-            <input class="ci-input" id="ci-dt" type="datetime-local"/>
-          </div>
-        </div>
-
-        <!-- SETOR -->
         <div class="ci-field">
-          <div class="ci-label">Setor</div>
-          <div class="ci-chips" id="ci-setor">
-            <div class="ci-chip" data-val="Novos" onclick="ciChip(this,'ci-setor','sel-setor-novo');ciAtualizarCamposPorSetor()">Novos</div>
-            <div class="ci-chip" data-val="Semi-novos" onclick="ciChip(this,'ci-setor','sel-setor-seminovo');ciAtualizarCamposPorSetor()">Semi-novos</div>
-            <div class="ci-chip" data-val="Oficina" onclick="ciChip(this,'ci-setor','sel-setor-oficina');ciAtualizarCamposPorSetor()">Oficina</div>
-            <div class="ci-chip" data-val="Reclamações e elogios" onclick="ciChip(this,'ci-setor','sel-setor-reclamacao');ciAtualizarCamposPorSetor()">Reclamações e elogios</div>
-            <div class="ci-chip" data-val="Vendas de peças e acessórios" onclick="ciChip(this,'ci-setor','sel-setor-pecas');ciAtualizarCamposPorSetor()">Vendas de peças e acessórios</div>
-          </div>
+          <div class="ci-label">Vendedor responsável</div>
+          <div class="filtro-cl-opts" id="ci-vendedor-tags"></div>
+          <input type="hidden" id="ci-vendedor"/>
         </div>
-
-        <!-- INTENÇÃO — opções trocam conforme o Setor (ver ciAtualizarCamposPorSetor) -->
         <div class="ci-field">
-          <div class="ci-label">Intenção de compra</div>
-          <div class="ci-chips" id="ci-intencao">
-            <div class="ci-chip" data-val="Comprar agora" onclick="ciChip(this,'ci-intencao','sel-green')">Comprar agora</div>
-            <div class="ci-chip" data-val="Em breve (até 30d)" onclick="ciChip(this,'ci-intencao','sel-gold')">Em breve (até 30d)</div>
-            <div class="ci-chip" data-val="Pesquisando" onclick="ciChip(this,'ci-intencao','sel-gold')">Pesquisando</div>
-            <div class="ci-chip" data-val="Só curiosidade" onclick="ciChip(this,'ci-intencao','sel-red')">Só curiosidade</div>
+          <div class="ci-label">Origem</div>
+          <div class="ci-chips" id="ci-origem">
+            <div class="ci-chip" data-val="Passou na loja" onclick="ciChip(this,'ci-origem','sel-gold')">Passou na loja</div>
+            <div class="ci-chip" data-val="Instagram" onclick="ciChip(this,'ci-origem','sel-gold')">Instagram</div>
+            <div class="ci-chip" data-val="Facebook" onclick="ciChip(this,'ci-origem','sel-gold')">Facebook</div>
+            <div class="ci-chip" data-val="Google" onclick="ciChip(this,'ci-origem','sel-gold')">Google</div>
+            <div class="ci-chip" data-val="Indicação" onclick="ciChip(this,'ci-origem','sel-gold')">Indicação</div>
+            <div class="ci-chip" data-val="Já é cliente" onclick="ciChip(this,'ci-origem','sel-gold')">Já é cliente</div>
+            <div class="ci-chip" data-val="Outro" onclick="ciChip(this,'ci-origem','sel-gold')">Outro</div>
           </div>
-        </div>
-
-        <!-- DESCRIÇÃO DO SERVIÇO — só aparece quando Setor = Oficina -->
-        <div class="ci-field" id="ci-desc-oficina" style="display:none;">
-          <div class="ci-label">Descreva o serviço de oficina</div>
-          <textarea class="ci-textarea" id="ci-servico-oficina" placeholder="Ex: troca de óleo, revisão dos 10.000km, barulho no motor, freios..."></textarea>
-        </div>
-
-        <!-- RECLAMAÇÕES/ELOGIOS — só aparece quando Setor = Vendas de peças e acessórios -->
-        <div class="ci-field" id="ci-desc-pecas" style="display:none;">
-          <div class="ci-label">Reclamações / elogios</div>
-          <textarea class="ci-textarea" id="ci-reclamacoes-elogios" placeholder="Registre aqui reclamações ou elogios do cliente sobre peças/acessórios..."></textarea>
-        </div>
-
-        <!-- MODELO — só aparece quando Setor = Novos ou Semi-novos -->
-        <div class="ci-field" id="ci-modelo-field" style="display:none;">
-          <div class="ci-label">Modelo(s) de interesse</div>
-          <input class="ci-input" id="ci-modelo" type="text" placeholder="Ex: Honda CB 500, Yamaha MT-07..."/>
-        </div>
-
-        <!-- QUALIFICAÇÃO BÁSICA — só aparece quando Setor = Novos ou Semi-novos -->
-        <div id="ci-qualif-basica" style="display:none;">
-          <div class="ci-sec-title" style="margin-top:6px">Qualificação</div>
-
-          <div class="ci-row2">
-            <div class="ci-field">
-              <div class="ci-label">Tem veículo para troca?</div>
-              <div class="ci-yesno" id="ci-troca">
-                <button class="ci-yn yes" onclick="ciYN('ci-troca','S')">✔ Sim</button>
-                <button class="ci-yn no"  onclick="ciYN('ci-troca','N')">✖ Não</button>
-              </div>
-            </div>
-            <div class="ci-field">
-              <div class="ci-label">CPF/CNPJ aprova financiamento?</div>
-              <div class="ci-yesno" id="ci-finan">
-                <button class="ci-yn yes" onclick="ciYN('ci-finan','S')">✔ Sim</button>
-                <button class="ci-yn no"  onclick="ciYN('ci-finan','N')">✖ Não</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="ci-row2">
-            <div class="ci-field">
-              <div class="ci-label">Cliente fez test drive?</div>
-              <div class="ci-yesno" id="ci-td">
-                <button class="ci-yn yes" onclick="ciYN('ci-td','S')">✔ Sim</button>
-                <button class="ci-yn no"  onclick="ciYN('ci-td','N')">✖ Não</button>
-              </div>
-            </div>
-            <div class="ci-field">
-              <div class="ci-label">Pediu proposta / simulação?</div>
-              <div class="ci-yesno" id="ci-prop">
-                <button class="ci-yn yes" onclick="ciYN('ci-prop','S')">✔ Sim</button>
-                <button class="ci-yn no"  onclick="ciYN('ci-prop','N')">✖ Não</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- DESFECHO -->
-        <div class="ci-field">
-          <div class="ci-label">Como o atendimento terminou?</div>
-          <div class="ci-chips" id="ci-desfecho">
-            <div class="ci-chip" data-val="Vai pensar"       onclick="ciChip(this,'ci-desfecho','sel-gold');ciAtualizarCamposPorDesfecho()">Vai pensar</div>
-            <div class="ci-chip" data-val="Pediu retorno"    onclick="ciChip(this,'ci-desfecho','sel-gold');ciAtualizarCamposPorDesfecho()">Pediu retorno</div>
-            <div class="ci-chip" data-val="Comprou"          onclick="ciChip(this,'ci-desfecho','sel-green');ciAtualizarCamposPorDesfecho()">🏆 Comprou</div>
-            <div class="ci-chip" data-val="Desistiu"         onclick="ciChip(this,'ci-desfecho','sel-red');ciAtualizarCamposPorDesfecho()">Desistiu</div>
-            <div class="ci-chip" data-val="Saiu sem definição" onclick="ciChip(this,'ci-desfecho','sel-red');ciAtualizarCamposPorDesfecho()">Saiu sem definição</div>
-          </div>
-        </div>
-
-        <!-- DATA PREVISTA DE RETORNO — só aparece quando Desfecho = Vai pensar ou Pediu retorno -->
-        <div class="ci-field" id="ci-data-retorno-field" style="display:none;">
-          <div class="ci-label">Data prevista de retorno <span class="ci-opt">(opcional)</span></div>
-          <input class="ci-input" id="ci-data-retorno" type="date"/>
-        </div>
-
-        <!-- MOTIVO DA DESISTÊNCIA — só aparece quando Desfecho = Desistiu ou Saiu sem definição -->
-        <div class="ci-field" id="ci-motivo-desistencia-field" style="display:none;">
-          <div class="ci-label">Motivo da desistência <span class="ci-opt">(opcional)</span></div>
-          <textarea class="ci-textarea" id="ci-motivo-desistencia" placeholder="Ex: preço acima do orçamento, não gostou do modelo, comprou em outro lugar, prazo de entrega longo..."></textarea>
-        </div>
-
-        <!-- QUALIFICAÇÃO DO LEAD — só aparece para Novos/Semi-novos, quem quer -->
-        <!-- comprar carro novo ou semi-novo é quem passa pelo processo de -->
-        <!-- qualificação; o vendedor define a temperatura e justifica. -->
-        <div class="ci-sec-title" id="ci-qualif-title" style="margin-top:6px;display:none;">Qualificação do lead (Novos/Semi-novos)</div>
-        <div id="ci-qualif-block" style="display:none;">
-          <div class="ci-field">
-            <div class="ci-label">Temperatura do lead</div>
-            <div class="ci-chips" id="ci-temperatura">
-              <div class="ci-chip" data-val="Frio" onclick="ciChip(this,'ci-temperatura','sel-temp-frio')">Frio</div>
-              <div class="ci-chip" data-val="Morno" onclick="ciChip(this,'ci-temperatura','sel-temp-morno')">Morno</div>
-              <div class="ci-chip" data-val="Engajado" onclick="ciChip(this,'ci-temperatura','sel-temp-engajado')">Engajado</div>
-              <div class="ci-chip" data-val="Quente" onclick="ciChip(this,'ci-temperatura','sel-temp-quente')">Quente</div>
-              <div class="ci-chip" data-val="Premium" onclick="ciChip(this,'ci-temperatura','sel-temp-premium')">Premium</div>
-            </div>
-          </div>
-          <div class="ci-field">
-            <div class="ci-label">Justifique a temperatura escolhida</div>
-            <textarea class="ci-textarea" id="ci-justificativa" placeholder="Explique por que o lead está nessa temperatura: interesse demonstrado, urgência, orçamento, objeções, etc."></textarea>
-          </div>
-        </div>
-
-        <!-- OBSERVAÇÕES -->
-        <div class="ci-field">
-          <div class="ci-label">Observações <span class="ci-opt">(opcional)</span></div>
-          <textarea class="ci-textarea" id="ci-obs" placeholder="Informações relevantes sobre o atendimento, preferências do cliente, objeções, etc."></textarea>
         </div>
 
         <div style="display:flex;gap:10px;align-items:center;">
@@ -3584,12 +3439,12 @@ function ciGetYN(groupId){
 }
 
 function ciClear(){
-  ['ci-nome','ci-wa','ci-cpf','ci-vendedor','ci-loja','ci-modelo','ci-obs','ci-justificativa','ci-servico-oficina','ci-reclamacoes-elogios','ci-data-retorno','ci-motivo-desistencia'].forEach(id=>{
+  ['ci-nome','ci-wa','ci-vendedor'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.value='';
   });
   const dtEl=document.getElementById('ci-dt');
   if(dtEl){const now=new Date();now.setMinutes(now.getMinutes()-now.getTimezoneOffset());dtEl.value=now.toISOString().slice(0,16);}
-  ['ci-setor','ci-intencao','ci-desfecho','ci-temperatura'].forEach(g=>{
+  ['ci-origem'].forEach(g=>{
     document.querySelectorAll('#'+g+' .ci-chip').forEach(c=>{
       [...c.classList].forEach(cls=>{ if(cls.startsWith('sel-')) c.classList.remove(cls); });
     });
@@ -3606,42 +3461,21 @@ function ciClear(){
 }
 
 async function ciSave(){
-  const nome    = document.getElementById('ci-nome').value.trim();
-  const wa      = document.getElementById('ci-wa').value.trim();
-  const vend    = document.getElementById('ci-vendedor').value.trim();
-  const loja    = document.getElementById('ci-loja').value;
-  const dt      = document.getElementById('ci-dt').value;
-  const setor   = ciGetChip('ci-setor');
-  const intenc  = ciGetChip('ci-intencao');
-  const qualifica     = ciEhSetorQualificavel(setor);
-  const isOficina     = setor === 'Oficina';
-  const isPecas       = setor === 'Vendas de peças e acessórios';
-  const modelo  = qualifica ? document.getElementById('ci-modelo').value.trim() : '';
-  const desfech = ciGetChip('ci-desfecho');
-  const err     = document.getElementById('ci-err');
-  const temperatura   = qualifica ? ciGetChip('ci-temperatura') : '';
-  const justificativa = qualifica ? document.getElementById('ci-justificativa').value.trim() : '';
-  const servicoOficina      = isOficina ? document.getElementById('ci-servico-oficina').value.trim() : '';
-  const reclamacoesElogios  = isPecas ? document.getElementById('ci-reclamacoes-elogios').value.trim() : '';
-  const precisaRetorno      = desfech==='Vai pensar' || desfech==='Pediu retorno';
-  const desistiu            = desfech==='Desistiu' || desfech==='Saiu sem definição';
-  const dataRetorno          = precisaRetorno ? document.getElementById('ci-data-retorno').value : '';
-  const motivoDesistencia    = desistiu ? document.getElementById('ci-motivo-desistencia').value.trim() : '';
+  // [CHECKIN_SIMPLES_11_11] só 4 campos obrigatórios. Data/hora = agora.
+  // Os outros campos do webhook seguem indo vazios pra não quebrar o n8n.
+  const nome   = document.getElementById('ci-nome').value.trim();
+  const wa     = document.getElementById('ci-wa').value.trim();
+  const vend   = document.getElementById('ci-vendedor').value.trim();
+  const origem = ciGetChip('ci-origem');
+  const err    = document.getElementById('ci-err');
+  const agora  = new Date(); agora.setMinutes(agora.getMinutes() - agora.getTimezoneOffset());
+  const dt     = agora.toISOString().slice(0,16);
 
   const missing = [];
-  if(!nome)    missing.push('Nome');
-  if(!wa)      missing.push('WhatsApp');
-  if(!vend)    missing.push('Vendedor');
-  if(!loja)    missing.push('Loja');
-  if(!dt)      missing.push('Data/hora');
-  if(!setor)   missing.push('Setor');
-  if(!intenc)  missing.push('Intenção de compra');
-  if(!desfech) missing.push('Desfecho');
-  if(qualifica && !temperatura)   missing.push('Temperatura');
-  if(qualifica && !justificativa) missing.push('Justificativa da temperatura');
-  if(isOficina && !servicoOficina)     missing.push('Descrição do serviço de oficina');
-  if(isPecas && !reclamacoesElogios)   missing.push('Reclamações/elogios');
-
+  if(!nome)   missing.push('Nome');
+  if(!wa)     missing.push('Telefone');
+  if(!vend)   missing.push('Vendedor');
+  if(!origem) missing.push('Origem');
   if(missing.length){
     err.textContent = 'Preencha: '+missing.join(', ');
     err.style.display='inline';
@@ -3649,43 +3483,14 @@ async function ciSave(){
   }
   err.style.display='none';
 
-  const INTENCAO_MAP = {
-    'Comprar agora':      'agora',
-    'Em breve (até 30d)': 'ate_30d',
-    'Pesquisando':        'pesquisando',
-    'Só curiosidade':     'curiosidade',
-    'Urgente':            'urgente',
-    'Em breve':           'em_breve'
-  };
-  const DESFECHO_MAP = {
-    'Vai pensar':         'vai_pensar',
-    'Pediu retorno':      'pediu_retorno',
-    'Comprou':            'comprou',
-    'Desistiu':           'desistiu',
-    'Saiu sem definição': 'indefinido'
-  };
-
-  const cpf = document.getElementById('ci-cpf').value.trim();
-
+  const desfech = '';
   const reg = {
     id: Date.now(),
-    nome, wa, cpf, vend, loja, dt, setor, intencao: intenc, modelos: modelo,
-    troca:         ciGetYN('ci-troca'),
-    financiamento: ciGetYN('ci-finan'),
-    test_drive:    ciGetYN('ci-td'),
-    proposta:      ciGetYN('ci-prop'),
-    desfecho:      desfech,
-    observacoes:   document.getElementById('ci-obs').value.trim(),
-    justificativa: justificativa,
-    servico_oficina:      servicoOficina,
-    reclamacoes_elogios:  reclamacoesElogios,
-    data_retorno:         dataRetorno,
-    motivo_desistencia:   motivoDesistencia
+    nome, wa, cpf:'', vend, loja:'', dt, setor:'', intencao:'', modelos:'', origem,
+    troca:'', financiamento:'', test_drive:'', proposta:'', desfecho:desfech,
+    observacoes:'', justificativa:'', servico_oficina:'', reclamacoes_elogios:'',
+    data_retorno:'', motivo_desistencia:'', score:null, temperatura:null
   };
-  // Nota e temperatura vêm sempre do que o vendedor escolheu (não são mais
-  // calculadas automaticamente) — só existem quando o setor é qualificável.
-  reg.score = qualifica ? ciTemperaturaParaNota(temperatura) : null;
-  reg.temperatura = qualifica ? temperatura : null;
 
   const saveBtn = document.querySelector('.btn-ci-save');
   saveBtn.disabled = true;
@@ -3696,32 +3501,14 @@ async function ciSave(){
     token:               authToken(),
     nome:                nome,
     whatsapp:            wa,
-    cpf:                 cpf.replace(/\D/g,''),
     vendedor:            vend,
-    loja:                loja,
+    origem:              origem,
     atendimento_em:      dt,
-    setor:               setor,
-    intencao_compra:     INTENCAO_MAP[intenc]   || intenc,
-    modelo_interesse:    modelo,
-    fez_test_drive:      ciGetYN('ci-td')    === 'S',
-    pediu_proposta:      ciGetYN('ci-prop')  === 'S',
-    tem_veiculo_troca:   ciGetYN('ci-troca') === 'S',
-    financiamento_aprov: ciGetYN('ci-finan') === 'S',
-    desfecho_visita:     DESFECHO_MAP[desfech]  || desfech,
-    // score_final/temperatura vêm da temperatura que o vendedor escolheu acima
-    // (só para Novos/Semi-novos; os demais setores não são qualificados) —
-    // pendente: o workflow n8n do check-in ainda não grava essas colunas em `leads`.
-    score_final:         reg.score ?? 0,
-    temperatura:         reg.temperatura || '',
-    justificativa_temperatura: justificativa,
-    // pendente: colunas novas, o workflow n8n do check-in ainda não grava
-    // descricao_servico_oficina/reclamacoes_elogios/data_retorno_prevista/
-    // motivo_desistencia em `leads`.
-    descricao_servico_oficina: servicoOficina,
-    reclamacoes_elogios:       reclamacoesElogios,
-    data_retorno_prevista:     dataRetorno,
-    motivo_desistencia:        motivoDesistencia,
-    observacoes:         document.getElementById('ci-obs').value.trim()
+    cpf:'', loja:'', setor:'', intencao_compra:'', modelo_interesse:'',
+    fez_test_drive:false, pediu_proposta:false, tem_veiculo_troca:false, financiamento_aprov:false,
+    desfecho_visita:'', score_final:0, temperatura:'', justificativa_temperatura:'',
+    descricao_servico_oficina:'', reclamacoes_elogios:'', data_retorno_prevista:'',
+    motivo_desistencia:'', observacoes:''
   });
   // ATENÇÃO — Decisão (2026-07-15): uma única tentativa, sempre em modo JSON
   // normal, SEM fallback em no-cors. Antes havia uma 2ª tentativa em no-cors
