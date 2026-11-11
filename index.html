@@ -3462,7 +3462,7 @@ function ciClear(){
 
 async function ciSave(){
   // [CHECKIN_SIMPLES_11_11] só 4 campos obrigatórios. Data/hora = agora.
-  // Os outros campos do webhook seguem indo vazios pra não quebrar o n8n.
+  // O webhook recebe só esses 4 + data; o n8n (versão de 11/11) não exige mais o resto.
   const nome   = document.getElementById('ci-nome').value.trim();
   const wa     = document.getElementById('ci-wa').value.trim();
   const vend   = document.getElementById('ci-vendedor').value.trim();
@@ -3504,11 +3504,7 @@ async function ciSave(){
     vendedor:            vend,
     origem:              origem,
     atendimento_em:      dt,
-    cpf:'', loja:'', setor:'', intencao_compra:'', modelo_interesse:'',
-    fez_test_drive:false, pediu_proposta:false, tem_veiculo_troca:false, financiamento_aprov:false,
-    desfecho_visita:'', score_final:0, temperatura:'', justificativa_temperatura:'',
-    descricao_servico_oficina:'', reclamacoes_elogios:'', data_retorno_prevista:'',
-    motivo_desistencia:'', observacoes:''
+    modo_checkin:        'simples'
   });
   // ATENÇÃO — Decisão (2026-07-15): uma única tentativa, sempre em modo JSON
   // normal, SEM fallback em no-cors. Antes havia uma 2ª tentativa em no-cors
