@@ -947,6 +947,17 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 .oc-empty-thread .em{font-size:20px;margin-bottom:8px;}
 
 .oc-msg-scroll{flex:1 1 auto;overflow-y:auto;padding:6px 20px 14px;display:flex;flex-direction:column;gap:2px;scrollbar-width:thin;scrollbar-color:var(--s3) transparent;}
+.oc-new-msg-pill{position:absolute;left:50%;bottom:96px;transform:translate(-50%,8px);z-index:6;display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:999px;border:1px solid var(--ac);background:var(--s2);color:var(--tx);font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;}
+.oc-new-msg-pill.show{opacity:1;transform:translate(-50%,0);pointer-events:auto;}
+.oc-msg-row.oc-msg-new{animation:ocMsgIn .28s ease-out;}
+@keyframes ocMsgIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+@media (prefers-reduced-motion:reduce){.oc-msg-row.oc-msg-new{animation:none;}.oc-new-msg-pill{transition:none;}}
+.oc-sync{font-size:10.5px;color:var(--tx3);display:flex;align-items:center;gap:5px;min-height:0;}
+.oc-sync:empty{display:none;}
+.oc-sync.ao-vivo{color:var(--grn-l);}
+.oc-sync.ao-vivo::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;animation:ocPulse 2s infinite;}
+.oc-sync.reconectando{color:var(--ac);}
+@keyframes ocPulse{0%,100%{opacity:1}50%{opacity:.35}}
 .oc-date-div{display:flex;align-items:center;gap:12px;margin:14px 0 10px;color:var(--tx3);font-size:11px;font-weight:600;}
 .oc-date-div::before,.oc-date-div::after{content:'';flex:1;height:1px;background:var(--bdr);}
 .oc-msg-row{display:flex;margin:4px 0;max-width:74%;}
@@ -1789,6 +1800,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
           <div class="oc-chat-head-meta">
             <div class="oc-chat-head-name-row"><h3 id="ocChatHeadName"></h3><span class="oc-chan-pill" id="ocChatHeadChanPill"></span></div>
             <div class="oc-chat-head-origin" id="ocChatHeadOrigin"></div>
+            <div class="oc-sync" id="ocSync"></div>
           </div>
         </div>
         <div class="oc-chat-head-actions">
@@ -1801,6 +1813,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 
       <div id="ocAiSummaryWrap"></div>
       <div class="oc-msg-scroll" id="ocMsgScroll"></div>
+      <button type="button" class="oc-new-msg-pill" id="ocNewMsgPill">↓ <span>novas mensagens</span></button>
       <div class="oc-composer" id="ocComposer">
         <div class="oc-composer-note" id="ocComposerNote" style="display:none;"></div>
         <div class="oc-composer-row">
@@ -2097,12 +2110,6 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   /* ---------------- STATE ---------------- */
   let state = { channel:null, tab:'todas', search:'', selected:null };
   let CONVERSATIONS = [];
-  let realThreadPollTimer = null;
-  let lastRenderedThreadKey = '';
-  function stopRealThreadPoll(){
-    if(realThreadPollTimer){ clearInterval(realThreadPollTimer); realThreadPollTimer = null; }
-  }
-
   // Por padrão a lista mostra só conversas REAIS (WhatsApp). As fictícias
   // (Instagram/Webmotors/OLX/Chat Site) só entram se alguém clicar em
   // "Carregar mais conversas fictícias" — nunca aparecem sem ação explícita.
@@ -2174,7 +2181,22 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     });
   }
 
-  /* ---------------- RENDER: CONVERSATION LIST ---------------- */
+  /* ---------------- RENDER: CONVERSATION LIST ----------------
+     [TEMPO_REAL_13_11] Atualiza só as linhas que mudaram (não apaga a lista),
+     então a rolagem e o item selecionado ficam onde estão. */
+  function convInnerHtml(c){
+    const statusChip = c.real
+      ? (c.status ? `<span class="oc-status-dot-lbl" style="background:rgba(212,175,55,.1);color:${STATUS_COLOR[c.status]||'var(--tx3)'};">${c.status}</span>` : '')
+      : (c.unread>0 ? `<span class="oc-unread">${c.unread}</span>` : '');
+    return `<div class="oc-conv-av-wrap">
+          <div class="oc-avatar oc-conv-av" style="background:${c.avColor};">${initials(c.name)}</div>
+          ${chanBadgeHtml(c.channel)}
+        </div>
+        <div class="oc-conv-body">
+          <div class="oc-conv-row1"><span class="oc-conv-name">${escHtml(c.name)}</span><span class="oc-conv-time">${c.lastTime||''}</span></div>
+          <div class="oc-conv-row2"><span class="oc-conv-preview">${escHtml(c.lastPreview||'')}</span>${statusChip}</div>
+        </div>`;
+  }
   function renderConvList(){
     const el = document.getElementById('ocConvScroll');
     const list = filteredConversations();
@@ -2182,27 +2204,32 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       el.innerHTML = `<div class="oc-empty">Nenhuma conversa encontrada.</div>`;
       return;
     }
-    el.innerHTML = list.map(c=>{
-      const statusChip = c.real
-        ? (c.status ? `<span class="oc-status-dot-lbl" style="background:rgba(212,175,55,.1);color:${STATUS_COLOR[c.status]||'var(--tx3)'};">${c.status}</span>` : '')
-        : (c.unread>0 ? `<span class="oc-unread">${c.unread}</span>` : '');
-      return `<div class="oc-conv-item${state.selected===c.id?' selected':''}" data-oc-conv="${c.id}">
-        <div class="oc-conv-av-wrap">
-          <div class="oc-avatar oc-conv-av" style="background:${c.avColor};">${initials(c.name)}</div>
-          ${chanBadgeHtml(c.channel)}
-        </div>
-        <div class="oc-conv-body">
-          <div class="oc-conv-row1"><span class="oc-conv-name">${escHtml(c.name)}</span><span class="oc-conv-time">${c.lastTime||''}</span></div>
-          <div class="oc-conv-row2"><span class="oc-conv-preview">${escHtml(c.lastPreview||'')}</span>${statusChip}</div>
-        </div>
-      </div>`;
-    }).join('') + (state.channel===null && state.tab==='todas' ? `<button type="button" class="oc-load-more" id="ocLoadMoreBtn">Carregar mais conversas fictícias ${ocIcon('chevron-down',13)}</button>` : '');
-
-    el.querySelectorAll('[data-oc-conv]').forEach(item=>{
-      item.addEventListener('click',()=>{ selectConversation(item.getAttribute('data-oc-conv')); });
+    el.querySelectorAll(':scope > :not([data-oc-conv])').forEach(n=>n.remove());
+    const existentes = new Map([...el.querySelectorAll(':scope > [data-oc-conv]')].map(n=>[n.getAttribute('data-oc-conv'), n]));
+    let prev = null;
+    list.forEach(c=>{
+      let node = existentes.get(c.id);
+      if(node) existentes.delete(c.id);
+      else {
+        node = document.createElement('div');
+        node.setAttribute('data-oc-conv', c.id);
+        node.addEventListener('click', ()=>selectConversation(c.id));
+      }
+      const cls = 'oc-conv-item'+(state.selected===c.id?' selected':'');
+      if(node.className!==cls) node.className = cls;
+      setHtmlIfChanged(node, convInnerHtml(c));
+      const lugar = prev ? prev.nextSibling : el.firstChild;
+      if(lugar!==node) el.insertBefore(node, lugar);
+      prev = node;
     });
-    const lm = document.getElementById('ocLoadMoreBtn');
-    if(lm) lm.addEventListener('click', loadMoreMock);
+    existentes.forEach(n=>n.remove());
+    if(state.channel===null && state.tab==='todas'){
+      const lm = document.createElement('button');
+      lm.type='button'; lm.className='oc-load-more'; lm.id='ocLoadMoreBtn';
+      lm.innerHTML = `Carregar mais conversas fictícias ${ocIcon('chevron-down',13)}`;
+      lm.addEventListener('click', loadMoreMock);
+      el.appendChild(lm);
+    }
   }
   function loadMoreMock(){
     if(extraIdx>=EXTRA_POOL.length){ showToast('Não há mais conversas fictícias para carregar.'); return; }
@@ -2234,57 +2261,60 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     closeDrawers();
   }
 
-  /* ---------------- RENDER: CHAT ---------------- */
+  /* ---------------- RENDER: CHAT ----------------
+     [TEMPO_REAL_13_11] A conversa aberta NUNCA é redesenhada pelo refresh
+     periódico do painel (30s). Ela só é carregada inteira quando a pessoa
+     troca de conversa; depois disso, um poll leve (4s) busca só o que chegou
+     depois da última mensagem (?desde=) e ANEXA no fim. Quem está lendo lá
+     em cima não perde a posição: aparece o aviso "↓ N novas mensagens". */
+  function setHtmlIfChanged(el, html){
+    if(el && el._ocHtml !== html){ el.innerHTML = html; el._ocHtml = html; }
+  }
   function renderChat(){
-    stopRealThreadPoll();
     const c = CONVERSATIONS.find(x=>x.id===state.selected);
     const headAv = document.getElementById('ocChatHeadAv');
     if(!c){
-      headAv.innerHTML = '';
+      closeThread();
+      setHtmlIfChanged(headAv, '');
       document.getElementById('ocChatHeadName').textContent = 'Nenhuma conversa selecionada';
-      document.getElementById('ocChatHeadChanPill').innerHTML = '';
+      setHtmlIfChanged(document.getElementById('ocChatHeadChanPill'), '');
       document.getElementById('ocChatHeadOrigin').textContent = '';
-      document.getElementById('ocAiSummaryWrap').innerHTML = '';
-      document.getElementById('ocMsgScroll').innerHTML = `<div class="oc-empty">Selecione uma conversa na lista ao lado.</div>`;
+      setHtmlIfChanged(document.getElementById('ocAiSummaryWrap'), '');
+      const sc = document.getElementById('ocMsgScroll');
+      sc.innerHTML = `<div class="oc-empty">Selecione uma conversa na lista ao lado.</div>`;
       setComposerEnabled(false, '');
       return;
     }
     const meta = CHANNELS[c.channel];
-    headAv.innerHTML = `<div class="oc-avatar oc-conv-av" style="background:${c.avColor};width:38px;height:38px;">${initials(c.name)}</div>`;
+    setHtmlIfChanged(headAv, `<div class="oc-avatar oc-conv-av" style="background:${c.avColor};width:38px;height:38px;">${initials(c.name)}</div>`);
     document.getElementById('ocChatHeadName').textContent = c.name;
     const pill = document.getElementById('ocChatHeadChanPill');
     pill.style.background = meta.bg;
-    pill.innerHTML = `${c.channel==='olx'?'':ocIcon(meta.icon,8)}<span>${meta.label}</span>`;
+    setHtmlIfChanged(pill, `${c.channel==='olx'?'':ocIcon(meta.icon,8)}<span>${meta.label}</span>`);
     document.getElementById('ocChatHeadOrigin').textContent = c.origin||'';
 
-    const summaryWrap = document.getElementById('ocAiSummaryWrap');
+    let summaryHtml = '';
     if(c.aiSummary){
-      summaryWrap.innerHTML = `<div class="oc-ai-summary">
+      summaryHtml = `<div class="oc-ai-summary">
         <div class="oc-ai-summary-head"><span class="t">☀️ Resumo da IA</span>${c.real?'':'<span class="oc-new-pill">Novo</span>'}</div>
         <p>${escHtml(c.aiSummary)}</p>
       </div>`;
     } else if(c.real){
-      summaryWrap.innerHTML = `<div class="oc-ai-summary">
+      summaryHtml = `<div class="oc-ai-summary">
         <div class="oc-ai-summary-head"><span class="t">☀️ Resumo da IA</span></div>
         <p>O <span class="brand-ia">IA</span><span class="brand-n">n</span> ainda não registrou uma justificativa de qualificação para esse lead.</p>
       </div>`;
-    } else {
-      summaryWrap.innerHTML = '';
     }
+    setHtmlIfChanged(document.getElementById('ocAiSummaryWrap'), summaryHtml);
 
-    const scroll = document.getElementById('ocMsgScroll');
     if(c.real){
       setComposerEnabled(false, 'O envio de mensagem por aqui ainda não está disponível para leads reais — a conversa continua acontecendo pelo fluxo automático do IAn no WhatsApp.');
-      lastRenderedThreadKey = '';
-      renderRealThread(c);
-      // Atualiza a conversa aberta sozinha (sem precisar dar F5), como um chat
-      // de verdade — só enquanto essa conversa real continuar selecionada.
-      realThreadPollTimer = setInterval(()=>{
-        const cur = CONVERSATIONS.find(x=>x.id===state.selected);
-        if(cur && cur.real) renderRealThread(cur, {silent:true});
-        else stopRealThreadPoll();
-      }, 7000);
+      // Só (re)carrega se mudou de conversa. Refresh do painel não toca na conversa aberta.
+      if(thread.convId !== c.id || thread.senderId !== c.senderId) openThread(c);
+      else startThreadPoll();
     } else {
+      closeThread();
+      const scroll = document.getElementById('ocMsgScroll');
       scroll.innerHTML = `<div class="oc-date-div">Hoje</div>` + c.messages.map(m=>`
         <div class="oc-msg-row ${m.dir}">
           <div class="oc-bubble">${escHtml(m.text)}</div>
@@ -2295,59 +2325,198 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     }
   }
 
-  /* ---------------- REAL: histórico de mensagens (endpoint adtsa-chat-history) ----------------
-     Esse endpoint já estava declarado no app (N8N_CHAT_HISTORY) mas nunca tinha sido usado em
-     nenhuma tela. Seguimos o MESMO padrão defensivo de fetchLeadHistorico() já usado no resto do
-     app: tenta buscar; se o fluxo ainda não existir/estiver ativo no N8N, ou devolver algo em
-     formato inesperado, cai sem quebrar no aviso "histórico ainda não disponível" — nunca inventa
-     mensagem falsa. Não sabemos ainda os nomes exatos dos campos que esse endpoint devolve, então
-     normalizeMsg() tenta várias variações plausíveis (mesma convenção de nomes em português usada
-     no resto do Supabase deste app). Ajustar aqui assim que o formato real for confirmado. */
-  function renderRealThread(c, opts){
-    const silent = !!(opts && opts.silent);
-    const scroll = document.getElementById('ocMsgScroll');
-    if(!silent) scroll.innerHTML = `<div class="oc-empty">Carregando mensagens…</div>`;
-    const requestedId = c.id;
-    fetchRealMessages(c.senderId).then(msgs=>{
-      if(state.selected !== requestedId) return; // trocou de conversa antes da resposta chegar
-      const key = c.id+'|'+(msgs||[]).map(m=>m.dir+':'+m.text+':'+m.time).join('|');
-      if(silent && key===lastRenderedThreadKey) return; // nada novo, não redesenha (evita piscar)
-      lastRenderedThreadKey = key;
-      if(msgs && msgs.length){
-        const wasAtBottom = scroll.scrollTop + scroll.clientHeight >= scroll.scrollHeight - 40;
-        let _diaAnterior = '';
-        scroll.innerHTML = `<div class="oc-date-div">Histórico real · WhatsApp</div>` + msgs.map(m=>{
-          const _dia = m._ts ? new Date(m._ts).toLocaleDateString('pt-BR',{timeZone:'America/Recife'}) : '';
-          const _sep = (_dia && _dia!==_diaAnterior) ? `<div class="oc-date-div">${_dia}</div>` : '';
-          if(_dia) _diaAnterior = _dia;
-          return _sep + `
-          <div class="oc-msg-row ${m.dir}">
+  /* ---------------- REAL: conversa ao vivo (endpoint adtsa-chat-history-mt) ---------------- */
+  const THREAD_POLL_MS = 4000;          // "quase tempo real"
+  const THREAD_OVERLAP_MS = 2 * 60000;  // pede 2 min a mais pra não perder mensagem gravada fora de ordem (dedup cuida do resto)
+  const NEAR_BOTTOM_PX = 80;
+  const thread = { convId:null, senderId:null, msgs:[], keys:new Set(), lastTs:0, lastDia:'',
+                   gen:0, seq:0, inflight:false, timer:null, unseen:0, falhas:0 };
+
+  function msgScroll(){ return document.getElementById('ocMsgScroll'); }
+  function isNearBottom(sc){ return sc.scrollHeight - sc.scrollTop - sc.clientHeight <= NEAR_BOTTOM_PX; }
+  function hasSelectionInside(sc){
+    const s = window.getSelection && window.getSelection();
+    return !!(s && !s.isCollapsed && s.rangeCount && sc.contains(s.getRangeAt(0).commonAncestorContainer));
+  }
+  function diaDe(ts){ return ts ? new Date(ts).toLocaleDateString('pt-BR',{timeZone:'America/Recife'}) : ''; }
+  function msgRowHtml(m, isNew){
+    return `<div class="oc-msg-row ${m.dir}${isNew?' oc-msg-new':''}" data-uid="${m.uid}">
             <div class="oc-bubble">${escHtml(m.text)}</div>
             <div class="oc-msg-meta">${m.dir==='out'?`<span class="oc-read-check">✓✓</span>`:''}<span>${m.time||''}</span></div>
-          </div>`;}).join('');
-        if(!silent || wasAtBottom) scroll.scrollTop = scroll.scrollHeight;
-      } else if(!silent){
-        scroll.innerHTML = `<div class="oc-empty-thread">
+          </div>`;
+  }
+  const THREAD_HEAD = `<div class="oc-date-div">Histórico real · WhatsApp</div>`;
+  const EMPTY_THREAD = `<div class="oc-empty-thread">
           <div class="em">💬</div>
-          Histórico de mensagens ainda não disponível aqui.<br>
-          O fluxo de histórico de conversa no N8N ainda não devolveu dados para este lead —
-          mesma pendência já sinalizada na Central de Leads. O que já é real: o resumo da IA
-          acima e os dados ao lado →
+          Nenhuma mensagem registrada ainda para este lead.<br>
+          Assim que o lead ou o <span class="brand-ia">IA</span><span class="brand-n">n</span> mandar algo, ela aparece aqui sozinha.
         </div>`;
+
+  function setSync(estado){
+    const el = document.getElementById('ocSync');
+    if(!el) return;
+    el.className = 'oc-sync ' + (estado||'');
+    el.textContent = estado==='ao-vivo' ? 'Ao vivo' : estado==='reconectando' ? 'Reconectando…' : estado==='pausado' ? 'Pausado (aba em segundo plano)' : '';
+  }
+
+  function closeThread(){
+    stopThreadPoll();
+    thread.gen++; thread.convId = null; thread.senderId = null;
+    thread.msgs = []; thread.keys = new Set(); thread.lastTs = 0; thread.lastDia = ''; thread.inflight = false;
+    hideNewPill();
+    setSync('');
+  }
+
+  function openThread(c){
+    closeThread();
+    thread.convId = c.id; thread.senderId = c.senderId;
+    const gen = thread.gen;
+    const sc = msgScroll();
+    sc.innerHTML = `<div class="oc-empty">Carregando mensagens…</div>`;
+    fetchRealMessages(c.senderId, null).then(res=>{
+      if(gen !== thread.gen) return; // trocou de conversa antes da resposta chegar
+      if(!res.ok){
+        sc.innerHTML = `<div class="oc-empty-thread">
+          <div class="em">💬</div>
+          Não foi possível carregar o histórico agora.<br>Tentando de novo automaticamente…
+        </div>`;
+        setSync('reconectando');
+      } else if(!res.msgs.length){
+        sc.innerHTML = EMPTY_THREAD;
+        setSync('ao-vivo');
+      } else {
+        addMessages(res.msgs, {initial:true});
+        setSync('ao-vivo');
       }
+      startThreadPoll();
     });
   }
-  async function fetchRealMessages(senderId){
-    if(!senderId || typeof authFetch!=='function' || typeof N8N_CHAT_HISTORY==='undefined') return [];
+
+  function startThreadPoll(){
+    if(thread.timer || !thread.convId) return;
+    thread.timer = setInterval(pollThread, THREAD_POLL_MS);
+  }
+  function stopThreadPoll(){
+    if(thread.timer){ clearInterval(thread.timer); thread.timer = null; }
+  }
+
+  async function pollThread(){
+    if(!thread.convId || thread.inflight) return;
+    if(document.hidden){ setSync('pausado'); return; } // aba do navegador em segundo plano: não gasta requisição
+    const gen = thread.gen;
+    thread.inflight = true;
     try{
-      const res = await authFetch(`${N8N_CHAT_HISTORY}?lead_sender_id=${encodeURIComponent(senderId)}`, {method:'GET'});
-      if(!res.ok) return [];
-      const rows = await res.json();
-      if(!Array.isArray(rows)) return [];
-      return rows.map(normalizeMsg).filter(Boolean).sort((a,b)=>(a._ts||0)-(b._ts||0));
+      const desde = thread.lastTs ? new Date(thread.lastTs - THREAD_OVERLAP_MS).toISOString() : null;
+      const res = await fetchRealMessages(thread.senderId, desde);
+      if(gen !== thread.gen) return;
+      if(!res.ok){
+        thread.falhas++;
+        if(thread.falhas >= 2) setSync('reconectando');
+        return;
+      }
+      thread.falhas = 0;
+      setSync('ao-vivo');
+      const novos = res.msgs.filter(m=>!thread.keys.has(m.key));
+      if(novos.length) addMessages(novos, {initial:false});
+    } finally {
+      if(gen === thread.gen) thread.inflight = false;
+    }
+  }
+
+  // Junta mensagens novas na conversa aberta sem redesenhar o que já está na tela.
+  function addMessages(novos, opts){
+    const initial = !!(opts && opts.initial);
+    const sc = msgScroll();
+    novos = novos.filter(m=>!thread.keys.has(m.key)).sort((a,b)=>(a._ts||0)-(b._ts||0));
+    if(!novos.length) return;
+    novos.forEach(m=>{ m.uid = ++thread.seq; thread.keys.add(m.key); });
+
+    const estavaNoFim = isNearBottom(sc);
+    const selecionando = hasSelectionInside(sc);
+    const foraDeOrdem = !initial && thread.msgs.length && novos[0]._ts && thread.lastTs && novos[0]._ts < thread.lastTs;
+
+    thread.msgs.push(...novos);
+    thread.msgs.sort((a,b)=>(a._ts||0)-(b._ts||0));
+    novos.forEach(m=>{ if(m._ts > thread.lastTs) thread.lastTs = m._ts; });
+
+    if(initial || foraDeOrdem || !sc.querySelector('[data-uid]')){
+      paintThread(sc, initial ? null : captureAnchor(sc), novos);
+    } else {
+      // caso normal: anexa no fim, nada do que já está na tela é tocado
+      let html = '';
+      novos.forEach(m=>{
+        const d = diaDe(m._ts);
+        if(d && d !== thread.lastDia){ html += `<div class="oc-date-div">${d}</div>`; thread.lastDia = d; }
+        html += msgRowHtml(m, true);
+      });
+      sc.insertAdjacentHTML('beforeend', html);
+    }
+
+    if(initial){
+      sc.scrollTop = sc.scrollHeight;
+    } else if(estavaNoFim && !selecionando){
+      sc.scrollTo({top: sc.scrollHeight, behavior:'smooth'});
+    } else {
+      thread.unseen += novos.length;
+      showNewPill();
+    }
+  }
+
+  // Redesenho completo (só na abertura ou se chegar mensagem com horário anterior às já exibidas),
+  // mantendo a mesma mensagem no mesmo lugar da tela.
+  function paintThread(sc, anchor, novos){
+    const novosSet = new Set((novos||[]).map(m=>m.uid));
+    let dia = '';
+    sc.innerHTML = THREAD_HEAD + thread.msgs.map(m=>{
+      const d = diaDe(m._ts);
+      const sep = (d && d !== dia) ? `<div class="oc-date-div">${d}</div>` : '';
+      if(d) dia = d;
+      return sep + msgRowHtml(m, anchor && novosSet.has(m.uid));
+    }).join('');
+    thread.lastDia = dia;
+    if(anchor){
+      const el = sc.querySelector(`[data-uid="${anchor.uid}"]`);
+      if(el) sc.scrollTop = el.offsetTop - anchor.offset;
+    }
+  }
+  function captureAnchor(sc){
+    if(isNearBottom(sc)) return null;
+    const rows = sc.querySelectorAll('[data-uid]');
+    for(const r of rows){
+      if(r.offsetTop + r.offsetHeight > sc.scrollTop){
+        return { uid: r.getAttribute('data-uid'), offset: r.offsetTop - sc.scrollTop };
+      }
+    }
+    return null;
+  }
+
+  function showNewPill(){
+    const p = document.getElementById('ocNewMsgPill');
+    if(!p || !thread.unseen) return;
+    const comp = document.getElementById('ocComposer');
+    p.style.bottom = ((comp ? comp.offsetHeight : 80) + 14) + 'px';
+    p.querySelector('span').textContent = thread.unseen===1 ? '1 nova mensagem' : `${thread.unseen} novas mensagens`;
+    p.classList.add('show');
+  }
+  function hideNewPill(){
+    thread.unseen = 0;
+    const p = document.getElementById('ocNewMsgPill');
+    if(p) p.classList.remove('show');
+  }
+
+  async function fetchRealMessages(senderId, desde){
+    if(!senderId || typeof authFetch!=='function' || typeof N8N_CHAT_HISTORY==='undefined') return {ok:false, msgs:[]};
+    try{
+      let url = `${N8N_CHAT_HISTORY}?lead_sender_id=${encodeURIComponent(senderId)}`;
+      if(desde) url += `&desde=${encodeURIComponent(desde)}`; // fluxo antigo ignora e devolve tudo — o dedup no painel resolve
+      const res = await authFetch(url, {method:'GET', cache:'no-store'});
+      if(!res.ok) return {ok:false, msgs:[]};
+      const body = await res.json();
+      const rows = Array.isArray(body) ? body : (body && typeof body==='object' ? [body] : []);
+      return {ok:true, msgs: rows.map(normalizeMsg).filter(Boolean).sort((a,b)=>(a._ts||0)-(b._ts||0))};
     }catch(e){
-      console.warn('[Omnichannel] fetchRealMessages falhou (endpoint ainda não ativo no N8N?):', e);
-      return [];
+      console.warn('[Omnichannel] fetchRealMessages falhou:', e);
+      return {ok:false, msgs:[]};
     }
   }
   function normalizeMsg(row){
@@ -2356,13 +2525,13 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     if(!text) return null;
     const tsRaw = row.enviado_em||row.criado_em||row.timestamp||row.data_hora||row.registrado_em||row.created_at||null;
     const ts = tsRaw ? new Date(tsRaw).getTime() : 0;
-    const time = tsRaw ? new Date(tsRaw).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}) : '';
+    const time = tsRaw ? new Date(tsRaw).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Recife'}) : '';
     const senderStr = String(row.remetente||row.direcao||row.role||row.sender||row.tipo_remetente||'').toLowerCase();
-    // 'outbound' é o valor real gravado pelo n8n (node "Preparar mensagens para
-    // Supabase") pra resposta do Rui; 'lead'/'inbound' pra mensagem do lead —
-    // sem esses dois, tudo caía como "in" (esquerda), até a resposta do Rui.
+    // 'outbound' é o valor real gravado pelo n8n pra resposta do IAn; 'lead'/'inbound' pra mensagem do lead.
     const isOut = row.from_me===true || ['outbound','bot','rui','agente','vendedor','assistant','out','saida','ai','atendente'].includes(senderStr);
-    return {dir: isOut?'out':'in', text:String(text), time, _ts:ts};
+    const dir = isOut?'out':'in';
+    // chave estável pelo conteúdo (funciona com o fluxo antigo, que não manda id)
+    return {dir, text:String(text), time, _ts:Number.isFinite(ts)?ts:0, key: dir+'|'+(Number.isFinite(ts)?ts:0)+'|'+String(text)};
   }
   function setComposerEnabled(enabled, note){
     const comp = document.getElementById('ocComposer');
@@ -2372,8 +2541,12 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   }
 
   /* ---------------- RENDER: LEAD PANEL ---------------- */
+  let leadPanelSig = null;
   function renderLeadPanel(){
     const c = CONVERSATIONS.find(x=>x.id===state.selected);
+    const sig = c ? JSON.stringify(c) : '';
+    if(sig === leadPanelSig) return; // nada mudou: não redesenha o painel do lead
+    leadPanelSig = sig;
     if(!c){
       ['ocLeadAvatar','ocLeadName','ocLeadContact','ocLeadTags','ocVehicleCard','ocDetailList','ocTimeline'].forEach(id=>document.getElementById(id).innerHTML='');
       return;
@@ -2547,6 +2720,14 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       document.getElementById('ocScrim').classList.add('open');
     });
     document.getElementById('ocLeadClose').addEventListener('click', closeDrawers);
+
+    // [TEMPO_REAL_13_11] aviso de mensagens novas + pausa quando a aba do navegador fica oculta
+    const sc = document.getElementById('ocMsgScroll');
+    sc.addEventListener('scroll', ()=>{ if(thread.unseen && isNearBottom(sc)) hideNewPill(); }, {passive:true});
+    document.getElementById('ocNewMsgPill').addEventListener('click', ()=>{
+      sc.scrollTo({top: sc.scrollHeight, behavior:'smooth'}); hideNewPill();
+    });
+    document.addEventListener('visibilitychange', ()=>{ if(!document.hidden && thread.convId) pollThread(); });
     document.getElementById('ocScrim').addEventListener('click', closeDrawers);
   }
 
@@ -2555,7 +2736,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     renderAll(); // já reconstrói a lista de conversas sozinho
     renderKpis();
   };
-  window.ocOnClose = stopRealThreadPoll;
+  window.ocOnClose = closeThread;
 })();
 </script>
 
