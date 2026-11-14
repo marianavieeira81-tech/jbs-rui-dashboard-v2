@@ -947,6 +947,19 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 .oc-empty-thread .em{font-size:20px;margin-bottom:8px;}
 
 .oc-msg-scroll{flex:1 1 auto;overflow-y:auto;padding:6px 20px 14px;display:flex;flex-direction:column;gap:2px;scrollbar-width:thin;scrollbar-color:var(--s3) transparent;}
+.oc-pause-btn{display:flex;align-items:center;gap:6px;height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--ac);background:rgba(212,175,55,.08);color:var(--ac);font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap;transition:background .15s;}
+.oc-pause-btn:hover{background:rgba(212,175,55,.18);}
+.oc-pause-btn.on{border-color:var(--grn-l);color:var(--grn-l);background:rgba(34,197,94,.08);}
+.oc-pause-btn:disabled{opacity:.5;cursor:wait;}
+.oc-human-bar{display:none;align-items:center;gap:8px;margin:0 20px 8px;padding:8px 12px;border-radius:10px;border:1px solid rgba(212,175,55,.35);background:rgba(212,175,55,.08);color:var(--tx);font-size:12px;line-height:1.4;}
+.oc-human-bar.show{display:flex;}
+.oc-human-bar b{color:var(--ac);}
+.oc-msg-row.out.humano .oc-bubble{background:#1E3A5F;color:#E8F1FF;font-weight:500;}
+.oc-msg-row.pendente .oc-bubble{opacity:.6;}
+.oc-msg-row.erro .oc-bubble{background:#5B1E24;color:#FFD9DD;}
+.oc-msg-row.erro .oc-msg-meta{color:#FF8A95;}
+.oc-autor{font-weight:700;color:#8DB8F2;}
+@media (max-width:700px){.oc-pause-btn .lbl-long{display:none;}}
 .oc-new-msg-pill{position:absolute;left:50%;bottom:96px;transform:translate(-50%,8px);z-index:6;display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:999px;border:1px solid var(--ac);background:var(--s2);color:var(--tx);font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;}
 .oc-new-msg-pill.show{opacity:1;transform:translate(-50%,0);pointer-events:auto;}
 .oc-msg-row.oc-msg-new{animation:ocMsgIn .28s ease-out;}
@@ -1804,6 +1817,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
           </div>
         </div>
         <div class="oc-chat-head-actions">
+          <button type="button" class="oc-pause-btn" id="ocPauseBtn" style="display:none;"></button>
           <button class="oc-icon-btn" data-tip="Favoritar"><span class="oc-ic" data-oc-icon="star"></span></button>
           <button class="oc-icon-btn" data-tip="Etiquetar"><span class="oc-ic" data-oc-icon="tag"></span></button>
           <button class="oc-icon-btn" data-tip="Mais opções" id="ocMoreBtn"><span class="oc-ic" data-oc-icon="more-vertical"></span></button>
@@ -1814,6 +1828,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       <div id="ocAiSummaryWrap"></div>
       <div class="oc-msg-scroll" id="ocMsgScroll"></div>
       <button type="button" class="oc-new-msg-pill" id="ocNewMsgPill">↓ <span>novas mensagens</span></button>
+      <div class="oc-human-bar" id="ocHumanBar"></div>
       <div class="oc-composer" id="ocComposer">
         <div class="oc-composer-note" id="ocComposerNote" style="display:none;"></div>
         <div class="oc-composer-row">
@@ -2283,6 +2298,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       const sc = document.getElementById('ocMsgScroll');
       sc.innerHTML = `<div class="oc-empty">Selecione uma conversa na lista ao lado.</div>`;
       setComposerEnabled(false, '');
+      renderHumano();
       return;
     }
     const meta = CHANNELS[c.channel];
@@ -2308,10 +2324,10 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     setHtmlIfChanged(document.getElementById('ocAiSummaryWrap'), summaryHtml);
 
     if(c.real){
-      setComposerEnabled(false, 'O envio de mensagem por aqui ainda não está disponível para leads reais — a conversa continua acontecendo pelo fluxo automático do IAn no WhatsApp.');
       // Só (re)carrega se mudou de conversa. Refresh do painel não toca na conversa aberta.
       if(thread.convId !== c.id || thread.senderId !== c.senderId) openThread(c);
       else startThreadPoll();
+      renderHumano();
     } else {
       closeThread();
       const scroll = document.getElementById('ocMsgScroll');
@@ -2322,6 +2338,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
         </div>`).join('');
       scroll.scrollTop = scroll.scrollHeight;
       setComposerEnabled(true, '');
+      renderHumano();
     }
   }
 
@@ -2330,7 +2347,8 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   const THREAD_OVERLAP_MS = 2 * 60000;  // pede 2 min a mais pra não perder mensagem gravada fora de ordem (dedup cuida do resto)
   const NEAR_BOTTOM_PX = 80;
   const thread = { convId:null, senderId:null, msgs:[], keys:new Set(), lastTs:0, lastDia:'',
-                   gen:0, seq:0, inflight:false, timer:null, unseen:0, falhas:0 };
+                   gen:0, seq:0, inflight:false, timer:null, unseen:0, falhas:0, tick:0,
+                   humano:{carregado:false}, pendentes:[] };
 
   function msgScroll(){ return document.getElementById('ocMsgScroll'); }
   function isNearBottom(sc){ return sc.scrollHeight - sc.scrollTop - sc.clientHeight <= NEAR_BOTTOM_PX; }
@@ -2340,9 +2358,10 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   }
   function diaDe(ts){ return ts ? new Date(ts).toLocaleDateString('pt-BR',{timeZone:'America/Recife'}) : ''; }
   function msgRowHtml(m, isNew){
-    return `<div class="oc-msg-row ${m.dir}${isNew?' oc-msg-new':''}" data-uid="${m.uid}">
+    const hum = m.autor==='atendente';
+    return `<div class="oc-msg-row ${m.dir}${hum?' humano':''}${isNew?' oc-msg-new':''}" data-uid="${m.uid}">
             <div class="oc-bubble">${escHtml(m.text)}</div>
-            <div class="oc-msg-meta">${m.dir==='out'?`<span class="oc-read-check">✓✓</span>`:''}<span>${m.time||''}</span></div>
+            <div class="oc-msg-meta">${hum?'<span class="oc-autor">👤 Atendente</span>':''}${m.dir==='out'?`<span class="oc-read-check">✓✓</span>`:''}<span>${m.time||''}</span></div>
           </div>`;
   }
   const THREAD_HEAD = `<div class="oc-date-div">Histórico real · WhatsApp</div>`;
@@ -2363,6 +2382,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     stopThreadPoll();
     thread.gen++; thread.convId = null; thread.senderId = null;
     thread.msgs = []; thread.keys = new Set(); thread.lastTs = 0; thread.lastDia = ''; thread.inflight = false;
+    thread.humano = {carregado:false}; thread.pendentes = []; thread.tick = 0;
     hideNewPill();
     setSync('');
   }
@@ -2371,6 +2391,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     closeThread();
     thread.convId = c.id; thread.senderId = c.senderId;
     const gen = thread.gen;
+    atualizarStatusHumano();
     const sc = msgScroll();
     sc.innerHTML = `<div class="oc-empty">Carregando mensagens…</div>`;
     fetchRealMessages(c.senderId, null).then(res=>{
@@ -2416,6 +2437,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       }
       thread.falhas = 0;
       setSync('ao-vivo');
+      if(++thread.tick % 4 === 0) atualizarStatusHumano();
       const novos = res.msgs.filter(m=>!thread.keys.has(m.key));
       if(novos.length) addMessages(novos, {initial:false});
     } finally {
@@ -2430,6 +2452,11 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     novos = novos.filter(m=>!thread.keys.has(m.key)).sort((a,b)=>(a._ts||0)-(b._ts||0));
     if(!novos.length) return;
     novos.forEach(m=>{ m.uid = ++thread.seq; thread.keys.add(m.key); });
+    novos.forEach(m=>{
+      if(m.dir!=='out') return;
+      const i = thread.pendentes.findIndex(p=>p.text===m.text);
+      if(i>=0){ thread.pendentes[i].el.remove(); thread.pendentes.splice(i,1); }
+    });
 
     const estavaNoFim = isNearBottom(sc);
     const selecionando = hasSelectionInside(sc);
@@ -2474,6 +2501,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       return sep + msgRowHtml(m, anchor && novosSet.has(m.uid));
     }).join('');
     thread.lastDia = dia;
+    thread.pendentes.forEach(p=>sc.appendChild(p.el)); // bolhas "enviando…" continuam no fim
     if(anchor){
       const el = sc.querySelector(`[data-uid="${anchor.uid}"]`);
       if(el) sc.scrollTop = el.offsetTop - anchor.offset;
@@ -2494,7 +2522,8 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     const p = document.getElementById('ocNewMsgPill');
     if(!p || !thread.unseen) return;
     const comp = document.getElementById('ocComposer');
-    p.style.bottom = ((comp ? comp.offsetHeight : 80) + 14) + 'px';
+    const bar = document.getElementById('ocHumanBar');
+    p.style.bottom = ((comp ? comp.offsetHeight : 80) + (bar ? bar.offsetHeight : 0) + 14) + 'px';
     p.querySelector('span').textContent = thread.unseen===1 ? '1 nova mensagem' : `${thread.unseen} novas mensagens`;
     p.classList.add('show');
   }
@@ -2530,9 +2559,145 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     // 'outbound' é o valor real gravado pelo n8n pra resposta do IAn; 'lead'/'inbound' pra mensagem do lead.
     const isOut = row.from_me===true || ['outbound','bot','rui','agente','vendedor','assistant','out','saida','ai','atendente'].includes(senderStr);
     const dir = isOut?'out':'in';
+    const autor = (row.autor==='atendente' || senderStr==='atendente') ? 'atendente' : null;
     // chave estável pelo conteúdo (funciona com o fluxo antigo, que não manda id)
-    return {dir, text:String(text), time, _ts:Number.isFinite(ts)?ts:0, key: dir+'|'+(Number.isFinite(ts)?ts:0)+'|'+String(text)};
+    return {dir, autor, text:String(text), time, _ts:Number.isFinite(ts)?ts:0, key: dir+'|'+(Number.isFinite(ts)?ts:0)+'|'+String(text)};
   }
+  /* ---------------- [ATENDIMENTO_HUMANO_13_11] pausar o IAn e responder pelo painel ----------------
+     O botão "Pausar IAn" grava a pausa no banco (fluxo n8n atendimento-humano-mt). Enquanto pausado,
+     o IAn não responde esse lead (recepção) e nenhum envio automático sai pra ele (Enviar WhatsApp
+     registrado). A pausa acaba no "Devolver ao IAn" ou sozinha 4h depois da última ação humana. */
+  const N8N_ATENDIMENTO_HUMANO = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/atendimento-humano-mt';
+  async function humanoApi(acao, senderId, texto){
+    try{
+      const res = await fetch(N8N_ATENDIMENTO_HUMANO, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({token: (typeof authToken==='function'?authToken():''), acao, sender_id: senderId, texto: texto||''})
+      });
+      if(res.status===401){ if(typeof handleUnauthorized==='function') handleUnauthorized(); return {ok:false, motivo:'sessao'}; }
+      if(res.status===404) return {ok:false, motivo:'indisponivel'};
+      return (await res.json().catch(()=>null)) || {ok:false, motivo:'erro'};
+    }catch(e){ return {ok:false, motivo:'erro'}; }
+  }
+  function motivoHumano(r){
+    const m = r && r.motivo;
+    if(m==='nao_pausado') return 'A pausa acabou (expirou ou alguém devolveu ao IAn). Pause de novo para responder.';
+    if(m==='lead_nao_encontrado') return 'Esse contato não tem conversa registrada nesta loja.';
+    if(m==='indisponivel') return 'Atendimento humano ainda não foi ativado no n8n.';
+    if(m==='sessao') return 'Sessão expirada — entre de novo.';
+    if(m==='texto_vazio') return 'Escreva a mensagem antes de enviar.';
+    if(m==='texto_longo') return 'Mensagem muito longa (máx. 4000 caracteres).';
+    if(m==='envio'){
+      if(/131047|24 ?h|re-?engagement/i.test(r.mensagem||'')) return 'Já passaram 24h da última mensagem do lead — o WhatsApp só deixa enviar modelo aprovado.';
+      return 'O WhatsApp recusou o envio: ' + (r.mensagem||'erro desconhecido');
+    }
+    return 'Não foi possível agora. Tente de novo.';
+  }
+  function aplicarStatusHumano(r){
+    if(!r || !r.ok) return;
+    thread.humano = { carregado:true, pausado:!!r.pausado, pausado_por:r.pausado_por||'', expira_em:r.expira_em||null,
+                      janela_aberta: r.janela_aberta!==false, atendente:r.atendente||'' };
+    renderHumano();
+  }
+  async function atualizarStatusHumano(){
+    const gen = thread.gen, sid = thread.senderId;
+    if(!sid) return;
+    const r = await humanoApi('status', sid);
+    if(gen !== thread.gen) return;
+    if(r.ok) aplicarStatusHumano(r);
+    else if(!thread.humano.carregado){ thread.humano = {carregado:true, indisponivel:true, motivo:r.motivo}; renderHumano(); }
+  }
+  function horaCurta(iso){
+    try{ return new Date(iso).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Recife'}); }catch(e){ return ''; }
+  }
+  function renderHumano(){
+    const btn = document.getElementById('ocPauseBtn');
+    const bar = document.getElementById('ocHumanBar');
+    const c = CONVERSATIONS.find(x=>x.id===state.selected);
+    if(!btn || !bar) return;
+    if(!c || !c.real){ btn.style.display='none'; bar.classList.remove('show'); return; }
+    const h = thread.humano || {};
+    btn.style.display = '';
+    if(!h.carregado){
+      btn.disabled = true; btn.className = 'oc-pause-btn'; btn.innerHTML = '⏳ <span class="lbl-long">Verificando…</span>';
+    } else if(h.pausado){
+      btn.disabled = false; btn.className = 'oc-pause-btn on'; btn.innerHTML = '▶ <span class="lbl-long">Devolver ao IAn</span>';
+    } else {
+      btn.disabled = false; btn.className = 'oc-pause-btn'; btn.innerHTML = '⏸ <span class="lbl-long">Pausar IAn e responder</span>';
+    }
+    btn.title = h.pausado ? 'O IAn volta a responder este lead automaticamente' : 'O IAn para de responder este lead e você assume a conversa';
+
+    const inp = document.getElementById('ocComposerInput');
+    const scH = msgScroll(), estavaNoFimH = scH && isNearBottom(scH);
+    requestAnimationFrame(()=>{ if(estavaNoFimH && scH) scH.scrollTop = scH.scrollHeight; }); // barra não empurra a leitura
+    if(h.pausado){
+      bar.innerHTML = `⏸️ <span><b>IAn pausado</b> nesta conversa${h.pausado_por?` por <b>${escHtml(h.pausado_por)}</b>`:''} — quem responde agora é você.`+
+        (h.expira_em?` Se ninguém mandar mensagem, o IAn volta sozinho às ${horaCurta(h.expira_em)}.`:'')+`</span>`;
+      bar.classList.add('show');
+      if(h.janela_aberta) setComposerEnabled(true, '');
+      else setComposerEnabled(false, 'Já passaram 24h desde a última mensagem do lead: o WhatsApp não deixa mandar texto livre. Espere o lead escrever de novo.');
+      if(inp) inp.placeholder = 'Responder como atendente…';
+    } else {
+      bar.classList.remove('show');
+      if(inp) inp.placeholder = 'Digite sua mensagem...';
+      setComposerEnabled(false, h.carregado && !h.indisponivel
+        ? 'O IAn está atendendo esta conversa. Para responder você mesmo, clique em "Pausar IAn e responder".'
+        : (h.indisponivel ? 'Responder pelo painel depende do fluxo "atendimento humano" ativo no n8n.' : ''));
+    }
+  }
+  async function alternarPausa(){
+    const c = CONVERSATIONS.find(x=>x.id===state.selected);
+    if(!c || !c.real) return;
+    const h = thread.humano || {};
+    const acao = h.pausado ? 'retomar' : 'pausar';
+    if(acao==='retomar' && !confirm('Devolver esta conversa ao IAn? Ele volta a responder o lead automaticamente.')) return;
+    const btn = document.getElementById('ocPauseBtn');
+    btn.disabled = true;
+    const gen = thread.gen;
+    const r = await humanoApi(acao, c.senderId);
+    if(gen !== thread.gen) return;
+    btn.disabled = false;
+    if(!r.ok){ showToast(motivoHumano(r)); return; }
+    aplicarStatusHumano(r);
+    if(acao==='pausar'){
+      showToast('IAn pausado nesta conversa. Pode responder o lead.');
+      if(inp_ok(r)) document.getElementById('ocComposerInput').focus();
+    } else showToast('Conversa devolvida ao IAn.');
+  }
+  function inp_ok(r){ return r && r.janela_aberta!==false && !!document.getElementById('ocComposerInput'); }
+  async function enviarHumano(c){
+    const input = document.getElementById('ocComposerInput');
+    const text = input.value.trim();
+    if(!text) return;
+    if(!(thread.humano && thread.humano.pausado)){ showToast('Pause o IAn nesta conversa antes de responder.'); return; }
+    input.value = '';
+    const sc = msgScroll();
+    sc.querySelectorAll('.oc-empty-thread, .oc-empty').forEach(n=>n.remove());
+    const el = document.createElement('div');
+    el.className = 'oc-msg-row out humano pendente oc-msg-new';
+    el.innerHTML = `<div class="oc-bubble">${escHtml(text)}</div><div class="oc-msg-meta"><span class="oc-autor">👤 Atendente</span><span>enviando…</span></div>`;
+    sc.appendChild(el);
+    sc.scrollTo({top: sc.scrollHeight, behavior:'smooth'});
+    const pend = {text, el};
+    thread.pendentes.push(pend);
+    const gen = thread.gen;
+    const r = await humanoApi('enviar', c.senderId, text);
+    if(gen !== thread.gen) return;
+    if(r.ok && r.enviado){
+      el.classList.remove('pendente');
+      const meta = el.querySelector('.oc-msg-meta span:last-child'); if(meta) meta.textContent = 'enviado ✓';
+      aplicarStatusHumano(r);
+      setTimeout(pollThread, 1500); // traz a mensagem oficial do histórico (substitui esta)
+    } else {
+      thread.pendentes = thread.pendentes.filter(p=>p!==pend);
+      el.classList.remove('pendente'); el.classList.add('erro');
+      const meta = el.querySelector('.oc-msg-meta span:last-child'); if(meta) meta.textContent = 'não enviada — ' + motivoHumano(r);
+      if(!input.value) input.value = text;
+      if(r.motivo==='nao_pausado') atualizarStatusHumano();
+    }
+  }
+
+
   function setComposerEnabled(enabled, note){
     const comp = document.getElementById('ocComposer');
     const noteEl = document.getElementById('ocComposerNote');
@@ -2645,7 +2810,8 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   /* ---------------- COMPOSER (só conversas fictícias) ---------------- */
   function sendMessage(){
     const c = CONVERSATIONS.find(x=>x.id===state.selected);
-    if(!c || c.real) return;
+    if(!c) return;
+    if(c.real){ enviarHumano(c); return; }
     const input = document.getElementById('ocComposerInput');
     const text = input.value.trim();
     if(!text) return;
@@ -2707,6 +2873,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       else showToast('Relatório completo — disponível quando o canal virar real.');
     });
     document.getElementById('ocSendBtn').addEventListener('click', sendMessage);
+    document.getElementById('ocPauseBtn').addEventListener('click', alternarPausa);
     document.getElementById('ocComposerInput').addEventListener('keydown', e=>{ if(e.key==='Enter') sendMessage(); });
     document.getElementById('ocConvSearch').addEventListener('input', e=>{ state.search=e.target.value; renderAll(); });
     document.getElementById('ocGlobalSearch').addEventListener('input', e=>{ state.search=e.target.value; state.tab='todas'; renderAll(); });
