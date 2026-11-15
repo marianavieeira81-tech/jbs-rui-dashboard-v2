@@ -1073,6 +1073,69 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   .oc-kpi-item{padding:8px 16px;border-right:none;border-bottom:1px solid var(--bdr);}
   .oc-btn span{display:none;}
 }
+/* [WHATSAPP_15_11] Multicanais com cara de WhatsApp Web (modo escuro) */
+#p-omnichannel{--wa-bg:#0b141a;--wa-panel:#111b21;--wa-head:#202c33;--wa-hover:#202c33;--wa-sel:#2a3942;--wa-in:#202c33;--wa-out:#005c4b;--wa-tx:#e9edef;--wa-tx2:#8696a0;--wa-grn:#00a884;--wa-blue:#53bdeb;--wa-bdr:#222d34;}
+#p-omnichannel .oc-shell{background:var(--wa-bg);font-family:'Segoe UI',Helvetica,Arial,sans-serif;}
+#p-omnichannel .oc-topbar,#p-omnichannel .oc-channels,#p-omnichannel .oc-kpi-bar,#p-omnichannel #ocAiSummaryWrap{display:none!important;}
+#p-omnichannel .oc-body{grid-template-columns:400px 1fr;}
+#p-omnichannel .oc-col-list{background:var(--wa-panel);border-right:1px solid var(--wa-bdr);}
+#p-omnichannel .oc-col-head{padding:12px 12px 6px;}
+#p-omnichannel .oc-col-head-row{margin-bottom:8px;}
+#p-omnichannel .oc-col-head-row h2{font-family:inherit;font-size:21px;font-weight:700;color:var(--wa-tx);}
+#p-omnichannel .oc-tabs-row{border:none;gap:8px;margin-bottom:8px;}
+#p-omnichannel .oc-tab-item{font-family:inherit;padding:5px 12px;border-radius:999px;background:var(--wa-head);color:var(--wa-tx2);font-weight:500;}
+#p-omnichannel .oc-tab-item.active{background:#103529;color:#25d366;}
+#p-omnichannel .oc-tab-item.active::after{display:none;}
+#p-omnichannel .oc-mini-search{background:var(--wa-head);border:none;border-radius:8px;height:36px;}
+#p-omnichannel .oc-mini-search input{font-family:inherit;font-size:14px;color:var(--wa-tx);}
+#p-omnichannel .oc-conv-scroll{padding:0;}
+#p-omnichannel .oc-conv-item{border-radius:0;border-left:none;padding:10px 14px 0;margin:0;gap:14px;}
+#p-omnichannel .oc-conv-item:hover{background:var(--wa-hover);}
+#p-omnichannel .oc-conv-item.selected{background:var(--wa-sel);}
+#p-omnichannel .oc-conv-body{border-bottom:1px solid var(--wa-bdr);padding-bottom:10px;}
+#p-omnichannel .oc-conv-av{width:49px;height:49px;}
+#p-omnichannel .oc-conv-name{font-size:16px;font-weight:400;color:var(--wa-tx);}
+#p-omnichannel .oc-conv-time{font-size:12px;color:var(--wa-tx2);}
+#p-omnichannel .oc-conv-preview{font-size:14px;color:var(--wa-tx2);}
+#p-omnichannel .oc-unread{background:var(--wa-grn);color:#111b21;font-weight:600;font-size:12px;min-width:20px;height:20px;}
+#p-omnichannel .oc-col-chat{background-color:var(--wa-bg);background-image:radial-gradient(rgba(255,255,255,.025) 1px,transparent 1px);background-size:18px 18px;}
+#p-omnichannel .oc-chat-head{background:var(--wa-head);border:none;padding:10px 16px;min-height:60px;}
+#p-omnichannel .oc-chat-head-name-row h3{font-family:inherit;font-size:16px;font-weight:500;color:var(--wa-tx);}
+#p-omnichannel .oc-chat-head-origin,#p-omnichannel .oc-sync{font-size:13px;color:var(--wa-tx2);}
+#p-omnichannel .oc-chat-head-actions .oc-icon-btn{background:none;border:none;color:var(--wa-tx2);}
+#p-omnichannel .oc-chat-head-actions .oc-icon-btn[data-tip="Favoritar"],#p-omnichannel .oc-chat-head-actions .oc-icon-btn[data-tip="Etiquetar"]{display:none;}
+#p-omnichannel .oc-drawer-toggle.oc-lead-toggle{display:flex;background:none;border:none;color:var(--wa-tx2);}
+#p-omnichannel .oc-col-lead{position:fixed;top:0;right:0;bottom:0;width:380px;max-width:92vw;z-index:160;transform:translateX(100%);transition:transform .22s;box-shadow:var(--sh-md);background:var(--wa-panel);}
+#p-omnichannel .oc-col-lead.open{transform:translateX(0);}
+#p-omnichannel .oc-pause-btn{border-color:var(--wa-tx2);color:var(--wa-tx2);background:none;font-family:inherit;font-weight:500;}
+#p-omnichannel .oc-pause-btn.on{border-color:var(--wa-grn);color:var(--wa-grn);}
+#p-omnichannel .oc-msg-scroll{padding:12px 7% 10px;gap:0;}
+#p-omnichannel .oc-date-div{align-self:center;justify-content:center;margin:10px 0;font-size:12.5px;font-weight:400;color:var(--wa-tx2);background:#182229;padding:5px 12px;border-radius:8px;box-shadow:0 1px .5px rgba(11,20,26,.13);}
+#p-omnichannel .oc-date-div::before,#p-omnichannel .oc-date-div::after{display:none;}
+#p-omnichannel .oc-msg-row{max-width:65%;margin:1px 0;}
+#p-omnichannel .oc-msg-row.in+.oc-msg-row.out,#p-omnichannel .oc-msg-row.out+.oc-msg-row.in{margin-top:10px;}
+#p-omnichannel .oc-bubble{position:relative;padding:6px 7px 8px 9px;font-size:14.2px;line-height:19px;border-radius:7.5px;box-shadow:0 1px .5px rgba(11,20,26,.13);font-weight:400!important;}
+#p-omnichannel .oc-msg-row.in .oc-bubble{background:var(--wa-in);color:var(--wa-tx);}
+#p-omnichannel .oc-msg-row.out .oc-bubble,#p-omnichannel .oc-msg-row.out.humano .oc-bubble{background:var(--wa-out);color:var(--wa-tx);}
+#p-omnichannel .oc-msg-row.erro .oc-bubble{background:#5B1E24;}
+#p-omnichannel .oc-msg-meta{float:right;margin:8px 0 -5px 12px;padding:0;font-size:11px;line-height:15px;color:rgba(233,237,239,.6);display:inline-flex;gap:3px;white-space:nowrap;}
+#p-omnichannel .oc-read-check,#p-omnichannel .oc-tick.ok{color:var(--wa-blue);letter-spacing:-3px;padding-right:3px;}
+#p-omnichannel .oc-autor{font-size:12.8px;font-weight:500;color:#53bdeb;margin-bottom:2px;}
+#p-omnichannel .oc-empty-thread{background:#182229;border:none;color:var(--wa-tx2);}
+#p-omnichannel .oc-new-msg-pill{background:var(--wa-head);border-color:var(--wa-grn);color:var(--wa-grn);}
+#p-omnichannel .oc-human-bar{margin:0;border-radius:0;border:none;background:#182229;color:var(--wa-tx2);justify-content:center;font-size:12.5px;}
+#p-omnichannel .oc-human-bar b{color:var(--wa-grn);}
+#p-omnichannel .oc-composer{background:var(--wa-head);border:none;padding:8px 16px;}
+#p-omnichannel .oc-composer-toolbar{display:none;}
+#p-omnichannel .oc-composer-note{color:var(--wa-tx2);text-align:center;}
+#p-omnichannel .oc-composer-row{background:none;border:none;padding:0;gap:12px;}
+#p-omnichannel .oc-composer-row input{background:#2a3942;border-radius:8px;height:42px;padding:0 14px;font-family:inherit;font-size:15px;color:var(--wa-tx);}
+#p-omnichannel .oc-composer-row input::placeholder{color:var(--wa-tx2);}
+#p-omnichannel .oc-send-btn{background:none;color:var(--wa-tx2);width:42px;height:42px;padding:0;justify-content:center;border-radius:50%;}
+#p-omnichannel .oc-send-btn:hover{background:none;color:var(--wa-grn);}
+#p-omnichannel .oc-composer-row:focus-within .oc-send-btn{color:var(--wa-grn);}
+@media (max-width:860px){#p-omnichannel .oc-body{grid-template-columns:1fr;}#p-omnichannel .oc-col-list{top:0;width:360px;}#p-omnichannel .oc-msg-scroll{padding:10px 12px;}#p-omnichannel .oc-msg-row{max-width:85%;}}
+
 /* [AVISO_TRANSF_31_10] aviso de lead transferido */
 .av-bell{position:fixed;right:16px;bottom:16px;z-index:9998;display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;border:1px solid var(--ac-d);background:var(--s2);color:var(--tx);font:600 12px/1 inherit;cursor:pointer;box-shadow:var(--sh)}
 .av-bell:hover{border-color:var(--ac)}
@@ -1832,8 +1895,8 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       <div class="oc-composer" id="ocComposer">
         <div class="oc-composer-note" id="ocComposerNote" style="display:none;"></div>
         <div class="oc-composer-row">
-          <input type="text" id="ocComposerInput" placeholder="Digite sua mensagem...">
-          <button class="oc-send-btn" id="ocSendBtn"><span>Enviar</span></button>
+          <input type="text" id="ocComposerInput" placeholder="Digite uma mensagem" autocomplete="off">
+          <button class="oc-send-btn" id="ocSendBtn" aria-label="Enviar"><svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M1.1 21.8 23 12 1.1 2.2 1 9.8l15.6 2.2L1 14.2z"/></svg></button>
         </div>
         <div class="oc-composer-toolbar">
           <button class="oc-tool-btn" data-tip="Emoji"><span class="oc-ic" data-oc-icon="smile"></span></button>
@@ -2333,8 +2396,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       const scroll = document.getElementById('ocMsgScroll');
       scroll.innerHTML = `<div class="oc-date-div">Hoje</div>` + c.messages.map(m=>`
         <div class="oc-msg-row ${m.dir}">
-          <div class="oc-bubble">${escHtml(m.text)}</div>
-          <div class="oc-msg-meta">${m.dir==='out'?`<span class="oc-read-check">✓✓</span>`:''}<span>${m.time}</span></div>
+          <div class="oc-bubble">${escHtml(m.text)}<span class="oc-msg-meta"><span>${m.time}</span>${m.dir==='out'?`<span class="oc-read-check">✓✓</span>`:''}</span></div>
         </div>`).join('');
       scroll.scrollTop = scroll.scrollHeight;
       setComposerEnabled(true, '');
@@ -2343,7 +2405,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   }
 
   /* ---------------- REAL: conversa ao vivo (endpoint adtsa-chat-history-mt) ---------------- */
-  const THREAD_POLL_MS = 4000;          // "quase tempo real"
+  const THREAD_POLL_MS = 2000;          // "quase tempo real"
   const THREAD_OVERLAP_MS = 2 * 60000;  // pede 2 min a mais pra não perder mensagem gravada fora de ordem (dedup cuida do resto)
   const NEAR_BOTTOM_PX = 80;
   const thread = { convId:null, senderId:null, msgs:[], keys:new Set(), lastTs:0, lastDia:'',
@@ -2360,8 +2422,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   function msgRowHtml(m, isNew){
     const hum = m.autor==='atendente';
     return `<div class="oc-msg-row ${m.dir}${hum?' humano':''}${isNew?' oc-msg-new':''}" data-uid="${m.uid}">
-            <div class="oc-bubble">${escHtml(m.text)}</div>
-            <div class="oc-msg-meta">${hum?'<span class="oc-autor">👤 Atendente</span>':''}${m.dir==='out'?`<span class="oc-read-check">✓✓</span>`:''}<span>${m.time||''}</span></div>
+            <div class="oc-bubble">${hum?'<div class="oc-autor">Atendente</div>':''}${escHtml(m.text)}<span class="oc-msg-meta"><span>${m.time||''}</span>${m.dir==='out'?`<span class="oc-read-check">✓✓</span>`:''}</span></div>
           </div>`;
   }
   const THREAD_HEAD = `<div class="oc-date-div">Histórico real · WhatsApp</div>`;
@@ -2669,13 +2730,22 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     const input = document.getElementById('ocComposerInput');
     const text = input.value.trim();
     if(!text) return;
-    if(!(thread.humano && thread.humano.pausado)){ showToast('Pause o IAn nesta conversa antes de responder.'); return; }
+    if(!(thread.humano && thread.humano.pausado)){
+      // [WHATSAPP_15_11] vendedor só digita e envia: o painel pausa o IAn sozinho nesta conversa
+      const gp = thread.gen;
+      const rp = await humanoApi('pausar', c.senderId);
+      if(gp !== thread.gen) return;
+      if(!rp.ok){ showToast(motivoHumano(rp)); return; }
+      aplicarStatusHumano(rp);
+      showToast('IAn pausado nesta conversa — você assumiu o atendimento.');
+    }
     input.value = '';
     const sc = msgScroll();
     sc.querySelectorAll('.oc-empty-thread, .oc-empty').forEach(n=>n.remove());
     const el = document.createElement('div');
     el.className = 'oc-msg-row out humano pendente oc-msg-new';
-    el.innerHTML = `<div class="oc-bubble">${escHtml(text)}</div><div class="oc-msg-meta"><span class="oc-autor">👤 Atendente</span><span>enviando…</span></div>`;
+    const hh = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Recife'});
+    el.innerHTML = `<div class="oc-bubble"><div class="oc-autor">Atendente</div>${escHtml(text)}<span class="oc-msg-meta"><span>${hh}</span><span class="oc-tick">🕓</span></span></div>`;
     sc.appendChild(el);
     sc.scrollTo({top: sc.scrollHeight, behavior:'smooth'});
     const pend = {text, el};
@@ -2685,13 +2755,13 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     if(gen !== thread.gen) return;
     if(r.ok && r.enviado){
       el.classList.remove('pendente');
-      const meta = el.querySelector('.oc-msg-meta span:last-child'); if(meta) meta.textContent = 'enviado ✓';
+      const meta = el.querySelector('.oc-tick'); if(meta){ meta.textContent = '✓'; meta.className = 'oc-tick ok'; }
       aplicarStatusHumano(r);
-      setTimeout(pollThread, 1500); // traz a mensagem oficial do histórico (substitui esta)
+      setTimeout(pollThread, 700); // traz a mensagem oficial do histórico (substitui esta)
     } else {
       thread.pendentes = thread.pendentes.filter(p=>p!==pend);
       el.classList.remove('pendente'); el.classList.add('erro');
-      const meta = el.querySelector('.oc-msg-meta span:last-child'); if(meta) meta.textContent = 'não enviada — ' + motivoHumano(r);
+      const meta = el.querySelector('.oc-tick'); if(meta){ meta.textContent = '⚠ não enviada — ' + motivoHumano(r); meta.className = 'oc-tick'; }
       if(!input.value) input.value = text;
       if(r.motivo==='nao_pausado') atualizarStatusHumano();
     }
@@ -2898,7 +2968,16 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
     document.getElementById('ocScrim').addEventListener('click', closeDrawers);
   }
 
+  // [WHATSAPP_15_11] a tela do chat ocupa exatamente a altura visível (caixa de digitar sempre à vista)
+  function ocAjustarAltura(){
+    const sh = document.querySelector('#p-omnichannel .oc-shell');
+    if(!sh || !sh.offsetParent) return;
+    const top = sh.getBoundingClientRect().top + window.scrollY;
+    sh.style.height = Math.max(420, window.innerHeight - top) + 'px';
+  }
+  window.addEventListener('resize', ocAjustarAltura);
   window.ocOnOpen = function(){
+    requestAnimationFrame(ocAjustarAltura);
     initOnce();
     renderAll(); // já reconstrói a lista de conversas sozinho
     renderKpis();
