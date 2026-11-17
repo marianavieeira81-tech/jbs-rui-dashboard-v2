@@ -620,6 +620,33 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 .ci-input:focus{outline:none;border-color:rgba(212,175,55,.4);background:var(--s3);}
 .ci-input::placeholder{color:var(--tx3);}
 .ci-row2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+/* [MODELOS_17_11] aba Modelos de Mensagem */
+.mm-grid{align-items:flex-start;gap:28px;}
+.mm-hint{font-size:11px;color:var(--tx3);margin-top:6px;line-height:1.5;}
+.mm-row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:8px;}
+.mm-btn2{background:var(--s3);color:var(--tx);border:1px solid var(--s4);padding:7px 14px;border-radius:var(--rsm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;}
+.mm-btn2:hover{border-color:rgba(212,175,55,.4);}
+textarea.ci-input{resize:vertical;min-height:110px;line-height:1.5;}
+select.ci-input{cursor:pointer;}
+.mm-prev{background:#0b141a;border:1px solid var(--bdr);border-radius:var(--rsm);padding:18px 16px;margin:8px 0 20px;}
+.mm-bolha{background:#202c33;color:#e9edef;padding:8px 11px 9px;border-radius:0 9px 9px 9px;max-width:88%;width:fit-content;font-size:13.5px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere;}
+.mm-var{background:rgba(212,175,55,.18);color:var(--ac-l);border-radius:4px;padding:0 3px;}
+.mm-criar{width:100%;padding:13px 22px;}
+.mm-criar:disabled{opacity:.6;cursor:wait;}
+.mm-msg{margin-top:12px;font-size:13px;line-height:1.5;}
+.mm-msg.ok{color:var(--grn-l);} .mm-msg.err{color:var(--red);}
+.mm-lista{max-height:680px;overflow:auto;}
+.mm-item{border-top:1px solid var(--bdr);padding:14px 0;}
+.mm-item:first-child{border-top:none;padding-top:0;}
+.mm-item-h{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;}
+.mm-nome{font-weight:700;font-size:13px;overflow-wrap:anywhere;}
+.mm-badge{font-size:10px;font-weight:700;letter-spacing:.06em;padding:3px 9px;border-radius:999px;text-transform:uppercase;white-space:nowrap;}
+.mm-b-ok{background:var(--grn-bg);color:var(--grn-l);} .mm-b-pend{background:var(--ac-faint);color:var(--ac);}
+.mm-b-rej{background:var(--red-bg);color:var(--red);} .mm-b-out{background:var(--s3);color:var(--tx2);}
+.mm-meta{font-size:11px;color:var(--tx3);margin-top:3px;}
+.mm-txt{font-size:12px;color:var(--tx2);margin-top:7px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.5;}
+@media(max-width:900px){ #p-modelos .mm-grid{grid-template-columns:1fr;} #p-modelos .ci-row2{grid-template-columns:1fr;gap:0;} }
+
 .ci-chips{display:flex;flex-wrap:wrap;gap:8px;}
 .ci-chip{background:var(--s2);border:1px solid var(--bdr);color:var(--tx2);padding:8px 18px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;transition:all .18s;user-select:none;}
 .ci-chip:hover{background:var(--s3);color:var(--tx);}
@@ -1403,6 +1430,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
       <div class="sb-item" onclick="go('checkin')"><i class="sb-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><path d="m9 13.5 2 2 4-4.5"/></svg></i>Check-in</div>
       <div class="sb-item" onclick="go('agenda')"><i class="sb-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M16 2.5v4M8 2.5v4M3 10h18"/></svg></i>Agenda</div>
       <div class="sb-item" onclick="go('omnichannel')"><i class="sb-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg></i>Multicanais - em construção 🚧</div>
+      <div class="sb-item" onclick="go('modelos')"><i class="sb-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v12H8l-4 4z"/><path d="M8 9h8M8 12h5"/></svg></i>Modelos de Mensagem</div>
     </div>
   </div>
   <div class="sb-chess"></div>
@@ -3336,6 +3364,59 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
   </div>
 </div>
 
+<!-- ============ MODELOS DE MENSAGEM ============ -->
+<div id="p-modelos" style="display:none">
+  <!-- [MODELOS_17_11] cria e lista os modelos (templates) do WhatsApp da loja pela API oficial da Meta (fluxo n8n modelos-mensagem-mt) -->
+  <div class="topbar">
+    <div><div class="eye">WhatsApp</div><h1>Modelos de Mensagem</h1></div>
+    <div class="topbar-r"><button class="btn-ref" onclick="mmListar()">↺ Atualizar</button></div>
+  </div>
+  <div class="g2 mm-grid">
+    <div class="card">
+      <div class="ci-sec-title">Novo modelo</div>
+      <div class="ci-field">
+        <div class="ci-label">Nome do modelo</div>
+        <input class="ci-input" id="mm-nome" maxlength="512" placeholder="ex.: confirmacao_atendimento" oninput="mmNomeLimpar(this)" autocomplete="off"/>
+        <div class="mm-hint">Só letras minúsculas, números e _. Espaços e acentos são ajustados sozinhos.</div>
+      </div>
+      <div class="ci-row2">
+        <div class="ci-field">
+          <div class="ci-label">Categoria</div>
+          <select class="ci-input" id="mm-cat">
+            <option value="UTILITY">Utilidade</option>
+            <option value="MARKETING">Marketing</option>
+          </select>
+          <div class="mm-hint">Utilidade: avisos e confirmações. Marketing: ofertas e novidades.</div>
+        </div>
+        <div class="ci-field">
+          <div class="ci-label">Idioma</div>
+          <select class="ci-input" id="mm-idioma">
+            <option value="pt_BR">Português (Brasil)</option>
+            <option value="en_US">Inglês (EUA)</option>
+            <option value="es">Espanhol</option>
+          </select>
+        </div>
+      </div>
+      <div class="ci-field">
+        <div class="ci-label">Texto da mensagem</div>
+        <textarea class="ci-input" id="mm-texto" rows="5" maxlength="1024" oninput="mmAtualizar()" placeholder="Olá {{1}}, seu atendimento foi registrado. Em breve um vendedor fala com você."></textarea>
+        <div class="mm-row"><button type="button" class="mm-btn2" onclick="mmAddVar()">+ Variável</button><span class="mm-hint" id="mm-cont" style="margin:0">0 / 1024</span></div>
+        <div class="mm-hint">Variáveis como {{1}} são trocadas pelo nome do cliente (ou outro dado) na hora do envio.</div>
+      </div>
+      <div id="mm-exemplos"></div>
+      <div class="ci-label">Como o cliente vai ver</div>
+      <div class="mm-prev"><div class="mm-bolha" id="mm-prev"></div></div>
+      <button class="btn-ref mm-criar" id="mm-criar" onclick="mmCriar()">Criar modelo</button>
+      <div class="mm-msg" id="mm-msg"></div>
+    </div>
+    <div class="card">
+      <div class="ci-sec-title">Modelos desta loja <span id="mm-status" style="letter-spacing:0;text-transform:none;font-weight:400"></span></div>
+      <div class="mm-lista" id="mm-lista"><div class="mm-hint">Carregando…</div></div>
+      <div class="mm-hint" style="margin-top:14px;border-top:1px solid var(--bdr);padding-top:12px">Todo modelo novo passa pela análise da Meta antes de poder ser usado (normalmente de minutos a algumas horas). Use ↺ Atualizar para ver a situação.</div>
+    </div>
+  </div>
+</div>
+
 <!-- ============ AGENDA ============ -->
 <div id="p-agenda" style="display:none">
   <!-- [AGENDA_TD_31_10] agenda de test drive — dados do banco (o IAn marca na conversa; o vendedor confirma, marca presença, remarca ou cancela aqui) -->
@@ -3740,6 +3821,7 @@ function go(id){
   if(id==='checkin') ciInit();
   if(id==='vendedores') vdCarregar();
   if(id==='agenda') agInit();
+  if(id==='modelos' && typeof mmInit==='function') mmInit(); // [MODELOS_17_11]
   if(DR_TABS.includes(id)) drBuild(id);
 }
 
@@ -8954,6 +9036,118 @@ function tdBadge(l){
   // Some com o botão na tela de login
   setInterval(()=>{ const b=document.getElementById('avBell'); const ov=document.getElementById('loginOverlay'); if(b) b.style.display = (ov && ov.style.display==='flex') ? 'none' : 'flex'; }, 1000);
 })();
+</script>
+<script>
+// ============================================================
+// [MODELOS_17_11] MODELOS DE MENSAGEM (templates do WhatsApp da loja)
+// Cria e lista pela API oficial da Meta, via n8n (valida a sessão e usa o WABA da loja logada).
+// ============================================================
+const N8N_MODELOS = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/modelos-mensagem-mt';
+function _mmEsc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+async function modelosApi(campos){
+  try{
+    const res = await fetch(N8N_MODELOS, {method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(Object.assign({token: authToken()}, campos))});
+    if(res.status===401){ handleUnauthorized(); return {ok:false, motivo:'sessao'}; }
+    if(res.status===404) return {ok:false, motivo:'nao_ativado'};
+    const data = await res.json().catch(()=>null);
+    return data || {ok:false, motivo:'erro'};
+  }catch(e){ return {ok:false, motivo:'erro'}; }
+}
+function mmMotivoTexto(r){
+  const m = r && r.motivo;
+  if(m==='nao_ativado') return 'Essa função ainda não foi ativada no servidor (fluxo "modelos de mensagem" no n8n).';
+  if(m==='sessao') return 'Sessão expirada — entre de novo.';
+  if(m==='sem_waba') return 'Esta loja ainda não tem conta do WhatsApp (WABA) cadastrada.';
+  if(m==='meta') return 'A Meta recusou: ' + (r.mensagem || 'erro sem detalhe');
+  if(m==='invalido') return r.mensagem || 'Confira os campos.';
+  return 'Não foi possível agora. Tente de novo em instantes.';
+}
+function mmVars(texto){
+  return [...new Set((String(texto).match(/\{\{\s*(\d+)\s*\}\}/g)||[]).map(v=>+v.replace(/\D/g,'')))].sort((a,b)=>a-b);
+}
+function mmNomeLimpar(el){
+  const v = el.value.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[\s-]+/g,'_').replace(/[^a-z0-9_]/g,'');
+  if(v!==el.value) el.value = v;
+}
+function mmAddVar(){
+  const ta = document.getElementById('mm-texto'); if(!ta) return;
+  const n = (mmVars(ta.value).slice(-1)[0]||0) + 1, ins = '{{'+n+'}}';
+  const ini = ta.selectionStart ?? ta.value.length, fim = ta.selectionEnd ?? ta.value.length;
+  ta.value = ta.value.slice(0,ini) + ins + ta.value.slice(fim);
+  ta.focus(); ta.selectionStart = ta.selectionEnd = ini + ins.length;
+  mmAtualizar();
+}
+function mmExemplosAtuais(){
+  const o = {}; document.querySelectorAll('#mm-exemplos input[data-n]').forEach(i=>{ o[i.dataset.n] = i.value; }); return o;
+}
+function mmAtualizar(){
+  const ta = document.getElementById('mm-texto'); if(!ta) return;
+  const vars = mmVars(ta.value), ant = mmExemplosAtuais();
+  document.getElementById('mm-cont').textContent = ta.value.length + ' / 1024';
+  const box = document.getElementById('mm-exemplos');
+  const atuais = [...box.querySelectorAll('input[data-n]')].map(i=>+i.dataset.n);
+  if(atuais.join()!==vars.join()){
+    box.innerHTML = vars.map(n=>`<div class="ci-field"><div class="ci-label">Exemplo para {{${n}}} (a Meta exige)</div><input class="ci-input" data-n="${n}" maxlength="200" placeholder="${n===1?'ex.: Maria':'ex.: um valor de exemplo'}" value="${_mmEsc(ant[n]||'')}" oninput="mmPrevia()"/></div>`).join('');
+  }
+  mmPrevia();
+}
+function mmPrevia(){
+  const texto = (document.getElementById('mm-texto')||{}).value || '', ex = mmExemplosAtuais();
+  const html = _mmEsc(texto).replace(/\{\{\s*(\d+)\s*\}\}/g, (m,n)=> ex[n] ? `<b>${_mmEsc(ex[n])}</b>` : `<span class="mm-var">{{${n}}}</span>`);
+  const el = document.getElementById('mm-prev');
+  if(el) el.innerHTML = html || '<span style="color:#8696a0">A mensagem aparece aqui.</span>';
+}
+function mmValidar(d){
+  if(!/^[a-z0-9_]{1,512}$/.test(d.nome)) return 'Dê um nome ao modelo (letras minúsculas, números e _).';
+  if(!d.texto.trim()) return 'Escreva o texto da mensagem.';
+  if(d.texto.length>1024) return 'O texto pode ter no máximo 1024 caracteres.';
+  const vars = mmVars(d.texto);
+  if(vars.some((n,i)=>n!==i+1)) return 'As variáveis precisam estar em sequência: {{1}}, {{2}}, {{3}}…';
+  if(/^\s*\{\{\s*\d+\s*\}\}/.test(d.texto) || /\{\{\s*\d+\s*\}\}\s*$/.test(d.texto)) return 'A Meta não aceita variável no começo ou no fim do texto. Escreva algo antes e depois dela.';
+  if(d.exemplos.some(x=>!String(x).trim())) return 'Preencha um exemplo para cada variável — a Meta exige.';
+  return '';
+}
+function mmStatusTexto(s){
+  return ({APPROVED:'Aprovado',PENDING:'Em análise',REJECTED:'Rejeitado',PAUSED:'Pausado',DISABLED:'Desativado',IN_APPEAL:'Em recurso'})[String(s||'').toUpperCase()] || (s || '—');
+}
+function mmBadge(s){
+  s = String(s||'').toUpperCase();
+  const c = s==='APPROVED' ? 'mm-b-ok' : (s==='PENDING'||s==='IN_APPEAL') ? 'mm-b-pend' : (s==='REJECTED'||s==='DISABLED') ? 'mm-b-rej' : 'mm-b-out';
+  return `<span class="mm-badge ${c}">${_mmEsc(mmStatusTexto(s))}</span>`;
+}
+async function mmCriar(){
+  const btn = document.getElementById('mm-criar'), msg = document.getElementById('mm-msg');
+  const texto = document.getElementById('mm-texto').value, ex = mmExemplosAtuais();
+  const d = { nome: document.getElementById('mm-nome').value.trim(), categoria: document.getElementById('mm-cat').value,
+              idioma: document.getElementById('mm-idioma').value, texto, exemplos: mmVars(texto).map(n=>ex[n]||'') };
+  const erro = mmValidar(d);
+  if(erro){ msg.className = 'mm-msg err'; msg.textContent = erro; return; }
+  btn.disabled = true; btn.textContent = 'Enviando para a Meta…'; msg.className = 'mm-msg'; msg.textContent = '';
+  const r = await modelosApi(Object.assign({acao:'criar'}, d));
+  btn.disabled = false; btn.textContent = 'Criar modelo';
+  if(!r.ok){ msg.className = 'mm-msg err'; msg.textContent = mmMotivoTexto(r); return; }
+  msg.className = 'mm-msg ok';
+  msg.innerHTML = `✓ Modelo <b>${_mmEsc(d.nome)}</b> criado e enviado para a Meta. Situação: <b>${_mmEsc(mmStatusTexto(r.status))}</b>${r.id ? ` · ID ${_mmEsc(r.id)}` : ''}`;
+  mmListar();
+}
+async function mmListar(){
+  const box = document.getElementById('mm-lista'), st = document.getElementById('mm-status'); if(!box) return;
+  if(st) st.textContent = '· carregando…';
+  const r = await modelosApi({acao:'listar'});
+  if(!r.ok){ if(st) st.textContent = ''; box.innerHTML = `<div class="mm-hint">${_mmEsc(mmMotivoTexto(r))}</div>`; return; }
+  const lista = Array.isArray(r.modelos) ? r.modelos : [];
+  if(st) st.textContent = `· ${lista.length} · atualizado às ` + new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Recife'});
+  if(!lista.length){ box.innerHTML = '<div class="mm-hint">Nenhum modelo ainda. Crie o primeiro ao lado.</div>'; return; }
+  const CAT = {UTILITY:'Utilidade', MARKETING:'Marketing', AUTHENTICATION:'Autenticação'};
+  box.innerHTML = lista.map(m=>`<div class="mm-item">
+      <div class="mm-item-h"><span class="mm-nome">${_mmEsc(m.nome)}</span>${mmBadge(m.status)}</div>
+      <div class="mm-meta">${_mmEsc(CAT[m.categoria]||m.categoria||'')} · ${_mmEsc(m.idioma||'')}</div>
+      ${m.texto ? `<div class="mm-txt">${_mmEsc(m.texto)}</div>` : ''}
+      ${m.motivo && m.motivo!=='NONE' ? `<div class="mm-meta" style="color:var(--red)">Motivo da recusa: ${_mmEsc(m.motivo)}</div>` : ''}
+    </div>`).join('');
+}
+function mmInit(){ mmAtualizar(); mmListar(); }
 </script>
 </body>
 </html>
