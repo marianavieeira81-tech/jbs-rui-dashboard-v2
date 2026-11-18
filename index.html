@@ -620,6 +620,21 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:var(--stripe);
 .ci-input:focus{outline:none;border-color:rgba(212,175,55,.4);background:var(--s3);}
 .ci-input::placeholder{color:var(--tx3);}
 .ci-row2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+/* [EMBEDDED_SIGNUP_17_11] aba Conectar WhatsApp */
+.es-grid{align-items:flex-start;gap:28px;}
+.es-passos{margin:0 0 18px 18px;padding:0;font-size:13px;line-height:1.7;color:var(--tx2);}
+.es-passos b{color:var(--tx);}
+.es-btn{width:100%;padding:13px 22px;background:#1877f2;color:#fff;border:0;border-radius:var(--rsm);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;}
+.es-btn:disabled{opacity:.6;cursor:wait;}
+.es-linha{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-top:1px solid var(--bdr);font-size:13px;}
+.es-linha:first-child{border-top:none;}
+.es-linha span:first-child{color:var(--tx3);}
+.es-linha span:last-child{text-align:right;overflow-wrap:anywhere;}
+.es-barra{height:6px;background:var(--s3);border-radius:99px;overflow:hidden;margin-top:6px;}
+.es-barra i{display:block;height:100%;background:var(--grn-l);width:0;transition:width .4s;}
+.es-aviso a{color:var(--ac);text-decoration:underline;}
+.es-aviso{background:var(--ac-faint);color:var(--tx2);border-radius:var(--rsm);padding:10px 12px;font-size:12px;line-height:1.5;margin-top:12px;}
+@media(max-width:900px){ #p-conexao .es-grid{grid-template-columns:1fr;} }
 /* [MODELOS_17_11] aba Modelos de Mensagem */
 .mm-grid{align-items:flex-start;gap:28px;}
 .mm-hint{font-size:11px;color:var(--tx3);margin-top:6px;line-height:1.5;}
@@ -1431,6 +1446,7 @@ select.ci-input{cursor:pointer;}
       <div class="sb-item" onclick="go('agenda')"><i class="sb-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M16 2.5v4M8 2.5v4M3 10h18"/></svg></i>Agenda</div>
       <div class="sb-item" onclick="go('omnichannel')"><i class="sb-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg></i>Multicanais - em construção 🚧</div>
       <div class="sb-item" onclick="go('modelos')"><i class="sb-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v12H8l-4 4z"/><path d="M8 9h8M8 12h5"/></svg></i>Modelos de Mensagem</div>
+      <div class="sb-item" onclick="go('conexao')"><i class="sb-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg></i>Conectar WhatsApp</div>
     </div>
   </div>
   <div class="sb-chess"></div>
@@ -3417,6 +3433,34 @@ select.ci-input{cursor:pointer;}
   </div>
 </div>
 
+<!-- ============ CONECTAR WHATSAPP ============ -->
+<div id="p-conexao" style="display:none">
+  <!-- [EMBEDDED_SIGNUP_17_11] cliente conecta o próprio número (Embedded Signup da Meta, com Coexistência) — fluxo n8n conectar-whatsapp-mt -->
+  <div class="topbar">
+    <div><div class="eye">WhatsApp</div><h1>Conectar WhatsApp</h1></div>
+    <div class="topbar-r"><button class="btn-ref" onclick="esStatus()">↺ Atualizar</button></div>
+  </div>
+  <div class="g2 es-grid">
+    <div class="card">
+      <div class="ci-sec-title">Conectar o número da loja</div>
+      <ol class="es-passos">
+        <li>Deixe o <b>WhatsApp Business</b> do número da loja <b>atualizado e aberto</b> no celular.</li>
+        <li>Clique em <b>Conectar WhatsApp</b> e entre com o Facebook de quem administra a empresa.</li>
+        <li>Escolha <b>conectar o WhatsApp Business que você já usa</b> e digite o número.</li>
+        <li>No celular, abra a mensagem do <b>Facebook Business</b>, toque em <b>Conectar</b> e cole o código.</li>
+        <li>Pode compartilhar as conversas antigas: o IAn copia contatos e até 6 meses de conversas.</li>
+      </ol>
+      <div class="mm-hint" style="margin:-6px 0 16px">O número continua funcionando no celular. Quando alguém da loja responder pelo celular, o IAn <b>pausa sozinho</b> naquela conversa.</div>
+      <button class="es-btn" id="es-btn" onclick="esConectar()" disabled>Carregando…</button>
+      <div class="mm-msg" id="es-msg"></div>
+    </div>
+    <div class="card">
+      <div class="ci-sec-title">Situação da conexão</div>
+      <div id="es-status"><div class="mm-hint">Carregando…</div></div>
+    </div>
+  </div>
+</div>
+
 <!-- ============ AGENDA ============ -->
 <div id="p-agenda" style="display:none">
   <!-- [AGENDA_TD_31_10] agenda de test drive — dados do banco (o IAn marca na conversa; o vendedor confirma, marca presença, remarca ou cancela aqui) -->
@@ -3822,6 +3866,7 @@ function go(id){
   if(id==='vendedores') vdCarregar();
   if(id==='agenda') agInit();
   if(id==='modelos' && typeof mmInit==='function') mmInit(); // [MODELOS_17_11]
+  if(id==='conexao' && typeof esInit==='function') esInit(); // [EMBEDDED_SIGNUP_17_11]
   if(DR_TABS.includes(id)) drBuild(id);
 }
 
@@ -9149,6 +9194,131 @@ async function mmListar(){
 }
 function mmInit(){ mmAtualizar(); mmListar(); }
 </script>
+<script>
+// ============================================================
+// [EMBEDDED_SIGNUP_17_11] CONECTAR WHATSAPP (Embedded Signup da Meta + Coexistência)
+// O navegador só pega o "code" (vale 30 s) e os IDs da sessão; o n8n troca pelo token,
+// confere as contas, guarda no Vault e faz as sincronizações. O painel nunca vê o token.
+// ============================================================
+const N8N_CONECTAR = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/conectar-whatsapp-mt';
+const ES_APP_ID = '1106205191812877';
+const ES_CONFIG_ID = '1500775538561887';  // "IAN coexistencia" em Login do Facebook para empresas → Configurações
+const ES_GRAPH = 'v27.0';
+let _esSdk = null, _esSessao = null, _esTimer = null;
+
+function _esEsc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function esMsg(tipo, txt){ const el=document.getElementById('es-msg'); if(el){ el.className='mm-msg '+(tipo||''); el.innerHTML=txt||''; } }
+async function esApi(campos){
+  try{
+    const res = await fetch(N8N_CONECTAR, {method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(Object.assign({token: authToken()}, campos))});
+    if(res.status===401){ handleUnauthorized(); return {ok:false, motivo:'sessao'}; }
+    if(res.status===404) return {ok:false, motivo:'nao_ativado'};
+    return (await res.json().catch(()=>null)) || {ok:false, motivo:'erro'};
+  }catch(e){ return {ok:false, motivo:'erro'}; }
+}
+function esCarregarSdk(){
+  if(_esSdk) return _esSdk;
+  _esSdk = new Promise((ok, falha)=>{
+    if(window.FB){ ok(); return; }
+    window.fbAsyncInit = function(){ FB.init({appId: ES_APP_ID, autoLogAppEvents: true, xfbml: false, version: ES_GRAPH}); ok(); };
+    const sc = document.createElement('script');
+    sc.async = true; sc.defer = true; sc.crossOrigin = 'anonymous';
+    sc.src = 'https://connect.facebook.net/pt_BR/sdk.js';
+    sc.onerror = ()=>{ _esSdk = null; falha(new Error('sdk')); };
+    document.head.appendChild(sc);
+  });
+  return _esSdk;
+}
+// Session logging: IDs das contas no fim do fluxo, tela onde desistiu, ou erro informado
+window.addEventListener('message', ev=>{
+  let host = ''; try{ host = new URL(ev.origin).hostname; }catch(e){ return; }
+  if(host !== 'facebook.com' && !host.endsWith('.facebook.com')) return;
+  let d = ev.data;
+  if(typeof d === 'string'){ try{ d = JSON.parse(d); }catch(e){ return; } }
+  if(!d || d.type !== 'WA_EMBEDDED_SIGNUP') return;
+  _esSessao = d;
+  if(d.event === 'CANCEL' || d.event === 'ERROR'){
+    esApi({acao:'log', evento: d.event, sessao: d});
+    if(d.event === 'ERROR') esMsg('err', 'A Meta mostrou um erro: '+_esEsc((d.data||{}).error_message || 'sem detalhe')+(d.data&&d.data.error_code?' (código '+_esEsc(d.data.error_code)+')':''));
+  }
+});
+function esMotivoTexto(r){
+  const m = r && r.motivo;
+  if(m==='nao_ativado') return 'Essa função ainda não foi ativada no servidor (fluxo "conectar WhatsApp" no n8n).';
+  if(m==='sessao') return 'Sessão expirada — entre de novo.';
+  if(m==='troca_code') return 'A Meta não confirmou a conexão: '+_esEsc(r.mensagem||'')+'. Tente de novo.';
+  if(m==='sem_waba') return 'Nenhuma conta do WhatsApp foi liberada para o IAn. Refaça e marque a conta da loja.';
+  if(m==='numero_de_outra_loja') return 'Esse número já está ligado a outra loja no IAn. Fale com o suporte do IAn.';
+  if(m==='config') return 'Falta configuração no servidor do IAn (ID/segredo do app). Fale com o suporte do IAn.';
+  return 'Não foi possível agora. Tente de novo em instantes.';
+}
+function esConectar(){
+  if(!ES_CONFIG_ID){ esMsg('err', 'A conexão ainda não foi configurada pelo IAn (falta o ID da configuração da Meta).'); return; }
+  if(!window.FB){ esMsg('err', 'O login do Facebook não carregou. Recarregue a página.'); return; }
+  _esSessao = null;
+  esMsg('', 'Siga as telas da Meta na janela que abriu…');
+  FB.login(resp=>{ esAposLogin(resp); }, {
+    config_id: ES_CONFIG_ID, response_type: 'code', override_default_response_type: true,
+    extras: { setup: {}, featureType: 'whatsapp_business_app_onboarding', sessionInfoVersion: '3', version: 'v5' }
+  });
+}
+async function esAposLogin(resp){
+  if(!resp || !resp.authResponse || !resp.authResponse.code){
+    const passo = _esSessao && _esSessao.event==='CANCEL' ? ((_esSessao.data||{}).current_step||'') : '';
+    if(!_esSessao || _esSessao.event!=='ERROR') esMsg('err', 'A conexão não foi concluída'+(passo?' (parou em '+_esEsc(passo)+')':'')+'. Pode tentar de novo.');
+    return;
+  }
+  const code = resp.authResponse.code;   // vale só 30 segundos: manda já para o servidor
+  for(let i=0; i<25 && !(_esSessao && /^FINISH/.test(_esSessao.event||'')); i++) await new Promise(r=>setTimeout(r,100));
+  const btn = document.getElementById('es-btn'); if(btn){ btn.disabled = true; btn.textContent = 'Conectando…'; }
+  esMsg('', 'Conectando e preparando a sincronização… não feche esta página.');
+  const r = await esApi({acao:'conectar', code, sessao: _esSessao || {}});
+  if(btn){ btn.disabled = false; btn.textContent = 'Conectar WhatsApp'; }
+  if(!r || !r.ok){ esMsg('err', esMotivoTexto(r)); esStatus(); return; }
+  if(r.registro==='pendente_troca') esMsg('ok', 'Número conectado. Como esta loja já usava outro número no IAn, a troca será confirmada pelo suporte do IAn.');
+  else if(r.coexistencia) esMsg('ok', 'Conectado! O IAn está copiando seus contatos e conversas. <b>Deixe o WhatsApp Business aberto no celular</b> por alguns minutos.');
+  else esMsg('ok', 'Conectado! O número já pode ser usado pelo IAn.');
+  esStatus();
+}
+const ES_STATUS_TXT = {nao_conectado:'Não conectado', iniciado:'Iniciado', conectado:'Conectado', sincronizando:'Conectado — copiando conversas',
+  sincronizado:'Conectado e sincronizado', pendente_troca:'Aguardando o suporte do IAn trocar o número', erro:'Conectado com pendências', desconectado:'Desconectado'};
+function esRender(st){
+  const box = document.getElementById('es-status'); if(!box) return;
+  if(!st || st.ok===false){ box.innerHTML = `<div class="mm-hint">${_esEsc(esMotivoTexto(st))}</div>`; return; }
+  const linhas = [['Situação', ES_STATUS_TXT[st.status] || st.status]];
+  if(st.numero) linhas.push(['Número', st.numero]);
+  if(st.nome) linhas.push(['Nome no WhatsApp', st.nome]);
+  if(st.status !== 'nao_conectado') linhas.push(['Continua no app WhatsApp Business', st.coexistencia ? 'Sim' : 'Não']);
+  if(st.conectado_em) linhas.push(['Conectado em', new Date(st.conectado_em).toLocaleString('pt-BR')]);
+  if(st.coexistencia){
+    linhas.push(['Contatos copiados', String(st.contatos||0)]);
+    linhas.push(['Conversas antigas', st.historico_recusado ? 'Não compartilhadas' : (String(st.mensagens_historico||0)+' mensagens')]);
+  }
+  if(st.status==='desconectado' && st.desconexao_motivo) linhas.push(['Motivo', st.desconexao_motivo]);
+  let html = linhas.map(l=>`<div class="es-linha"><span>${_esEsc(l[0])}</span><span>${_esEsc(l[1])}</span></div>`).join('');
+  if(st.coexistencia && !st.historico_recusado && st.status!=='desconectado'){
+    const p = Math.max(0, Math.min(100, +st.historico_progresso||0));
+    html += `<div class="es-linha" style="display:block"><span>Cópia das conversas: ${p}%</span><div class="es-barra"><i style="width:${p}%"></i></div></div>`;
+  }
+  const et = st.etapas || {}, avisos = [];
+  ['webhooks','contatos','historico','registro','usuario_sistema'].forEach(k=>{ if(et[k] && et[k].erro) avisos.push(k+': '+et[k].erro); });
+  if(avisos.length) html += `<div class="es-aviso"><b>Detalhes técnicos para o suporte do IAn:</b><br>${avisos.map(_esEsc).join('<br>')}</div>`;
+  if(st.status && st.status!=='nao_conectado' && st.status!=='desconectado')
+    html += `<div class="es-aviso">Para a loja enviar mensagens pela API, cadastre um <b>cartão de pagamento</b> no <a href="https://business.facebook.com/wa/manage/home/" target="_blank" rel="noopener">WhatsApp Manager</a> (botão "Adicionar forma de pagamento").</div>`;
+  box.innerHTML = html;
+  clearTimeout(_esTimer);
+  if(st.status==='sincronizando' && document.getElementById('p-conexao').style.display!=='none') _esTimer = setTimeout(esStatus, 10000);
+}
+async function esStatus(){ esRender(await esApi({acao:'status'})); }
+function esInit(){
+  esStatus();
+  const btn = document.getElementById('es-btn');
+  esCarregarSdk().then(()=>{ if(btn){ btn.disabled = false; btn.textContent = 'Conectar WhatsApp'; } })
+    .catch(()=>{ if(btn){ btn.disabled = true; btn.textContent = 'Login do Facebook bloqueado'; } esMsg('err', 'Não foi possível carregar o login do Facebook (bloqueador de anúncios ou rede). Libere connect.facebook.net e recarregue.'); });
+}
+</script>
+
 </body>
 </html>
 
