@@ -2220,6 +2220,8 @@ select.ci-input{cursor:pointer;}
         const c = porChave.get(p.chave);
         if(c) c.pesquisa = p;
         else convs.push(mapPesquisa(p));
+        // [PESQUISA_SO_ENVIADOS_26_11] quem ainda NÃO recebeu nada (na fila, não saiu, fora da pesquisa) aparece só na
+        // aba "Pesquisa de loja". Em "Todas" ficava parecendo que o IAn tinha conversado com essa pessoa.
       });
     }
     return convs.sort((a,b) => (b._sort||'').localeCompare(a._sort||''));
@@ -2241,6 +2243,10 @@ select.ci-input{cursor:pointer;}
     if(/^55\d{10,11}$/.test(d)) return d.slice(2,4) + d.slice(-8);
     if(/^\d{10,11}$/.test(d)) return d.slice(0,2) + d.slice(-8);
     return d;
+  }
+  // [PESQUISA_SO_ENVIADOS_26_11] conversa criada só pela lista da pesquisa e sem nenhuma mensagem enviada ao cliente
+  function semMensagem(c){
+    return !!(c && String(c.id).startsWith('pq_') && c.pesquisa && ['na_fila','falhou','pulada'].includes(c.pesquisa.etapa));
   }
   function diaMes(iso){ const d = String(iso||'').slice(0,10).split('-'); return d.length===3 ? d[2]+'/'+d[1] : ''; }
   // [DIA_NA_LISTA_26_11] dia junto do horário na lista de conversas, como no WhatsApp: "Hoje 21:48", "Ontem 20:38", "24/11 19:00"
@@ -2370,6 +2376,7 @@ select.ci-input{cursor:pointer;}
       if(state.channel && c.channel!==state.channel) return false;
       if(state.tab==='nao_lidas' && !(c.unread>0)) return false;
       if(state.tab==='pesquisa' && !c.pesquisa) return false; // [PAINEL_PESQUISA_26_11]
+      if(state.tab!=='pesquisa' && semMensagem(c)) return false; // [PESQUISA_SO_ENVIADOS_26_11]
       if(state.search){
         const q = state.search.toLowerCase();
         if(!c.name.toLowerCase().includes(q) && !(c.lastPreview||'').toLowerCase().includes(q)) return false;
@@ -2380,7 +2387,7 @@ select.ci-input{cursor:pointer;}
 
   /* ---------------- RENDER: CHANNELS ---------------- */
   function renderChannels(){
-    const waCount = realConversations().length;
+    const waCount = realConversations().filter(c=>!semMensagem(c)).length;
     const el = document.getElementById('ocChannels');
     const order = ['whatsapp','instagram','webmotors','olx','chatsite'];
     el.innerHTML = order.map(key=>{
@@ -2420,7 +2427,7 @@ select.ci-input{cursor:pointer;}
   function renderTabs(){
     const el = document.getElementById('ocTabsRow');
     el.innerHTML = TABS.map(t=>{
-      const cnt = t.key==='todas' ? CONVERSATIONS.length
+      const cnt = t.key==='todas' ? CONVERSATIONS.filter(c=>!semMensagem(c)).length
                 : t.key==='pesquisa' ? CONVERSATIONS.filter(c=>c.pesquisa).length
                 : CONVERSATIONS.filter(c=>c.unread>0).length;
       return `<button class="oc-tab-item${state.tab===t.key?' active':''}" data-oc-tab="${t.key}">${t.label} <span class="cnt">${cnt}</span></button>`;
@@ -2872,7 +2879,8 @@ select.ci-input{cursor:pointer;}
         (h.expira_em?` Se ninguém mandar mensagem, o IAn volta sozinho às ${horaCurta(h.expira_em)}.`:'')+`</span>`;
       bar.classList.add('show');
       if(h.janela_aberta) setComposerEnabled(true, '');
-      else setComposerEnabled(false, 'Já passaram 24h desde a última mensagem do lead: o WhatsApp não deixa mandar texto livre. Espere o lead escrever de novo.');
+      // [AVISO_24H_26_11] o texto antigo falava em "24h desde a última mensagem" mesmo para quem nunca respondeu
+      else setComposerEnabled(false, 'O WhatsApp só deixa mandar texto livre até 24h depois da última mensagem DO CLIENTE, e este cliente não escreveu nas últimas 24h (ou nunca respondeu). Para falar com ele agora, o vendedor pode chamar pelo próprio WhatsApp. Quando o cliente responder, a caixa abre sozinha.');
       if(inp) inp.placeholder = 'Responder como atendente…';
     } else {
       bar.classList.remove('show');
