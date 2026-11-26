@@ -1140,6 +1140,15 @@ select.ci-input{cursor:pointer;}
 #p-omnichannel .oc-conv-time{font-size:12px;color:var(--wa-tx2);}
 #p-omnichannel .oc-conv-preview{font-size:14px;color:var(--wa-tx2);}
 #p-omnichannel .oc-unread{background:var(--wa-grn);color:#111b21;font-weight:600;font-size:12px;min-width:20px;height:20px;}
+/* [PAINEL_PESQUISA_26_11] pesquisa de loja: selo na lista + resumo por dia */
+#p-omnichannel .oc-conv-row2{gap:6px;}
+#p-omnichannel .oc-conv-preview{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+#p-omnichannel .oc-pq-chip{flex-shrink:0;font-size:11px;font-weight:600;line-height:1;padding:3px 7px;border:1px solid;border-radius:999px;white-space:nowrap;}
+#p-omnichannel .oc-pq-resumo{margin:6px 12px 8px;padding:10px 12px;border-radius:8px;background:var(--wa-head);color:var(--wa-tx2);font-size:13px;line-height:1.45;}
+#p-omnichannel .oc-pq-resumo .t{color:var(--wa-tx);font-weight:600;margin-bottom:4px;}
+#p-omnichannel .oc-pq-resumo .oc-pq-dia .d{display:inline-block;min-width:44px;color:var(--wa-tx);font-variant-numeric:tabular-nums;}
+#p-omnichannel .oc-pq-resumo b{color:var(--wa-tx);}
+#p-omnichannel .oc-pq-resumo .h{margin-top:6px;font-size:12px;opacity:.8;}
 #p-omnichannel .oc-col-chat{background-color:var(--wa-bg);background-image:radial-gradient(rgba(255,255,255,.025) 1px,transparent 1px);background-size:18px 18px;}
 #p-omnichannel .oc-chat-head{background:var(--wa-head);border:none;padding:10px 16px;min-height:60px;}
 #p-omnichannel .oc-chat-head-name-row h3{font-family:inherit;font-size:16px;font-weight:500;color:var(--wa-tx);}
@@ -2197,10 +2206,108 @@ select.ci-input{cursor:pointer;}
   /* ---------------- REAL: WhatsApp via ACTIVE_LEADS ---------------- */
   function realConversations(){
     if(typeof ACTIVE_LEADS === 'undefined' || !Array.isArray(ACTIVE_LEADS)) return [];
-    return ACTIVE_LEADS
+    const convs = ACTIVE_LEADS
       .filter(l => (l.canal||'whatsapp') !== 'presencial')
-      .map(mapRealLead)
-      .sort((a,b) => (b._sort||'').localeCompare(a._sort||''));
+      .map(mapRealLead);
+    // [PAINEL_PESQUISA_26_11] junta a pesquisa de loja: marca quem já está na lista e acrescenta quem ainda não respondeu
+    if(PESQUISA.length){
+      const porChave = new Map();
+      convs.forEach(c => { const k = telChave(c.senderId || c.telefone); if(k) porChave.set(k, c); });
+      const vistos = new Set();
+      PESQUISA.forEach(p => {
+        if(!p || !p.chave || vistos.has(p.chave)) return; // mesma pessoa em 2 visitas: fica a mais recente (a lista vem ordenada)
+        vistos.add(p.chave);
+        const c = porChave.get(p.chave);
+        if(c) c.pesquisa = p;
+        else convs.push(mapPesquisa(p));
+      });
+    }
+    return convs.sort((a,b) => (b._sort||'').localeCompare(a._sort||''));
+  }
+
+  /* ---------------- [PAINEL_PESQUISA_26_11] pesquisa de loja ----------------
+     Lista TODO lead de "Leads: Loja" dos últimos 7 dias com a situação do envio da pesquisa
+     (endpoint pesquisa-loja-mt → função ian_pesquisa_painel). Antes a aba só mostrava quem tinha
+     respondido ao IAn (só esses ganham cadastro de lead), e parecia que a pesquisa saía para poucos. */
+  let PESQUISA = [];
+  let pesquisaCarregadaEm = 0;
+  let pesquisaCarregando = false;
+  const PQ_ROTULO = { respondeu:'Respondeu', lida:'Leu', entregue:'Entregue', enviada:'Enviada',
+                      nao_entregue:'Não entregue', falhou:'Não saiu', na_fila:'Na fila', pulada:'Fora da pesquisa' };
+  const PQ_COR = { respondeu:'#25d366', lida:'#53bdeb', entregue:'#8696a0', enviada:'#8696a0',
+                   nao_entregue:'#f15c6d', falhou:'#f15c6d', na_fila:'#e9b949', pulada:'#8696a0' };
+  function telChave(v){ // igual a ian_tel_chave no banco: DDD + 8 últimos dígitos (com ou sem o 9, com ou sem +55)
+    const d = String(v||'').replace(/\D/g,'');
+    if(/^55\d{10,11}$/.test(d)) return d.slice(2,4) + d.slice(-8);
+    if(/^\d{10,11}$/.test(d)) return d.slice(0,2) + d.slice(-8);
+    return d;
+  }
+  function diaMes(iso){ const d = String(iso||'').slice(0,10).split('-'); return d.length===3 ? d[2]+'/'+d[1] : ''; }
+  function mapPesquisa(p){
+    const ultimo = p.ultima_resposta_em || p.lembrete_enviado_em || p.enviado_em || null;
+    const dv = p.data_visita ? String(p.data_visita).slice(0,10) : '';
+    return {
+      id: 'pq_'+p.chave, real:true, pesquisa:p,
+      name: p.nome || 'Lead de loja', channel:'whatsapp',
+      senderId: String(p.sender_id||''),
+      avColor: 'var(--tx3)',
+      lastTime: ultimo ? _horaLocal(ultimo) : '',
+      lastPreview: 'Visitou a loja em ' + diaMes(dv) + (p.vendedor ? ' · ' + p.vendedor : ''),
+      status: '',
+      _sort: ultimo ? (_dataLocalISO(ultimo)+'T'+_horaLocal(ultimo)) : (dv+'T00:00'),
+      origin: 'Pesquisa de loja' + (dv ? ' • visita em '+diaMes(dv) : '') + (p.vendedor ? ' • vendedor: '+p.vendedor : ''),
+      aiSummary: null,
+      telefone: p.telefone || 'Não informado', localizacao: 'Não informado',
+      temperatura: null, score: null, modelo: p.modelo || null, setor: null, pagamento: null, veicAtual: null,
+      decisao: null, codDetalhe: null, quer_reservar: null, unidadePreferida: null,
+      data: dv, hora: ultimo ? _horaLocal(ultimo) : '', qualificadoEm: null,
+    };
+  }
+  function pqChipHtml(p){
+    if(!p) return '';
+    const cor = PQ_COR[p.etapa] || '#8696a0';
+    return `<span class="oc-pq-chip" style="color:${cor};border-color:${cor}66;" title="${escHtml('Pesquisa de loja: '+(p.situacao||''))}">📋 ${PQ_ROTULO[p.etapa]||'Pesquisa'}</span>`;
+  }
+  function resumoPesquisaHtml(){
+    const cab = `<div class="t">Pesquisa de loja · últimos 7 dias</div>`;
+    const rodape = `<div class="h">Todo lead de "Leads: Loja" recebe a pesquisa às 19h do dia da visita. Quem fica sem mensagem recebe de novo no dia seguinte, entre 10h e 20h.</div>`;
+    if(!PESQUISA.length) return `<div class="oc-pq-resumo">${cab}<div class="oc-pq-dia">Nenhum lead de loja nos últimos 7 dias.</div>${rodape}</div>`;
+    const dias = new Map();
+    PESQUISA.forEach(p => { const d = String(p.data_visita||'').slice(0,10); if(!dias.has(d)) dias.set(d, []); dias.get(d).push(p); });
+    const linhas = [...dias.entries()].sort((a,b) => b[0].localeCompare(a[0])).map(([d, arr]) => {
+      const n = k => arr.filter(p => p.etapa===k).length;
+      const receberam = arr.filter(p => ['respondeu','lida','entregue','enviada'].includes(p.etapa)).length;
+      const semEntrega = n('nao_entregue') + n('falhou');
+      const resp = n('respondeu');
+      const partes = [`<b>${arr.length}</b> lead${arr.length>1?'s':''}`, `${receberam} ${receberam===1?'recebeu':'receberam'}`,
+                      `${resp} ${resp===1?'respondeu':'responderam'}`];
+      if(n('na_fila')) partes.push(`${n('na_fila')} na fila`);
+      if(semEntrega) partes.push(`<span style="color:#f15c6d;">${semEntrega} sem entrega</span>`);
+      if(n('pulada')) partes.push(`${n('pulada')} fora da pesquisa`);
+      return `<div class="oc-pq-dia"><span class="d">${diaMes(d)}</span>${partes.join(' · ')}</div>`;
+    }).join('');
+    return `<div class="oc-pq-resumo">${cab}${linhas}${rodape}</div>`;
+  }
+  async function carregarPesquisa(forcar){
+    if(pesquisaCarregando || typeof authFetch!=='function' || typeof N8N_PESQUISA_LOJA==='undefined') return;
+    if(!forcar && Date.now() - pesquisaCarregadaEm < 60000) return;
+    pesquisaCarregando = true;
+    try{
+      const res = await authFetch(N8N_PESQUISA_LOJA + '?dias=7', {method:'GET'});
+      if(!res.ok) return;
+      const j = await res.json();
+      const itens = Array.isArray(j) ? (j[0] && j[0].itens) : (j && j.itens);
+      if(!Array.isArray(itens)) return;
+      pesquisaCarregadaEm = Date.now();
+      const mudou = JSON.stringify(itens) !== JSON.stringify(PESQUISA);
+      PESQUISA = itens;
+      const aba = document.getElementById('p-omnichannel');
+      if(mudou && aba && aba.style.display!=='none') renderAll();
+    }catch(e){
+      console.warn('[PesquisaLoja] lista indisponível:', e);
+    }finally{
+      pesquisaCarregando = false;
+    }
   }
   function mapRealLead(l){
     const perguntas = l.perguntas || [];
@@ -2246,6 +2353,7 @@ select.ci-input{cursor:pointer;}
     return CONVERSATIONS.filter(c=>{
       if(state.channel && c.channel!==state.channel) return false;
       if(state.tab==='nao_lidas' && !(c.unread>0)) return false;
+      if(state.tab==='pesquisa' && !c.pesquisa) return false; // [PAINEL_PESQUISA_26_11]
       if(state.search){
         const q = state.search.toLowerCase();
         if(!c.name.toLowerCase().includes(q) && !(c.lastPreview||'').toLowerCase().includes(q)) return false;
@@ -2291,11 +2399,14 @@ select.ci-input{cursor:pointer;}
   const TABS = [
     {key:'todas', label:'Todas'},
     {key:'nao_lidas', label:'Não lidas'},
+    {key:'pesquisa', label:'Pesquisa de loja'}, // [PAINEL_PESQUISA_26_11]
   ];
   function renderTabs(){
     const el = document.getElementById('ocTabsRow');
     el.innerHTML = TABS.map(t=>{
-      const cnt = t.key==='todas' ? CONVERSATIONS.length : CONVERSATIONS.filter(c=>c.unread>0).length;
+      const cnt = t.key==='todas' ? CONVERSATIONS.length
+                : t.key==='pesquisa' ? CONVERSATIONS.filter(c=>c.pesquisa).length
+                : CONVERSATIONS.filter(c=>c.unread>0).length;
       return `<button class="oc-tab-item${state.tab===t.key?' active':''}" data-oc-tab="${t.key}">${t.label} <span class="cnt">${cnt}</span></button>`;
     }).join('');
     el.querySelectorAll('[data-oc-tab]').forEach(b=>{
@@ -2316,14 +2427,14 @@ select.ci-input{cursor:pointer;}
         </div>
         <div class="oc-conv-body">
           <div class="oc-conv-row1"><span class="oc-conv-name">${escHtml(c.name)}</span><span class="oc-conv-time">${c.lastTime||''}</span></div>
-          <div class="oc-conv-row2"><span class="oc-conv-preview">${escHtml(c.lastPreview||'')}</span>${statusChip}</div>
+          <div class="oc-conv-row2"><span class="oc-conv-preview">${escHtml(c.lastPreview||'')}</span>${pqChipHtml(c.pesquisa)}${statusChip}</div>
         </div>`;
   }
   function renderConvList(){
     const el = document.getElementById('ocConvScroll');
     const list = filteredConversations();
     if(list.length===0){
-      el.innerHTML = `<div class="oc-empty">Nenhuma conversa encontrada.</div>`;
+      el.innerHTML = (state.tab==='pesquisa' ? resumoPesquisaHtml() : '') + `<div class="oc-empty">Nenhuma conversa encontrada.</div>`;
       return;
     }
     el.querySelectorAll(':scope > :not([data-oc-conv])').forEach(n=>n.remove());
@@ -2345,6 +2456,11 @@ select.ci-input{cursor:pointer;}
       prev = node;
     });
     existentes.forEach(n=>n.remove());
+    if(state.tab==='pesquisa'){ // [PAINEL_PESQUISA_26_11] resumo por dia no topo da lista
+      const tmp = document.createElement('div');
+      tmp.innerHTML = resumoPesquisaHtml();
+      el.insertBefore(tmp.firstElementChild, el.firstChild);
+    }
     if(state.channel===null && state.tab==='todas'){
       const lm = document.createElement('button');
       lm.type='button'; lm.className='oc-load-more'; lm.id='ocLoadMoreBtn';
@@ -2857,13 +2973,25 @@ select.ci-input{cursor:pointer;}
         {k:'Urgência / reserva', v:c.quer_reservar||'Não informado', icon:'tag'},
         {k:'Unidade preferida', v:c.unidadePreferida || 'Não informado', icon:'map-pin'},
       ];
+      if(c.pesquisa){ // [PAINEL_PESQUISA_26_11]
+        rows.unshift(
+          {k:'Pesquisa de loja', v:c.pesquisa.situacao || '—', icon:'file-text'},
+          {k:'Visita à loja', v:diaMes(c.pesquisa.data_visita) + (c.pesquisa.vendedor ? ' · vendedor: ' + c.pesquisa.vendedor : ''), icon:'map-pin'});
+      }
       document.getElementById('ocDetailList').innerHTML = rows.map(d=>`
         <div class="oc-detail-row"><span class="oc-ic">${ocIcon(d.icon,15)}</span><div><div class="oc-detail-k">${d.k}</div><div class="oc-detail-v">${escHtml(d.v)}</div></div></div>`).join('');
 
       document.getElementById('ocSeeAll').style.display = 'none';
       const tl = [];
       if(c.qualificadoEm) tl.push({time:fmtDateTime(c.qualificadoEm), text:'Qualificação concluída', color:'var(--grn-l)'});
-      if(c.data) tl.push({time:fmtDateTime(c.data)+(c.hora?' '+c.hora:''), text:'Última atualização · status: '+(c.status||'—'), color:'var(--ac)'});
+      if(c.data && !String(c.id).startsWith('pq_')) tl.push({time:fmtDateTime(c.data)+(c.hora?' '+c.hora:''), text:'Última atualização · status: '+(c.status||'—'), color:'var(--ac)'});
+      if(c.pesquisa){ // [PAINEL_PESQUISA_26_11] linha do tempo da pesquisa
+        const p = c.pesquisa, quando = v => v ? diaMes(_dataLocalISO(v)) + ' ' + _horaLocal(v) : '';
+        if(p.ultima_resposta_em) tl.unshift({time:quando(p.ultima_resposta_em), text:'Respondeu ao IAn', color:'#25d366'});
+        if(p.lembrete_enviado_em && p.fonte!=='repescagem') tl.unshift({time:quando(p.lembrete_enviado_em), text:'2ª mensagem da pesquisa enviada', color:'var(--ac)'});
+        if(p.enviado_em) tl.unshift({time:quando(p.enviado_em), text:(p.fonte==='repescagem' ? 'Pesquisa enviada (repescagem)' : 'Pesquisa enviada'), color:'var(--ac)'});
+        tl.unshift({time:diaMes(p.data_visita), text:'Visitou a loja' + (p.vendedor ? ' · ' + escHtml(p.vendedor) : ''), color:'var(--grn-l)'});
+      }
       document.getElementById('ocTimeline').innerHTML = tl.length ? tl.map(t=>`
         <div class="oc-tl-item"><span class="oc-tl-dot" style="background:${t.color};"></span><div><div class="oc-tl-time">${t.time}</div><div class="oc-tl-text">${t.text}</div></div></div>`).join('')
         : `<div class="oc-empty" style="padding:12px 0;">Sem histórico detalhado disponível ainda.</div>`;
@@ -3025,6 +3153,7 @@ select.ci-input{cursor:pointer;}
     initOnce();
     renderAll(); // já reconstrói a lista de conversas sozinho
     renderKpis();
+    carregarPesquisa(); // [PAINEL_PESQUISA_26_11] no máximo 1 vez por minuto; redesenha a lista se mudou
   };
   window.ocOnClose = closeThread;
 })();
@@ -6401,6 +6530,7 @@ const ENDPOINTS = {
 };
 
 const N8N_CHAT_HISTORY  = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/adtsa-chat-history-mt';
+const N8N_PESQUISA_LOJA = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/pesquisa-loja-mt'; // [PAINEL_PESQUISA_26_11] leads de loja + situação da pesquisa
 const N8N_LOGIN         = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/rui-login';
 const N8N_LOGOUT        = 'https://n8n-n8n.lrdyzi.easypanel.host/webhook/rui-logout';
 // Cadastro de interesse (quem quer se tornar cliente do Rui) — endpoint ainda NÃO
