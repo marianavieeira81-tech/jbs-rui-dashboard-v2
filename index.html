@@ -2243,6 +2243,20 @@ select.ci-input{cursor:pointer;}
     return d;
   }
   function diaMes(iso){ const d = String(iso||'').slice(0,10).split('-'); return d.length===3 ? d[2]+'/'+d[1] : ''; }
+  // [DIA_NA_LISTA_26_11] dia junto do horário na lista de conversas, como no WhatsApp: "Hoje 21:48", "Ontem 20:38", "24/11 19:00"
+  function diaLista(iso){
+    const d = String(iso||'').slice(0,10);
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(d)) return '';
+    const hoje = _hojeLocal();
+    if(d === hoje) return 'Hoje';
+    if(d === _dataLocalISO(Date.now() - 86400000)) return 'Ontem';
+    return diaMes(d) + (d.slice(0,4) !== hoje.slice(0,4) ? '/' + d.slice(2,4) : '');
+  }
+  function quandoLista(c){
+    const dia = diaLista(c.lastDay);
+    if(!dia) return c.lastTime || '';
+    return c.lastTime ? dia + ' ' + c.lastTime : dia;
+  }
   function mapPesquisa(p){
     const ultimo = p.ultima_resposta_em || p.lembrete_enviado_em || p.enviado_em || null;
     const dv = p.data_visita ? String(p.data_visita).slice(0,10) : '';
@@ -2252,6 +2266,7 @@ select.ci-input{cursor:pointer;}
       senderId: String(p.sender_id||''),
       avColor: 'var(--tx3)',
       lastTime: ultimo ? _horaLocal(ultimo) : '',
+      lastDay: ultimo ? _dataLocalISO(ultimo) : '',
       lastPreview: 'Visitou a loja em ' + diaMes(dv) + (p.vendedor ? ' · ' + p.vendedor : ''),
       status: '',
       _sort: ultimo ? (_dataLocalISO(ultimo)+'T'+_horaLocal(ultimo)) : (dv+'T00:00'),
@@ -2319,9 +2334,10 @@ select.ci-input{cursor:pointer;}
       real:true, name: l.nome||'Lead sem nome', channel:'whatsapp',
       senderId: l.senderId || l.telefone || '',
       avColor: l.temperatura ? TEMP_COLOR[l.temperatura] : 'var(--tx3)',
-      lastTime: l.hora||'', lastPreview: preview, status: l.status||'',
+      lastTime: l.hora||'', lastDay: l.data||'', lastPreview: preview, status: l.status||'',
       _sort: (l.data||'')+'T'+(l.hora||''),
-      origin: 'WhatsApp'+(l.loja?(' • '+l.loja):'')+(l.data?(' • '+new Date(l.data).toLocaleDateString('pt-BR')):''),
+      // [DIA_NA_LISTA_26_11] l.data já é o dia em Recife (AAAA-MM-DD); new Date() lia como UTC e mostrava o dia anterior
+      origin: 'WhatsApp'+(l.loja?(' • '+l.loja):'')+(l.data?(' • '+fmtDateTime(l.data)):''),
       aiSummary: l.justificativa || l.intencao || null,
       telefone: l.telefone || 'Não informado',
       localizacao: l.localizacao || 'Não informado',
@@ -2426,7 +2442,7 @@ select.ci-input{cursor:pointer;}
           ${chanBadgeHtml(c.channel)}
         </div>
         <div class="oc-conv-body">
-          <div class="oc-conv-row1"><span class="oc-conv-name">${escHtml(c.name)}</span><span class="oc-conv-time">${c.lastTime||''}</span></div>
+          <div class="oc-conv-row1"><span class="oc-conv-name">${escHtml(c.name)}</span><span class="oc-conv-time">${quandoLista(c)}</span></div>
           <div class="oc-conv-row2"><span class="oc-conv-preview">${escHtml(c.lastPreview||'')}</span>${pqChipHtml(c.pesquisa)}${statusChip}</div>
         </div>`;
   }
@@ -3021,7 +3037,9 @@ select.ci-input{cursor:pointer;}
     }
   }
   function fmtDateTime(v){
-    try{ return new Date(v).toLocaleDateString('pt-BR'); }catch(e){ return v; }
+    // [DIA_NA_LISTA_26_11] "AAAA-MM-DD" já é o dia em Recife: new Date() leria como meia-noite UTC (dia anterior no Brasil)
+    if(/^\d{4}-\d{2}-\d{2}$/.test(String(v||''))) return String(v).split('-').reverse().join('/');
+    try{ return new Date(v).toLocaleDateString('pt-BR',{timeZone:'America/Recife'}); }catch(e){ return v; }
   }
 
   /* ---------------- RENDER: KPI FOOTER ---------------- */
@@ -3060,7 +3078,7 @@ select.ci-input{cursor:pointer;}
     const now = new Date();
     const time = String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
     c.messages.push({dir:'out', time, text});
-    c.lastTime = time; c.lastPreview = text;
+    c.lastTime = time; c.lastDay = _hojeLocal(); c.lastPreview = text;
     input.value = '';
     renderChat();
     renderConvList();
